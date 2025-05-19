@@ -1,72 +1,147 @@
-#ifndef _PROB_H_
-#define _PROB_H_
+#ifndef PROB_H
+#define PROB_H
 
+#include <AMReX_Print.H>
+#include <AMReX_ParmParse.H>
+#include <AMReX_Geometry.H>
+#include <AMReX_FArrayBox.H>
 #include <AMReX_REAL.H>
-#include <AMReX_GpuQualifiers.H>
-#include <IndexDefines.H>
-#include <EOS.H>
+#include <AMReX_GpuMemory.H>
 
-struct ProbParm {};
-struct ProbParmDevice {};
+#include "mechanism.H"
 
-namespace ProblemSpecificFunctions {
+#include "PeleC.H"
+#include "IndexDefines.H"
+#include "Constants.H"
+#include "PelePhysics.H"
+#include "Tagging.H"
 
-AMREX_GPU_DEVICE AMREX_FORCE_INLINE
-void problem_initialize(int i, int j, int k,
-                        amrex::Array4<amrex::Real> const& state,
-                        const amrex::GeometryData& geomdata,
-                        const ProbParmDevice& prob)
+#include "ProblemSpecificFunctions.H"
+#include "prob_parm.H"
+
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+void
+pc_initdata(
+  int i,
+  int j,
+  int k,
+  amrex::Array4<amrex::Real> const& state,
+  amrex::GeometryData const& geomdata,
+  ProbParmDevice const& prob_parm)
 {
-    const auto problo = geomdata.ProbLo();
-    const auto dx = geomdata.CellSize();
-    const amrex::Real x = problo[0] + (i + 0.5) * dx[0];
+  // Geometry
+  const amrex::Real* prob_lo = geomdata.ProbLo();
+  const amrex::Real* dx = geomdata.CellSize();
+  const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0];
+  const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
+  amrex::Real z = 0;
+#if AMREX_SPACEDIM == 3
+  z = prob_lo[2] + (k + 0.5) * dx[2];
+#endif
+  for (int n = 0; n < NUM_SPECIES; n++) {
+    state(i, j, k, UFS + n) = 0;
+  }
 
-    amrex::Real T, P;
-    amrex::Real Y[NUM_SPECIES] = {0.0};
-
-    if (x < 0.1) {
-        T = 2500.0;
-        P = 2.0e6;
-        Y[0] = 2.0 / 3.0;
-        Y[1] = 1.0 / 3.0;
+  // Set the states
+  if (prob_parm.idir == 1) {
+    if (x <= prob_parm.split[0]) {
+      state(i, j, k, URHO) = prob_parm.rho_l;
+      state(i, j, k, UMX) = prob_parm.rho_l * prob_parm.u_l;
+      state(i, j, k, UMY) = 0.0;
+      state(i, j, k, UMZ) = 0.0;
+      state(i, j, k, UEDEN) = prob_parm.rhoe_l + 0.5 * prob_parm.rho_l *
+                                                   prob_parm.u_l *
+                                                   prob_parm.u_l;
+      state(i, j, k, UEINT) = prob_parm.rhoe_l;
+      state(i, j, k, UTEMP) = prob_parm.T_l;
+      state(i, j, k, UFS + prob_parm.left_gas_id) = state(i, j, k, URHO);
     } else {
-        T = 300.0;
-        P = 1.0e5;
-        Y[1] = 0.21;
-        Y[2] = 0.79;
+      state(i, j, k, URHO) = prob_parm.rho_r;
+      state(i, j, k, UMX) = prob_parm.rho_r * prob_parm.u_r;
+      state(i, j, k, UMY) = 0.0;
+      state(i, j, k, UMZ) = 0.0;
+      state(i, j, k, UEDEN) = prob_parm.rhoe_r + 0.5 * prob_parm.rho_r *
+                                                   prob_parm.u_r *
+                                                   prob_parm.u_r;
+      state(i, j, k, UEINT) = prob_parm.rhoe_r;
+      state(i, j, k, UTEMP) = prob_parm.T_r;
+      state(i, j, k, UFS + prob_parm.right_gas_id) = state(i, j, k, URHO);
     }
-
-    auto eos = pele::physics::PhysicsType::eos();
-    amrex::Real rho, eint;
-    eos.RPY2RhoE(P, T, Y, rho, eint);
-
-    state(i,j,k,URHO ) = rho;
-    state(i,j,k,UEINT) = rho * eint;
-    state(i,j,k,UTEMP) = T;
-    state(i,j,k,UMX  ) = 0.0;
-    state(i,j,k,UMY  ) = 0.0;
-    state(i,j,k,UMZ  ) = 0.0;
-
-    for (int n = 0; n < NUM_SPECIES; ++n) {
-        state(i,j,k,UFS+n) = rho * Y[n];
+  } else if (prob_parm.idir == 2) {
+    if (y <= prob_parm.split[1]) {
+      state(i, j, k, URHO) = prob_parm.rho_l;
+      state(i, j, k, UMX) = 0.0;
+      state(i, j, k, UMY) = prob_parm.rho_l * prob_parm.u_l;
+      state(i, j, k, UMZ) = 0.0;
+      state(i, j, k, UEDEN) = prob_parm.rhoe_l + 0.5 * prob_parm.rho_l *
+                                                   prob_parm.u_l *
+                                                   prob_parm.u_l;
+      state(i, j, k, UEINT) = prob_parm.rhoe_l;
+      state(i, j, k, UTEMP) = prob_parm.T_l;
+      state(i, j, k, UFS + prob_parm.left_gas_id) = state(i, j, k, URHO);
+    } else {
+      state(i, j, k, URHO) = prob_parm.rho_r;
+      state(i, j, k, UMX) = 0.0;
+      state(i, j, k, UMY) = prob_parm.rho_r * prob_parm.u_r;
+      state(i, j, k, UMZ) = 0.0;
+      state(i, j, k, UEDEN) = prob_parm.rhoe_r + 0.5 * prob_parm.rho_r *
+                                                   prob_parm.u_r *
+                                                   prob_parm.u_r;
+      state(i, j, k, UEINT) = prob_parm.rhoe_r;
+      state(i, j, k, UTEMP) = prob_parm.T_r;
+      state(i, j, k, UFS + prob_parm.right_gas_id) = state(i, j, k, URHO);
     }
+  } else if (prob_parm.idir == 3) {
+    if (z <= prob_parm.split[2]) {
+      state(i, j, k, URHO) = prob_parm.rho_l;
+      state(i, j, k, UMX) = 0.0;
+      state(i, j, k, UMY) = 0.0;
+      state(i, j, k, UMZ) = prob_parm.rho_l * prob_parm.u_l;
+      state(i, j, k, UEDEN) = prob_parm.rhoe_l + 0.5 * prob_parm.rho_l *
+                                                   prob_parm.u_l *
+                                                   prob_parm.u_l;
+      state(i, j, k, UEINT) = prob_parm.rhoe_l;
+      state(i, j, k, UTEMP) = prob_parm.T_l;
+      state(i, j, k, UFS + prob_parm.left_gas_id) = state(i, j, k, URHO);
+    } else {
+      state(i, j, k, URHO) = prob_parm.rho_r;
+      state(i, j, k, UMX) = 0.0;
+      state(i, j, k, UMY) = 0.0;
+      state(i, j, k, UMZ) = prob_parm.rho_r * prob_parm.u_r;
+      state(i, j, k, UEDEN) = prob_parm.rhoe_r + 0.5 * prob_parm.rho_r *
+                                                   prob_parm.u_r *
+                                                   prob_parm.u_r;
+      state(i, j, k, UEINT) = prob_parm.rhoe_r;
+      state(i, j, k, UTEMP) = prob_parm.T_r;
+      state(i, j, k, UFS + prob_parm.right_gas_id) = state(i, j, k, URHO);
+    }
+  } else {
+    amrex::Abort("invalid idir");
+  }
 }
 
-AMREX_GPU_DEVICE AMREX_FORCE_INLINE
-void problem_modify_transport_coeffs(...) {
-    // Optional: You can leave this empty for now
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+void
+bcnormal(
+  const amrex::Real* /*x[AMREX_SPACEDIM]*/,
+  const amrex::Real s_int[NVAR],
+  amrex::Real s_ext[NVAR],
+  const int /*idir*/,
+  const int /*sgn*/,
+  const amrex::Real /*time*/,
+  amrex::GeometryData const& /*geomdata*/,
+  ProbParmDevice const& /*prob_parm*/,
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& /*turb_fluc*/)
+{
+  for (int n = 0; n < NVAR; n++) {
+    s_ext[n] = s_int[n];
+  }
 }
 
-AMREX_GPU_DEVICE AMREX_FORCE_INLINE
-void problem_eb_state(...) {
-    // Optional: You can leave this empty if not using EB
-}
+void pc_prob_close();
 
-AMREX_GPU_DEVICE AMREX_FORCE_INLINE
-void set_problem_tags(...) {
-    // Optional tagging logic
-}
-
-} // namespace ProblemSpecificFunctions
+using ProblemSpecificFunctions = DefaultProblemSpecificFunctions;
 
 #endif
