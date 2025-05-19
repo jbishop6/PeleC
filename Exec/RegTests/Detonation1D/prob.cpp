@@ -33,7 +33,7 @@ pc_initdata(int i, int j, int k,
         Y[2] = 0.79;         // N2
     }
 
-    auto eos = pele::physics::eos::ChemEOS();
+    auto eos = pele::physics::PhysicsType::eos();
     Real rho, eint;
     eos.RPY2RhoE(P, T, Y, rho, eint);
 
