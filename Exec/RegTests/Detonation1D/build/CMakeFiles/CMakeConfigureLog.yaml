@@ -1,0 +1,508 @@
+
+---
+events:
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/home/jbishop6/cmake/share/cmake-3.27/Modules/CMakeDetermineSystem.cmake:211 (message)"
+      - "CMakeLists.txt"
+    message: |
+      The system is: Linux - 4.18.0-240.el8.x86_64 - x86_64
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/home/jbishop6/cmake/share/cmake-3.27/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/home/jbishop6/cmake/share/cmake-3.27/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/home/jbishop6/cmake/share/cmake-3.27/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+      Compiler: /opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/bin/mpicc 
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      0
+      
+      
+      Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "a.out"
+      
+      The C compiler identification is GNU, found in:
+        /home/jbishop6/PeleC/Exec/RegTests/Detonation1D/build/CMakeFiles/3.27.0/CompilerIdC/a.out
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/home/jbishop6/cmake/share/cmake-3.27/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/home/jbishop6/cmake/share/cmake-3.27/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/home/jbishop6/cmake/share/cmake-3.27/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+      Compiler: /opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/bin/mpicxx 
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      0
+      
+      
+      Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "a.out"
+      
+      The CXX compiler identification is GNU, found in:
+        /home/jbishop6/PeleC/Exec/RegTests/Detonation1D/build/CMakeFiles/3.27.0/CompilerIdCXX/a.out
+      
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/home/jbishop6/cmake/share/cmake-3.27/Modules/CMakeDetermineCompilerABI.cmake:57 (try_compile)"
+      - "/home/jbishop6/cmake/share/cmake-3.27/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt"
+    checks:
+      - "Detecting C compiler ABI info"
+    directories:
+      source: "/home/jbishop6/PeleC/Exec/RegTests/Detonation1D/build/CMakeFiles/CMakeScratch/TryCompile-3sTuTk"
+      binary: "/home/jbishop6/PeleC/Exec/RegTests/Detonation1D/build/CMakeFiles/CMakeScratch/TryCompile-3sTuTk"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+    buildResult:
+      variable: "CMAKE_C_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: '/home/jbishop6/PeleC/Exec/RegTests/Detonation1D/build/CMakeFiles/CMakeScratch/TryCompile-3sTuTk'
+        
+        Run Build Command(s): /home/jbishop6/cmake/bin/cmake -E env VERBOSE=1 /usr/bin/gmake -f Makefile cmTC_72919/fast
+        /usr/bin/gmake  -f CMakeFiles/cmTC_72919.dir/build.make CMakeFiles/cmTC_72919.dir/build
+        gmake[1]: Entering directory '/home/jbishop6/PeleC/Exec/RegTests/Detonation1D/build/CMakeFiles/CMakeScratch/TryCompile-3sTuTk'
+        Building C object CMakeFiles/cmTC_72919.dir/CMakeCCompilerABI.c.o
+        /opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/bin/mpicc   -v -o CMakeFiles/cmTC_72919.dir/CMakeCCompilerABI.c.o -c /home/jbishop6/cmake/share/cmake-3.27/Modules/CMakeCCompilerABI.c
+        Using built-in specs.
+        COLLECT_GCC=/opt/ohpc/pub/compiler/gcc/9.3.0/bin/gcc
+        Target: x86_64-pc-linux-gnu
+        Configured with: ../configure --disable-multilib --enable-languages=c,c++,fortran --prefix=/opt/ohpc/pub/compiler/gcc/9.3.0 --disable-static --enable-shared
+        Thread model: posix
+        gcc version 9.3.0 (GCC) 
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_72919.dir/CMakeCCompilerABI.c.o' '-c' '-I' '/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/include' '-pthread' '-mtune=generic' '-march=x86-64'
+         /opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/9.3.0/cc1 -quiet -v -I /opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/include -D_REENTRANT /home/jbishop6/cmake/share/cmake-3.27/Modules/CMakeCCompilerABI.c -quiet -dumpbase CMakeCCompilerABI.c -mtune=generic -march=x86-64 -auxbase-strip CMakeFiles/cmTC_72919.dir/CMakeCCompilerABI.c.o -version -o /tmp/ccSw8G8S.s
+        GNU C17 (GCC) version 9.3.0 (x86_64-pc-linux-gnu)
+        	compiled by GNU C version 9.3.0, GMP version 6.1.2, MPFR version 4.0.2, MPC version 1.1.0, isl version none
+        GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+        ignoring nonexistent directory "/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../../../x86_64-pc-linux-gnu/include"
+        #include "..." search starts here:
+        #include <...> search starts here:
+         /opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/include
+         /opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/include
+         /usr/local/include
+         /opt/ohpc/pub/compiler/gcc/9.3.0/include
+         /opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/include-fixed
+         /usr/include
+        End of search list.
+        GNU C17 (GCC) version 9.3.0 (x86_64-pc-linux-gnu)
+        	compiled by GNU C version 9.3.0, GMP version 6.1.2, MPFR version 4.0.2, MPC version 1.1.0, isl version none
+        GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+        Compiler executable checksum: f193286197d89488066d456656d914b2
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_72919.dir/CMakeCCompilerABI.c.o' '-c' '-I' '/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/include' '-pthread' '-mtune=generic' '-march=x86-64'
+         as -v -I /opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/include --64 -o CMakeFiles/cmTC_72919.dir/CMakeCCompilerABI.c.o /tmp/ccSw8G8S.s
+        GNU assembler version 2.30 (x86_64-redhat-linux) using BFD version version 2.30-79.el8
+        COMPILER_PATH=/opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/9.3.0/:/opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/9.3.0/:/opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/:/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/:/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/
+        LIBRARY_PATH=/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/:/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../../:/lib/:/usr/lib/
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_72919.dir/CMakeCCompilerABI.c.o' '-c' '-I' '/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/include' '-pthread' '-mtune=generic' '-march=x86-64'
+        Linking C executable cmTC_72919
+        /home/jbishop6/cmake/bin/cmake -E cmake_link_script CMakeFiles/cmTC_72919.dir/link.txt --verbose=1
+        /opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/bin/mpicc  -v -rdynamic CMakeFiles/cmTC_72919.dir/CMakeCCompilerABI.c.o -o cmTC_72919 
+        Using built-in specs.
+        COLLECT_GCC=/opt/ohpc/pub/compiler/gcc/9.3.0/bin/gcc
+        COLLECT_LTO_WRAPPER=/opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/9.3.0/lto-wrapper
+        Target: x86_64-pc-linux-gnu
+        Configured with: ../configure --disable-multilib --enable-languages=c,c++,fortran --prefix=/opt/ohpc/pub/compiler/gcc/9.3.0 --disable-static --enable-shared
+        Thread model: posix
+        gcc version 9.3.0 (GCC) 
+        COMPILER_PATH=/opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/9.3.0/:/opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/9.3.0/:/opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/:/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/:/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/
+        LIBRARY_PATH=/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/:/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../../:/lib/:/usr/lib/
+        COLLECT_GCC_OPTIONS='-v' '-rdynamic' '-o' 'cmTC_72919' '-I' '/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/include' '-pthread' '-L/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/lib' '-mtune=generic' '-march=x86-64'
+         /opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/9.3.0/collect2 -plugin /opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/9.3.0/liblto_plugin.so -plugin-opt=/opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/9.3.0/lto-wrapper -plugin-opt=-fresolution=/tmp/ccoszFMV.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lpthread -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --eh-frame-hdr -m elf_x86_64 -export-dynamic -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_72919 /lib/../lib64/crt1.o /lib/../lib64/crti.o /opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/crtbegin.o -L/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/lib -L/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0 -L/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../.. CMakeFiles/cmTC_72919.dir/CMakeCCompilerABI.c.o -rpath /opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/lib --enable-new-dtags -lmpi -lgcc --push-state --as-needed -lgcc_s --pop-state -lpthread -lc -lgcc --push-state --as-needed -lgcc_s --pop-state /opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/crtend.o /lib/../lib64/crtn.o
+        COLLECT_GCC_OPTIONS='-v' '-rdynamic' '-o' 'cmTC_72919' '-I' '/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/include' '-pthread' '-L/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/lib' '-mtune=generic' '-march=x86-64'
+        gmake[1]: Leaving directory '/home/jbishop6/PeleC/Exec/RegTests/Detonation1D/build/CMakeFiles/CMakeScratch/TryCompile-3sTuTk'
+        
+      exitCode: 0
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/home/jbishop6/cmake/share/cmake-3.27/Modules/CMakeDetermineCompilerABI.cmake:127 (message)"
+      - "/home/jbishop6/cmake/share/cmake-3.27/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt"
+    message: |
+      Parsed C implicit include dir info: rv=done
+        found start of include info
+        found start of implicit include info
+          add: [/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/include]
+          add: [/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/include]
+          add: [/usr/local/include]
+          add: [/opt/ohpc/pub/compiler/gcc/9.3.0/include]
+          add: [/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/include-fixed]
+          add: [/usr/include]
+        end of search list found
+        collapse include dir [/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/include] ==> [/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/include]
+        collapse include dir [/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/include] ==> [/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/include]
+        collapse include dir [/usr/local/include] ==> [/usr/local/include]
+        collapse include dir [/opt/ohpc/pub/compiler/gcc/9.3.0/include] ==> [/opt/ohpc/pub/compiler/gcc/9.3.0/include]
+        collapse include dir [/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/include-fixed] ==> [/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/include-fixed]
+        collapse include dir [/usr/include] ==> [/usr/include]
+        implicit include dirs: [/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/include;/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/include;/usr/local/include;/opt/ohpc/pub/compiler/gcc/9.3.0/include;/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/include-fixed;/usr/include]
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/home/jbishop6/cmake/share/cmake-3.27/Modules/CMakeDetermineCompilerABI.cmake:152 (message)"
+      - "/home/jbishop6/cmake/share/cmake-3.27/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt"
+    message: |
+      Parsed C implicit link information:
+        link line regex: [^( *|.*[/\\])(ld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
+        ignore line: [Change Dir: '/home/jbishop6/PeleC/Exec/RegTests/Detonation1D/build/CMakeFiles/CMakeScratch/TryCompile-3sTuTk']
+        ignore line: []
+        ignore line: [Run Build Command(s): /home/jbishop6/cmake/bin/cmake -E env VERBOSE=1 /usr/bin/gmake -f Makefile cmTC_72919/fast]
+        ignore line: [/usr/bin/gmake  -f CMakeFiles/cmTC_72919.dir/build.make CMakeFiles/cmTC_72919.dir/build]
+        ignore line: [gmake[1]: Entering directory '/home/jbishop6/PeleC/Exec/RegTests/Detonation1D/build/CMakeFiles/CMakeScratch/TryCompile-3sTuTk']
+        ignore line: [Building C object CMakeFiles/cmTC_72919.dir/CMakeCCompilerABI.c.o]
+        ignore line: [/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/bin/mpicc   -v -o CMakeFiles/cmTC_72919.dir/CMakeCCompilerABI.c.o -c /home/jbishop6/cmake/share/cmake-3.27/Modules/CMakeCCompilerABI.c]
+        ignore line: [Using built-in specs.]
+        ignore line: [COLLECT_GCC=/opt/ohpc/pub/compiler/gcc/9.3.0/bin/gcc]
+        ignore line: [Target: x86_64-pc-linux-gnu]
+        ignore line: [Configured with: ../configure --disable-multilib --enable-languages=c c++ fortran --prefix=/opt/ohpc/pub/compiler/gcc/9.3.0 --disable-static --enable-shared]
+        ignore line: [Thread model: posix]
+        ignore line: [gcc version 9.3.0 (GCC) ]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_72919.dir/CMakeCCompilerABI.c.o' '-c' '-I' '/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/include' '-pthread' '-mtune=generic' '-march=x86-64']
+        ignore line: [ /opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/9.3.0/cc1 -quiet -v -I /opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/include -D_REENTRANT /home/jbishop6/cmake/share/cmake-3.27/Modules/CMakeCCompilerABI.c -quiet -dumpbase CMakeCCompilerABI.c -mtune=generic -march=x86-64 -auxbase-strip CMakeFiles/cmTC_72919.dir/CMakeCCompilerABI.c.o -version -o /tmp/ccSw8G8S.s]
+        ignore line: [GNU C17 (GCC) version 9.3.0 (x86_64-pc-linux-gnu)]
+        ignore line: [	compiled by GNU C version 9.3.0  GMP version 6.1.2  MPFR version 4.0.2  MPC version 1.1.0  isl version none]
+        ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
+        ignore line: [ignoring nonexistent directory "/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../../../x86_64-pc-linux-gnu/include"]
+        ignore line: [#include "..." search starts here:]
+        ignore line: [#include <...> search starts here:]
+        ignore line: [ /opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/include]
+        ignore line: [ /opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/include]
+        ignore line: [ /usr/local/include]
+        ignore line: [ /opt/ohpc/pub/compiler/gcc/9.3.0/include]
+        ignore line: [ /opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/include-fixed]
+        ignore line: [ /usr/include]
+        ignore line: [End of search list.]
+        ignore line: [GNU C17 (GCC) version 9.3.0 (x86_64-pc-linux-gnu)]
+        ignore line: [	compiled by GNU C version 9.3.0  GMP version 6.1.2  MPFR version 4.0.2  MPC version 1.1.0  isl version none]
+        ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
+        ignore line: [Compiler executable checksum: f193286197d89488066d456656d914b2]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_72919.dir/CMakeCCompilerABI.c.o' '-c' '-I' '/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/include' '-pthread' '-mtune=generic' '-march=x86-64']
+        ignore line: [ as -v -I /opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/include --64 -o CMakeFiles/cmTC_72919.dir/CMakeCCompilerABI.c.o /tmp/ccSw8G8S.s]
+        ignore line: [GNU assembler version 2.30 (x86_64-redhat-linux) using BFD version version 2.30-79.el8]
+        ignore line: [COMPILER_PATH=/opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/9.3.0/:/opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/9.3.0/:/opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/:/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/:/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/]
+        ignore line: [LIBRARY_PATH=/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/:/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../../:/lib/:/usr/lib/]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_72919.dir/CMakeCCompilerABI.c.o' '-c' '-I' '/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/include' '-pthread' '-mtune=generic' '-march=x86-64']
+        ignore line: [Linking C executable cmTC_72919]
+        ignore line: [/home/jbishop6/cmake/bin/cmake -E cmake_link_script CMakeFiles/cmTC_72919.dir/link.txt --verbose=1]
+        ignore line: [/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/bin/mpicc  -v -rdynamic CMakeFiles/cmTC_72919.dir/CMakeCCompilerABI.c.o -o cmTC_72919 ]
+        ignore line: [Using built-in specs.]
+        ignore line: [COLLECT_GCC=/opt/ohpc/pub/compiler/gcc/9.3.0/bin/gcc]
+        ignore line: [COLLECT_LTO_WRAPPER=/opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/9.3.0/lto-wrapper]
+        ignore line: [Target: x86_64-pc-linux-gnu]
+        ignore line: [Configured with: ../configure --disable-multilib --enable-languages=c c++ fortran --prefix=/opt/ohpc/pub/compiler/gcc/9.3.0 --disable-static --enable-shared]
+        ignore line: [Thread model: posix]
+        ignore line: [gcc version 9.3.0 (GCC) ]
+        ignore line: [COMPILER_PATH=/opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/9.3.0/:/opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/9.3.0/:/opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/:/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/:/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/]
+        ignore line: [LIBRARY_PATH=/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/:/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../../:/lib/:/usr/lib/]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-rdynamic' '-o' 'cmTC_72919' '-I' '/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/include' '-pthread' '-L/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/lib' '-mtune=generic' '-march=x86-64']
+        link line: [ /opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/9.3.0/collect2 -plugin /opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/9.3.0/liblto_plugin.so -plugin-opt=/opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/9.3.0/lto-wrapper -plugin-opt=-fresolution=/tmp/ccoszFMV.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lpthread -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --eh-frame-hdr -m elf_x86_64 -export-dynamic -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_72919 /lib/../lib64/crt1.o /lib/../lib64/crti.o /opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/crtbegin.o -L/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/lib -L/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0 -L/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../.. CMakeFiles/cmTC_72919.dir/CMakeCCompilerABI.c.o -rpath /opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/lib --enable-new-dtags -lmpi -lgcc --push-state --as-needed -lgcc_s --pop-state -lpthread -lc -lgcc --push-state --as-needed -lgcc_s --pop-state /opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/crtend.o /lib/../lib64/crtn.o]
+          arg [/opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/9.3.0/collect2] ==> ignore
+          arg [-plugin] ==> ignore
+          arg [/opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/9.3.0/liblto_plugin.so] ==> ignore
+          arg [-plugin-opt=/opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/9.3.0/lto-wrapper] ==> ignore
+          arg [-plugin-opt=-fresolution=/tmp/ccoszFMV.res] ==> ignore
+          arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
+          arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
+          arg [-plugin-opt=-pass-through=-lpthread] ==> ignore
+          arg [-plugin-opt=-pass-through=-lc] ==> ignore
+          arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
+          arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
+          arg [--eh-frame-hdr] ==> ignore
+          arg [-m] ==> ignore
+          arg [elf_x86_64] ==> ignore
+          arg [-export-dynamic] ==> ignore
+          arg [-dynamic-linker] ==> ignore
+          arg [/lib64/ld-linux-x86-64.so.2] ==> ignore
+          arg [-o] ==> ignore
+          arg [cmTC_72919] ==> ignore
+          arg [/lib/../lib64/crt1.o] ==> obj [/lib/../lib64/crt1.o]
+          arg [/lib/../lib64/crti.o] ==> obj [/lib/../lib64/crti.o]
+          arg [/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/crtbegin.o] ==> obj [/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/crtbegin.o]
+          arg [-L/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/lib] ==> dir [/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/lib]
+          arg [-L/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0] ==> dir [/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0]
+          arg [-L/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../../../lib64] ==> dir [/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../../../lib64]
+          arg [-L/lib/../lib64] ==> dir [/lib/../lib64]
+          arg [-L/usr/lib/../lib64] ==> dir [/usr/lib/../lib64]
+          arg [-L/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../..] ==> dir [/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../..]
+          arg [CMakeFiles/cmTC_72919.dir/CMakeCCompilerABI.c.o] ==> ignore
+          arg [-rpath] ==> ignore
+          arg [/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/lib] ==> ignore
+          arg [--enable-new-dtags] ==> ignore
+          arg [-lmpi] ==> lib [mpi]
+          arg [-lgcc] ==> lib [gcc]
+          arg [--push-state] ==> ignore
+          arg [--as-needed] ==> ignore
+          arg [-lgcc_s] ==> lib [gcc_s]
+          arg [--pop-state] ==> ignore
+          arg [-lpthread] ==> lib [pthread]
+          arg [-lc] ==> lib [c]
+          arg [-lgcc] ==> lib [gcc]
+          arg [--push-state] ==> ignore
+          arg [--as-needed] ==> ignore
+          arg [-lgcc_s] ==> lib [gcc_s]
+          arg [--pop-state] ==> ignore
+          arg [/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/crtend.o] ==> obj [/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/crtend.o]
+          arg [/lib/../lib64/crtn.o] ==> obj [/lib/../lib64/crtn.o]
+        collapse obj [/lib/../lib64/crt1.o] ==> [/lib64/crt1.o]
+        collapse obj [/lib/../lib64/crti.o] ==> [/lib64/crti.o]
+        collapse obj [/lib/../lib64/crtn.o] ==> [/lib64/crtn.o]
+        collapse library dir [/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/lib] ==> [/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/lib]
+        collapse library dir [/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0] ==> [/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0]
+        collapse library dir [/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../../../lib64] ==> [/opt/ohpc/pub/compiler/gcc/9.3.0/lib64]
+        collapse library dir [/lib/../lib64] ==> [/lib64]
+        collapse library dir [/usr/lib/../lib64] ==> [/usr/lib64]
+        collapse library dir [/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../..] ==> [/opt/ohpc/pub/compiler/gcc/9.3.0/lib]
+        implicit libs: [mpi;gcc;gcc_s;pthread;c;gcc;gcc_s]
+        implicit objs: [/lib64/crt1.o;/lib64/crti.o;/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/crtbegin.o;/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/crtend.o;/lib64/crtn.o]
+        implicit dirs: [/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/lib;/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0;/opt/ohpc/pub/compiler/gcc/9.3.0/lib64;/lib64;/usr/lib64;/opt/ohpc/pub/compiler/gcc/9.3.0/lib]
+        implicit fwks: []
+      
+      
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/home/jbishop6/cmake/share/cmake-3.27/Modules/CMakeDetermineCompilerABI.cmake:57 (try_compile)"
+      - "/home/jbishop6/cmake/share/cmake-3.27/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt"
+    checks:
+      - "Detecting CXX compiler ABI info"
+    directories:
+      source: "/home/jbishop6/PeleC/Exec/RegTests/Detonation1D/build/CMakeFiles/CMakeScratch/TryCompile-okchjH"
+      binary: "/home/jbishop6/PeleC/Exec/RegTests/Detonation1D/build/CMakeFiles/CMakeScratch/TryCompile-okchjH"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: ""
+    buildResult:
+      variable: "CMAKE_CXX_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: '/home/jbishop6/PeleC/Exec/RegTests/Detonation1D/build/CMakeFiles/CMakeScratch/TryCompile-okchjH'
+        
+        Run Build Command(s): /home/jbishop6/cmake/bin/cmake -E env VERBOSE=1 /usr/bin/gmake -f Makefile cmTC_08ad9/fast
+        /usr/bin/gmake  -f CMakeFiles/cmTC_08ad9.dir/build.make CMakeFiles/cmTC_08ad9.dir/build
+        gmake[1]: Entering directory '/home/jbishop6/PeleC/Exec/RegTests/Detonation1D/build/CMakeFiles/CMakeScratch/TryCompile-okchjH'
+        Building CXX object CMakeFiles/cmTC_08ad9.dir/CMakeCXXCompilerABI.cpp.o
+        /opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/bin/mpicxx   -v -o CMakeFiles/cmTC_08ad9.dir/CMakeCXXCompilerABI.cpp.o -c /home/jbishop6/cmake/share/cmake-3.27/Modules/CMakeCXXCompilerABI.cpp
+        Using built-in specs.
+        COLLECT_GCC=/opt/ohpc/pub/compiler/gcc/9.3.0/bin/g++
+        Target: x86_64-pc-linux-gnu
+        Configured with: ../configure --disable-multilib --enable-languages=c,c++,fortran --prefix=/opt/ohpc/pub/compiler/gcc/9.3.0 --disable-static --enable-shared
+        Thread model: posix
+        gcc version 9.3.0 (GCC) 
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_08ad9.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-I' '/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/include' '-pthread' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
+         /opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/9.3.0/cc1plus -quiet -v -I /opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/include -D_GNU_SOURCE -D_REENTRANT /home/jbishop6/cmake/share/cmake-3.27/Modules/CMakeCXXCompilerABI.cpp -quiet -dumpbase CMakeCXXCompilerABI.cpp -mtune=generic -march=x86-64 -auxbase-strip CMakeFiles/cmTC_08ad9.dir/CMakeCXXCompilerABI.cpp.o -version -o /tmp/ccdSxp2v.s
+        GNU C++14 (GCC) version 9.3.0 (x86_64-pc-linux-gnu)
+        	compiled by GNU C version 9.3.0, GMP version 6.1.2, MPFR version 4.0.2, MPC version 1.1.0, isl version none
+        GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+        ignoring nonexistent directory "/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../../../x86_64-pc-linux-gnu/include"
+        #include "..." search starts here:
+        #include <...> search starts here:
+         /opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/include
+         /opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../../../include/c++/9.3.0
+         /opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../../../include/c++/9.3.0/x86_64-pc-linux-gnu
+         /opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../../../include/c++/9.3.0/backward
+         /opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/include
+         /usr/local/include
+         /opt/ohpc/pub/compiler/gcc/9.3.0/include
+         /opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/include-fixed
+         /usr/include
+        End of search list.
+        GNU C++14 (GCC) version 9.3.0 (x86_64-pc-linux-gnu)
+        	compiled by GNU C version 9.3.0, GMP version 6.1.2, MPFR version 4.0.2, MPC version 1.1.0, isl version none
+        GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+        Compiler executable checksum: 5d5608f21e0f4cd7cceb125d27a8ea5a
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_08ad9.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-I' '/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/include' '-pthread' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
+         as -v -I /opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/include --64 -o CMakeFiles/cmTC_08ad9.dir/CMakeCXXCompilerABI.cpp.o /tmp/ccdSxp2v.s
+        GNU assembler version 2.30 (x86_64-redhat-linux) using BFD version version 2.30-79.el8
+        COMPILER_PATH=/opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/9.3.0/:/opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/9.3.0/:/opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/:/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/:/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/
+        LIBRARY_PATH=/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/:/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../../:/lib/:/usr/lib/
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_08ad9.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-I' '/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/include' '-pthread' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
+        Linking CXX executable cmTC_08ad9
+        /home/jbishop6/cmake/bin/cmake -E cmake_link_script CMakeFiles/cmTC_08ad9.dir/link.txt --verbose=1
+        /opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/bin/mpicxx  -v -rdynamic CMakeFiles/cmTC_08ad9.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_08ad9 
+        Using built-in specs.
+        COLLECT_GCC=/opt/ohpc/pub/compiler/gcc/9.3.0/bin/g++
+        COLLECT_LTO_WRAPPER=/opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/9.3.0/lto-wrapper
+        Target: x86_64-pc-linux-gnu
+        Configured with: ../configure --disable-multilib --enable-languages=c,c++,fortran --prefix=/opt/ohpc/pub/compiler/gcc/9.3.0 --disable-static --enable-shared
+        Thread model: posix
+        gcc version 9.3.0 (GCC) 
+        COMPILER_PATH=/opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/9.3.0/:/opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/9.3.0/:/opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/:/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/:/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/
+        LIBRARY_PATH=/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/:/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../../:/lib/:/usr/lib/
+        COLLECT_GCC_OPTIONS='-v' '-rdynamic' '-o' 'cmTC_08ad9' '-I' '/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/include' '-pthread' '-L/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/lib' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
+         /opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/9.3.0/collect2 -plugin /opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/9.3.0/liblto_plugin.so -plugin-opt=/opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/9.3.0/lto-wrapper -plugin-opt=-fresolution=/tmp/ccXQmCgA.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lpthread -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --eh-frame-hdr -m elf_x86_64 -export-dynamic -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_08ad9 /lib/../lib64/crt1.o /lib/../lib64/crti.o /opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/crtbegin.o -L/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/lib -L/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0 -L/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../.. CMakeFiles/cmTC_08ad9.dir/CMakeCXXCompilerABI.cpp.o -rpath /opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/lib --enable-new-dtags -lmpi_cxx -lmpi -lstdc++ -lm -lgcc_s -lgcc -lpthread -lc -lgcc_s -lgcc /opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/crtend.o /lib/../lib64/crtn.o
+        COLLECT_GCC_OPTIONS='-v' '-rdynamic' '-o' 'cmTC_08ad9' '-I' '/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/include' '-pthread' '-L/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/lib' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
+        gmake[1]: Leaving directory '/home/jbishop6/PeleC/Exec/RegTests/Detonation1D/build/CMakeFiles/CMakeScratch/TryCompile-okchjH'
+        
+      exitCode: 0
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/home/jbishop6/cmake/share/cmake-3.27/Modules/CMakeDetermineCompilerABI.cmake:127 (message)"
+      - "/home/jbishop6/cmake/share/cmake-3.27/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt"
+    message: |
+      Parsed CXX implicit include dir info: rv=done
+        found start of include info
+        found start of implicit include info
+          add: [/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/include]
+          add: [/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../../../include/c++/9.3.0]
+          add: [/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../../../include/c++/9.3.0/x86_64-pc-linux-gnu]
+          add: [/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../../../include/c++/9.3.0/backward]
+          add: [/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/include]
+          add: [/usr/local/include]
+          add: [/opt/ohpc/pub/compiler/gcc/9.3.0/include]
+          add: [/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/include-fixed]
+          add: [/usr/include]
+        end of search list found
+        collapse include dir [/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/include] ==> [/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/include]
+        collapse include dir [/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../../../include/c++/9.3.0] ==> [/opt/ohpc/pub/compiler/gcc/9.3.0/include/c++/9.3.0]
+        collapse include dir [/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../../../include/c++/9.3.0/x86_64-pc-linux-gnu] ==> [/opt/ohpc/pub/compiler/gcc/9.3.0/include/c++/9.3.0/x86_64-pc-linux-gnu]
+        collapse include dir [/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../../../include/c++/9.3.0/backward] ==> [/opt/ohpc/pub/compiler/gcc/9.3.0/include/c++/9.3.0/backward]
+        collapse include dir [/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/include] ==> [/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/include]
+        collapse include dir [/usr/local/include] ==> [/usr/local/include]
+        collapse include dir [/opt/ohpc/pub/compiler/gcc/9.3.0/include] ==> [/opt/ohpc/pub/compiler/gcc/9.3.0/include]
+        collapse include dir [/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/include-fixed] ==> [/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/include-fixed]
+        collapse include dir [/usr/include] ==> [/usr/include]
+        implicit include dirs: [/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/include;/opt/ohpc/pub/compiler/gcc/9.3.0/include/c++/9.3.0;/opt/ohpc/pub/compiler/gcc/9.3.0/include/c++/9.3.0/x86_64-pc-linux-gnu;/opt/ohpc/pub/compiler/gcc/9.3.0/include/c++/9.3.0/backward;/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/include;/usr/local/include;/opt/ohpc/pub/compiler/gcc/9.3.0/include;/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/include-fixed;/usr/include]
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/home/jbishop6/cmake/share/cmake-3.27/Modules/CMakeDetermineCompilerABI.cmake:152 (message)"
+      - "/home/jbishop6/cmake/share/cmake-3.27/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt"
+    message: |
+      Parsed CXX implicit link information:
+        link line regex: [^( *|.*[/\\])(ld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
+        ignore line: [Change Dir: '/home/jbishop6/PeleC/Exec/RegTests/Detonation1D/build/CMakeFiles/CMakeScratch/TryCompile-okchjH']
+        ignore line: []
+        ignore line: [Run Build Command(s): /home/jbishop6/cmake/bin/cmake -E env VERBOSE=1 /usr/bin/gmake -f Makefile cmTC_08ad9/fast]
+        ignore line: [/usr/bin/gmake  -f CMakeFiles/cmTC_08ad9.dir/build.make CMakeFiles/cmTC_08ad9.dir/build]
+        ignore line: [gmake[1]: Entering directory '/home/jbishop6/PeleC/Exec/RegTests/Detonation1D/build/CMakeFiles/CMakeScratch/TryCompile-okchjH']
+        ignore line: [Building CXX object CMakeFiles/cmTC_08ad9.dir/CMakeCXXCompilerABI.cpp.o]
+        ignore line: [/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/bin/mpicxx   -v -o CMakeFiles/cmTC_08ad9.dir/CMakeCXXCompilerABI.cpp.o -c /home/jbishop6/cmake/share/cmake-3.27/Modules/CMakeCXXCompilerABI.cpp]
+        ignore line: [Using built-in specs.]
+        ignore line: [COLLECT_GCC=/opt/ohpc/pub/compiler/gcc/9.3.0/bin/g++]
+        ignore line: [Target: x86_64-pc-linux-gnu]
+        ignore line: [Configured with: ../configure --disable-multilib --enable-languages=c c++ fortran --prefix=/opt/ohpc/pub/compiler/gcc/9.3.0 --disable-static --enable-shared]
+        ignore line: [Thread model: posix]
+        ignore line: [gcc version 9.3.0 (GCC) ]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_08ad9.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-I' '/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/include' '-pthread' '-shared-libgcc' '-mtune=generic' '-march=x86-64']
+        ignore line: [ /opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/9.3.0/cc1plus -quiet -v -I /opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/include -D_GNU_SOURCE -D_REENTRANT /home/jbishop6/cmake/share/cmake-3.27/Modules/CMakeCXXCompilerABI.cpp -quiet -dumpbase CMakeCXXCompilerABI.cpp -mtune=generic -march=x86-64 -auxbase-strip CMakeFiles/cmTC_08ad9.dir/CMakeCXXCompilerABI.cpp.o -version -o /tmp/ccdSxp2v.s]
+        ignore line: [GNU C++14 (GCC) version 9.3.0 (x86_64-pc-linux-gnu)]
+        ignore line: [	compiled by GNU C version 9.3.0  GMP version 6.1.2  MPFR version 4.0.2  MPC version 1.1.0  isl version none]
+        ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
+        ignore line: [ignoring nonexistent directory "/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../../../x86_64-pc-linux-gnu/include"]
+        ignore line: [#include "..." search starts here:]
+        ignore line: [#include <...> search starts here:]
+        ignore line: [ /opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/include]
+        ignore line: [ /opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../../../include/c++/9.3.0]
+        ignore line: [ /opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../../../include/c++/9.3.0/x86_64-pc-linux-gnu]
+        ignore line: [ /opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../../../include/c++/9.3.0/backward]
+        ignore line: [ /opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/include]
+        ignore line: [ /usr/local/include]
+        ignore line: [ /opt/ohpc/pub/compiler/gcc/9.3.0/include]
+        ignore line: [ /opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/include-fixed]
+        ignore line: [ /usr/include]
+        ignore line: [End of search list.]
+        ignore line: [GNU C++14 (GCC) version 9.3.0 (x86_64-pc-linux-gnu)]
+        ignore line: [	compiled by GNU C version 9.3.0  GMP version 6.1.2  MPFR version 4.0.2  MPC version 1.1.0  isl version none]
+        ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
+        ignore line: [Compiler executable checksum: 5d5608f21e0f4cd7cceb125d27a8ea5a]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_08ad9.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-I' '/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/include' '-pthread' '-shared-libgcc' '-mtune=generic' '-march=x86-64']
+        ignore line: [ as -v -I /opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/include --64 -o CMakeFiles/cmTC_08ad9.dir/CMakeCXXCompilerABI.cpp.o /tmp/ccdSxp2v.s]
+        ignore line: [GNU assembler version 2.30 (x86_64-redhat-linux) using BFD version version 2.30-79.el8]
+        ignore line: [COMPILER_PATH=/opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/9.3.0/:/opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/9.3.0/:/opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/:/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/:/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/]
+        ignore line: [LIBRARY_PATH=/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/:/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../../:/lib/:/usr/lib/]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_08ad9.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-I' '/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/include' '-pthread' '-shared-libgcc' '-mtune=generic' '-march=x86-64']
+        ignore line: [Linking CXX executable cmTC_08ad9]
+        ignore line: [/home/jbishop6/cmake/bin/cmake -E cmake_link_script CMakeFiles/cmTC_08ad9.dir/link.txt --verbose=1]
+        ignore line: [/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/bin/mpicxx  -v -rdynamic CMakeFiles/cmTC_08ad9.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_08ad9 ]
+        ignore line: [Using built-in specs.]
+        ignore line: [COLLECT_GCC=/opt/ohpc/pub/compiler/gcc/9.3.0/bin/g++]
+        ignore line: [COLLECT_LTO_WRAPPER=/opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/9.3.0/lto-wrapper]
+        ignore line: [Target: x86_64-pc-linux-gnu]
+        ignore line: [Configured with: ../configure --disable-multilib --enable-languages=c c++ fortran --prefix=/opt/ohpc/pub/compiler/gcc/9.3.0 --disable-static --enable-shared]
+        ignore line: [Thread model: posix]
+        ignore line: [gcc version 9.3.0 (GCC) ]
+        ignore line: [COMPILER_PATH=/opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/9.3.0/:/opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/9.3.0/:/opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/:/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/:/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/]
+        ignore line: [LIBRARY_PATH=/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/:/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../../:/lib/:/usr/lib/]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-rdynamic' '-o' 'cmTC_08ad9' '-I' '/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/include' '-pthread' '-L/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/lib' '-shared-libgcc' '-mtune=generic' '-march=x86-64']
+        link line: [ /opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/9.3.0/collect2 -plugin /opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/9.3.0/liblto_plugin.so -plugin-opt=/opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/9.3.0/lto-wrapper -plugin-opt=-fresolution=/tmp/ccXQmCgA.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lpthread -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --eh-frame-hdr -m elf_x86_64 -export-dynamic -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_08ad9 /lib/../lib64/crt1.o /lib/../lib64/crti.o /opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/crtbegin.o -L/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/lib -L/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0 -L/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../.. CMakeFiles/cmTC_08ad9.dir/CMakeCXXCompilerABI.cpp.o -rpath /opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/lib --enable-new-dtags -lmpi_cxx -lmpi -lstdc++ -lm -lgcc_s -lgcc -lpthread -lc -lgcc_s -lgcc /opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/crtend.o /lib/../lib64/crtn.o]
+          arg [/opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/9.3.0/collect2] ==> ignore
+          arg [-plugin] ==> ignore
+          arg [/opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/9.3.0/liblto_plugin.so] ==> ignore
+          arg [-plugin-opt=/opt/ohpc/pub/compiler/gcc/9.3.0/libexec/gcc/x86_64-pc-linux-gnu/9.3.0/lto-wrapper] ==> ignore
+          arg [-plugin-opt=-fresolution=/tmp/ccXQmCgA.res] ==> ignore
+          arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
+          arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
+          arg [-plugin-opt=-pass-through=-lpthread] ==> ignore
+          arg [-plugin-opt=-pass-through=-lc] ==> ignore
+          arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
+          arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
+          arg [--eh-frame-hdr] ==> ignore
+          arg [-m] ==> ignore
+          arg [elf_x86_64] ==> ignore
+          arg [-export-dynamic] ==> ignore
+          arg [-dynamic-linker] ==> ignore
+          arg [/lib64/ld-linux-x86-64.so.2] ==> ignore
+          arg [-o] ==> ignore
+          arg [cmTC_08ad9] ==> ignore
+          arg [/lib/../lib64/crt1.o] ==> obj [/lib/../lib64/crt1.o]
+          arg [/lib/../lib64/crti.o] ==> obj [/lib/../lib64/crti.o]
+          arg [/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/crtbegin.o] ==> obj [/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/crtbegin.o]
+          arg [-L/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/lib] ==> dir [/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/lib]
+          arg [-L/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0] ==> dir [/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0]
+          arg [-L/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../../../lib64] ==> dir [/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../../../lib64]
+          arg [-L/lib/../lib64] ==> dir [/lib/../lib64]
+          arg [-L/usr/lib/../lib64] ==> dir [/usr/lib/../lib64]
+          arg [-L/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../..] ==> dir [/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../..]
+          arg [CMakeFiles/cmTC_08ad9.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
+          arg [-rpath] ==> ignore
+          arg [/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/lib] ==> ignore
+          arg [--enable-new-dtags] ==> ignore
+          arg [-lmpi_cxx] ==> lib [mpi_cxx]
+          arg [-lmpi] ==> lib [mpi]
+          arg [-lstdc++] ==> lib [stdc++]
+          arg [-lm] ==> lib [m]
+          arg [-lgcc_s] ==> lib [gcc_s]
+          arg [-lgcc] ==> lib [gcc]
+          arg [-lpthread] ==> lib [pthread]
+          arg [-lc] ==> lib [c]
+          arg [-lgcc_s] ==> lib [gcc_s]
+          arg [-lgcc] ==> lib [gcc]
+          arg [/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/crtend.o] ==> obj [/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/crtend.o]
+          arg [/lib/../lib64/crtn.o] ==> obj [/lib/../lib64/crtn.o]
+        collapse obj [/lib/../lib64/crt1.o] ==> [/lib64/crt1.o]
+        collapse obj [/lib/../lib64/crti.o] ==> [/lib64/crti.o]
+        collapse obj [/lib/../lib64/crtn.o] ==> [/lib64/crtn.o]
+        collapse library dir [/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/lib] ==> [/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/lib]
+        collapse library dir [/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0] ==> [/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0]
+        collapse library dir [/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../../../lib64] ==> [/opt/ohpc/pub/compiler/gcc/9.3.0/lib64]
+        collapse library dir [/lib/../lib64] ==> [/lib64]
+        collapse library dir [/usr/lib/../lib64] ==> [/usr/lib64]
+        collapse library dir [/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/../../..] ==> [/opt/ohpc/pub/compiler/gcc/9.3.0/lib]
+        implicit libs: [mpi_cxx;mpi;stdc++;m;gcc_s;gcc;pthread;c;gcc_s;gcc]
+        implicit objs: [/lib64/crt1.o;/lib64/crti.o;/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/crtbegin.o;/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0/crtend.o;/lib64/crtn.o]
+        implicit dirs: [/opt/ohpc/pub/mpi/openmpi4-gnu9/4.0.5/lib;/opt/ohpc/pub/compiler/gcc/9.3.0/lib/gcc/x86_64-pc-linux-gnu/9.3.0;/opt/ohpc/pub/compiler/gcc/9.3.0/lib64;/lib64;/usr/lib64;/opt/ohpc/pub/compiler/gcc/9.3.0/lib]
+        implicit fwks: []
+      
+      
+...
