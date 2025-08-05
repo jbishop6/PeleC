@@ -17,6 +17,7 @@ EXCLUDE_PKGS += Source/Utility/BlackBoxFunction
 # Make system
 Bpack := ./Make.package
 Blocs := .
+EXCLUDE_PKGS := BlackBoxFunction
 PELE_HOME := ../../..
 include $(PELE_HOME)/Exec/Make.PeleC
 
