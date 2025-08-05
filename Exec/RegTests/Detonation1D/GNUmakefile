@@ -44,4 +44,6 @@ EXCLUDE_FILES += ReactorCvodePreconditioner.cpp
 EXCLUDE_FILES += ReactorCvodeUtils.cpp
 EXCLUDE_FILES += AMReX_SUNMemory.cpp
 EXCLUDE_FILES += AMReX_Sundials_Core.cpp
+EXCLUDE_PKGS += Source/Utility/BlackBoxFunction
+
 
