@@ -35,6 +35,7 @@ Chemistry_Model := Null
 Bpack := ./Make.package
 Blocs := .
 PELE_HOME := ../../..
+EXCLUDE_PKGS += Source/Utility/BlackBoxFunction
 include $(PELE_HOME)/Exec/Make.PeleC
 PELE_USE_SUNDIALS := FALSE
 
@@ -44,6 +45,6 @@ EXCLUDE_FILES += ReactorCvodePreconditioner.cpp
 EXCLUDE_FILES += ReactorCvodeUtils.cpp
 EXCLUDE_FILES += AMReX_SUNMemory.cpp
 EXCLUDE_FILES += AMReX_Sundials_Core.cpp
-EXCLUDE_PKGS += Source/Utility/BlackBoxFunction
+
 
 
