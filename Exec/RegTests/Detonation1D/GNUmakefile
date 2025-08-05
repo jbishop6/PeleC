@@ -19,3 +19,5 @@ Bpack := ./Make.package
 Blocs := .
 PELE_HOME := ../../..
 include $(PELE_HOME)/Exec/Make.PeleC
+
+Blocs := . ../../../Source ../../../Source/Params/param_includes
