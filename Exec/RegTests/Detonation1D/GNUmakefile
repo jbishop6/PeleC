@@ -24,7 +24,7 @@ Bpack := ./Make.package
 PELE_HOME := ../../..
 include $(PELE_HOME)/Exec/Make.PeleC
 
-# Blocs := . ../../../Source ../../../Source/Params/param_includes
+Blocs := . ../../../Source ../../../Source/Params/param_includes
 
 INCLUDE_LOCATIONS += /home/jbishop6/PeleC/Submodules/PelePhysics/Submodules/sundials/include
 INCLUDE_LOCATIONS += /home/jbishop6/PeleC/Submodules/PelePhysics/Submodules/sundials/install/include
