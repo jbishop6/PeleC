@@ -21,6 +21,7 @@ Transport_Model := Simple
 Bpack := ./Make.package
 # Blocs := .
 # EXCLUDE_PKGS := BlackBoxFunction
+INCLUDE_LOCATIONS += $(PELE_PHYSICS_HOME)/Mechanisms/Davis
 PELE_HOME := ../../..
 include $(PELE_HOME)/Exec/Make.PeleC
 
