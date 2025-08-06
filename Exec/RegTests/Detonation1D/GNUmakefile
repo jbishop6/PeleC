@@ -29,3 +29,4 @@ Blocs := . ../../../Source ../../../Source/Params/param_includes
 
 INCLUDE_LOCATIONS += /home/jbishop6/PeleC/Submodules/PelePhysics/Submodules/sundials/include
 INCLUDE_LOCATIONS += /home/jbishop6/PeleC/Submodules/PelePhysics/Submodules/sundials/install/include
+INCLUDE_LOCATIONS += .
