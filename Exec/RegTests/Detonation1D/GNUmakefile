@@ -15,7 +15,7 @@ Chemistry_Model := Davis
 Transport_Model := Simple
 
 # 🛑 Place this BEFORE including Make.PeleC!
-# EXCLUDE_PKGS += Source/Utility/BlackBoxFunction
+EXCLUDE_PKGS += Source/Utility/BlackBoxFunction
 
 # Make system
 Bpack := ./Make.package
