@@ -25,3 +25,12 @@ Bpack := ./Make.package
 Blocs := .
 PELE_HOME := ../../..
 include $(PELE_HOME)/Exec/Make.PeleC
+
+# --- hard-disable SUNDIALS link step ---
+USE_SUNDIALS = FALSE
+PELE_USE_MAGMA = FALSE
+PELE_USE_KLU   = FALSE
+
+# Remove any SUNDIALS libraries/paths that Make.ThirdParty may have added
+LIBRARIES := $(filter-out -lsundials_cvode -lsundials_arkode -lsundials_core -lsundials_nvecserial,$(LIBRARIES))
+LIB_LOCATIONS := $(filter-out %/ThirdParty/INSTALL/%,$(LIB_LOCATIONS))
