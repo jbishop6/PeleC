@@ -31,17 +31,21 @@ include $(PELE_HOME)/Exec/Make.PeleC
 DEFINES := $(filter-out -DAMREX_USE_SUNDIALS,$(DEFINES))
 
 # Nuke any sundials include/lib paths that packages might have added
-INCLUDE_LOCATIONS := $(filter-out %/sundials/%,$(INCLUDE_LOCATIONS))
+INCLUDE_LOCATIONS := $(filter-out %/sundials/% %/Src/Extern/SUNDIALS%,$(INCLUDE_LOCATIONS))
 LIB_LOCATIONS     := $(filter-out %/sundials/%,$(LIB_LOCATIONS))
 LIBRARIES         := $(filter-out -lsundials_%,$(LIBRARIES))
 
-# Make absolutely sure no PelePhysics reaction sources are compiled
+# drop any SUNDIALS-related translation units
 CEXE_sources := $(filter-out %/Source/Reactions/%,$(CEXE_sources))
 CEXE_headers := $(filter-out %/Source/Reactions/%,$(CEXE_headers))
+CEXE_sources := $(filter-out %/Src/Extern/SUNDIALS/%,$(CEXE_sources))
+CEXE_headers := $(filter-out %/Src/Extern/SUNDIALS/%,$(CEXE_headers))
 
-# (Optional but helpful) also filter any AMReX SUNDIALS externs that slipped in
-CEXE_sources := $(filter-out %AMReX_Sundials_% %AMReX_NVector_MultiFab.cpp,$(CEXE_sources))
-
+# also cover the common filenames directly (belt & suspenders)
+EXCLUDE_FILES += AMReX_SUNMemory.cpp AMReX_Sundials_Core.cpp AMReX_NVector_MultiFab.cpp
+EXCLUDE_FILES += ReactorCvode.cpp ReactorCvodeUtils.cpp ReactorCvodeJacobian.cpp \
+                 ReactorCvodePreconditioner.cpp ReactorCvodeCustomLinSolver.cpp \
+                 ReactorBDF.cpp ReactorArkode.cpp ReactorRK64.cpp
 
 # --- hard-disable SUNDIALS link step ---
 USE_SUNDIALS = FALSE
