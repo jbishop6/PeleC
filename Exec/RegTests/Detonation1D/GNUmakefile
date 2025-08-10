@@ -16,21 +16,15 @@ Chemistry_Model  := Null
 Transport_Model  := Simple
 
 # ------------------------------
-# Disable SUNDIALS entirely (must be BEFORE include)
+# Disable SUNDIALS entirely (MUST be before include)
 # ------------------------------
 USE_SUNDIALS = FALSE
 PELE_USE_KLU = FALSE
 PELE_USE_MAGMA = FALSE
 
-# ------------------------------
-# Exclude all SUNDIALS and Reactions source
-# ------------------------------
+# Exclude SUNDIALS and Reactions packages so their .cpp never enter CEXE_sources
 EXCLUDE_PKGS += $(AMREX_HOME)/Src/Extern/SUNDIALS
 EXCLUDE_PKGS += $(PELE_PHYSICS_HOME)/Source/Reactions
-EXCLUDE_FILES += AMReX_Sundials_Core.cpp AMReX_SUNMemory.cpp AMReX_NVector_MultiFab.cpp \
-                 ReactorCvode.cpp ReactorCvodeUtils.cpp ReactorCvodeJacobian.cpp \
-                 ReactorCvodePreconditioner.cpp ReactorCvodeCustomLinSolver.cpp \
-                 ReactorBDF.cpp ReactorArkode.cpp ReactorRK64.cpp
 
 # ------------------------------
 # Standard glue
@@ -41,15 +35,21 @@ PELE_HOME := ../../..
 include $(PELE_HOME)/Exec/Make.PeleC
 
 # ------------------------------
-# Scrub any SUNDIALS leftovers after include
+# Scrub all SUNDIALS leftovers computed during include
+# (AMReX precomputes rpath flags; nuke them explicitly)
 # ------------------------------
-DEFINES := $(filter-out -DAMREX_USE_SUNDIALS,$(DEFINES))
-INCLUDE_LOCATIONS := $(filter-out %/sundials/% %/Src/Extern/SUNDIALS%,$(INCLUDE_LOCATIONS))
-LIB_LOCATIONS     := $(filter-out %/sundials/% %/ThirdParty/INSTALL/%,$(LIB_LOCATIONS))
-RPATH_LOCATIONS   := $(filter-out %/sundials/% %/ThirdParty/INSTALL/%,$(RPATH_LOCATIONS))
-LIBRARIES         := $(filter-out -lsundials_%,$(LIBRARIES))
+DEFINES          := $(filter-out -DAMREX_USE_SUNDIALS,$(DEFINES))
+INCLUDE_LOCATIONS:= $(filter-out %/sundials/% %/Extern/SUNDIALS/%,$(INCLUDE_LOCATIONS))
+LIB_LOCATIONS    := $(filter-out %/sundials/% %/ThirdParty/INSTALL/%,$(LIB_LOCATIONS))
+RPATH_LOCATIONS  :=
+LIBRARIES        := $(filter-out -lsundials_%,$(LIBRARIES))
+
+# These are the important ones — AMReX uses this on the link line.
+amrex_rpath_flags :=
+# Belt & suspenders: strip any stray -Wl,-rpath added elsewhere.
+LDFLAGS   := $(filter-out -Wl,-rpath=%,$(LDFLAGS))
+LINKFLAGS := $(filter-out -Wl,-rpath=%,$(LINKFLAGS))
+
+# Also ensure no SUNDIALS/Reaction sources slipped in
 CEXE_sources := $(filter-out %/Source/Reactions/% %/Src/Extern/SUNDIALS/%,$(CEXE_sources))
 CEXE_headers := $(filter-out %/Source/Reactions/% %/Src/Extern/SUNDIALS/%,$(CEXE_headers))
-
-# Force RPATH off entirely
-USE_RPATH = FALSE
