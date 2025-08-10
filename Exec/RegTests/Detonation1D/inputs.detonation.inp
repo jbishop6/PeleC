@@ -1,80 +1,45 @@
-# domain & grid
-geometry.prob_lo = 0.0  0.0  0.0
-geometry.prob_hi = 1.0  1.0  1.0
+# -------- Geometry (1-D in practice) --------
+geometry.coord_sys    = 0
+geometry.prob_lo      = 0.0   0.0  0.0
+geometry.prob_hi      = 1.0   1.0  1.0
+geometry.is_periodic  = 0     1    1      # 1-D: only x has non-periodic BCs
 
-amr.n_cell   = 800 1 1     # 1-D in practice
-amr.max_level = 0
+# -------- Grid --------
+amr.n_cell            = 800   1    1      # 1-D line
+amr.max_level         = 0
+amr.blocking_factor   = 8
+amr.max_grid_size     = 256
 
-# time stepping
-stop_time = 0.002
-max_step = 100000
-cfl = 0.8
+# -------- Time stepping --------
+max_step              = 2000
+stop_time             = 0.002
+cfl                   = 0.8
+init_shrink           = 0.1
+grow_cfl              = 1.1
 
-# BCs, initial states, shock parameters — keep from Sod or tweak as needed
+# -------- I/O --------
+amr.plot_file         = plt_det1d
+amr.plot_int          = 50
+amr.check_file        = chk_det1d
+amr.check_int         = 0
 
+# -------- Physics toggles (build uses GammaLaw/Null/Constant) --------
+pelec.do_hydro        = 1
+pelec.do_react        = 0
+pelec.do_diffuse      = 0
 
+# -------- Gamma-law EOS params (compile-time model = GammaLaw) --------
+eos.gamma             = 1.4
+eos.R_gas             = 287.0    # only used if your prob.cpp expects it
 
-# >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
-# Interior, UserBC, Symmetry, SlipWall, NoSlipWall
-# >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
-pelec.lo_bc       = "Hard"   "SlipWall"   "SlipWall"
-pelec.hi_bc       = "Hard"   "SlipWall"   "SlipWall"
+# -------- Problem ICs (match names your prob.cpp expects!) --------
+# Typical Sod left/right states; adjust names if your Sod file uses different keys
+prob.rho_left         = 1.0
+prob.u_left           = 0.0
+prob.p_left           = 1.0
 
-# WHICH PHYSICS
-pelec.do_hydro = 1
-pelec.diffuse_vel = 0
-pelec.diffuse_temp = 0
-pelec.diffuse_spec = 0
-pelec.do_react = 0
+prob.rho_right        = 0.125
+prob.u_right          = 0.0
+prob.p_right          = 0.1
 
-# TIME STEP CONTROL
-pelec.cfl            = 0.9     # cfl number for hyperbolic system
-pelec.init_shrink    = 0.1     # scale back initial timestep
-pelec.change_max     = 1.05    # scale back initial timestep
-pelec.dt_cutoff      = 5.e-20  # level 0 timestep below which we halt
-
-# DIAGNOSTICS & VERBOSITY
-pelec.sum_interval   = 1       # timesteps between computing mass
-pelec.v              = 1       # verbosity in PeleC.cpp
-amr.v                = 1       # verbosity in Amr.cpp
-amr.data_log         = datlog
-
-# REFINEMENT / REGRIDDING
-amr.max_level       = 2       # maximum level number allowed
-amr.ref_ratio       = 2 2 2 2 # refinement ratio
-amr.regrid_int      = 2 2 2 2 # how often to regrid
-amr.blocking_factor = 8       # block factor in grid generation
-amr.max_grid_size   = 64
-amr.n_error_buf     = 2 2 2 2 # number of buffer cells in error est
-
-# CHECKPOINT FILES
-amr.checkpoint_files_output = 0
-amr.check_file      = chk        # root name of checkpoint file
-amr.check_int       = 100        # number of timesteps between checkpoints
-
-# PLOTFILES
-amr.plot_files_output = 1
-amr.plot_file       = plt        # root name of plotfile
-amr.plot_int        = 100        # number of timesteps between plotfiles
-amr.plot_vars  =  density Temp
-amr.derive_plot_vars = x_velocity y_velocity z_velocity magvel magvort pressure
-
-# PROBLEM PARAMETERS
-prob.p_l = 1.0
-prob.u_l = 0.0
-prob.rho_l = 1.0
-prob.p_r = 0.1
-prob.u_r = 0.0
-prob.rho_r = 0.125
-prob.idir = 1
-prob.frac = 0.5
-
-# TAGGING
-tagging.denerr = 3
-tagging.dengrad = 0.01
-tagging.max_denerr_lev = 3
-tagging.max_dengrad_lev = 3
-tagging.presserr = 3
-tagging.pressgrad = 0.01
-tagging.max_presserr_lev = 3
-tagging.max_pressgrad_lev = 3
+prob.xshock           = 0.5      # diaphragm position (in x)
