@@ -6,49 +6,33 @@ USE_MPI = FALSE
 USE_OMP  = FALSE
 DEBUG    = FALSE
 
-# --- physics choices (no chemistry for this case) ---
-Eos_Model       := Fuego
-Chemistry_Model := Null
-Transport_Model := Simple
+# --- physics choices (no chemistry) ---
+Eos_Model        := Fuego
+Chemistry_Model  := Null
+Transport_Model  := Simple
 
-# --- do NOT use SUNDIALS (must be BEFORE include) ---
-USE_SUNDIALS     = FALSE
-AMREX_USE_SUNDIALS = FALSE      # <— NEW: tell AMReX explicitly
+# --- before including Make.PeleC: exclude whole packages ---
+EXCLUDE_PKGS += $(AMREX_HOME)/Src/Extern/SUNDIALS
+EXCLUDE_PKGS += $(PELE_PHYSICS_HOME)/Source/Reactions
 
-# keep PelePhysics from pulling BlackBoxFunction AND
-# ***BLOCK the AMReX Extern/SUNDIALS package***
-EXCLUDE_PKGS += Source/Utility/BlackBoxFunction
-EXCLUDE_PKGS += $(AMREX_HOME)/Src/Extern/SUNDIALS   # <— NEW: the key line
+# Also exclude by basename (belt & suspenders)
+EXCLUDE_FILES += AMReX_Sundials_Core.cpp AMReX_SUNMemory.cpp AMReX_NVector_MultiFab.cpp
+EXCLUDE_FILES += ReactorCvode.cpp ReactorCvodeUtils.cpp ReactorCvodeJacobian.cpp \
+                 ReactorCvodePreconditioner.cpp ReactorCvodeCustomLinSolver.cpp \
+                 ReactorBDF.cpp ReactorArkode.cpp ReactorRK64.cpp
 
-# case glue
+# --- standard glue ---
 Bpack := ./Make.package
 Blocs := .
 PELE_HOME := ../../..
 include $(PELE_HOME)/Exec/Make.PeleC
 
-# --------- post-include: belt & suspenders (safe to keep) ----------
+# --- after include: strip any leftovers ---
+AMREX_USE_SUNDIALS = FALSE
 DEFINES := $(filter-out -DAMREX_USE_SUNDIALS,$(DEFINES))
-INCLUDE_LOCATIONS := $(filter-out $(AMREX_HOME)/Src/Extern/SUNDIALS,$(INCLUDE_LOCATIONS))
-VPATH_LOCATIONS   := $(filter-out $(AMREX_HOME)/Src/Extern/SUNDIALS,$(VPATH_LOCATIONS))
-INCLUDE_LOCATIONS := $(filter-out %/sundials/%,$(INCLUDE_LOCATIONS))
+INCLUDE_LOCATIONS := $(filter-out %/sundials/% %/Src/Extern/SUNDIALS%,$(INCLUDE_LOCATIONS))
 LIB_LOCATIONS     := $(filter-out %/sundials/% %/ThirdParty/INSTALL/%,$(LIB_LOCATIONS))
 LIBRARIES         := $(filter-out -lsundials_%,$(LIBRARIES))
-LDFLAGS           := $(filter-out -Wl,-rpath,%/sundials/% -Wl,-rpath,%/ThirdParty/INSTALL/%,$(LDFLAGS))
-
-EXCLUDE_FILES += \
-  $(PELE_PHYSICS_HOME)/Source/Reactions/ReactorCvode.cpp \
-  $(PELE_PHYSICS_HOME)/Source/Reactions/ReactorCvodeUtils.cpp \
-  $(PELE_PHYSICS_HOME)/Source/Reactions/ReactorCvodeJacobian.cpp \
-  $(PELE_PHYSICS_HOME)/Source/Reactions/ReactorCvodePreconditioner.cpp \
-  $(PELE_PHYSICS_HOME)/Source/Reactions/ReactorCvodeCustomLinSolver.cpp \
-  $(PELE_PHYSICS_HOME)/Source/Reactions/ReactorBDF.cpp \
-  $(PELE_PHYSICS_HOME)/Source/Reactions/ReactorArkode.cpp \
-  $(PELE_PHYSICS_HOME)/Source/Reactions/ReactorRK64.cpp \
-  $(AMREX_HOME)/Src/Extern/SUNDIALS/AMReX_Sundials_Core.cpp \
-  $(AMREX_HOME)/Src/Extern/SUNDIALS/AMReX_SUNMemory.cpp \
-  $(AMREX_HOME)/Src/Extern/SUNDIALS/AMReX_NVector_MultiFab.cpp
-
-CEXE_sources := $(filter-out %/Source/Reactions/%,$(CEXE_sources))
-CEXE_headers := $(filter-out %/Source/Reactions/%,$(CEXE_headers))
-CEXE_sources := $(filter-out %/Src/Extern/SUNDIALS/%,$(CEXE_sources))
-CEXE_headers := $(filter-out %/Src/Extern/SUNDIALS/%,$(CEXE_headers))
+CEXE_sources := $(filter-out %/Source/Reactions/% %/Src/Extern/SUNDIALS/%,$(CEXE_sources))
+CEXE_headers := $(filter-out %/Source/Reactions/% %/Src/Extern/SUNDIALS/%,$(CEXE_headers))
+EOF
