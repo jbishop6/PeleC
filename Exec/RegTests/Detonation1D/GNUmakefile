@@ -1,55 +1,34 @@
-# ------------------------------
-# Basic build knobs
-# ------------------------------
-DIM       = 3
-COMP      = gnu
+# --- basic build knobs ---
+DIM = 3
+COMP = gnu
 PRECISION = DOUBLE
-USE_MPI   = FALSE
-USE_OMP   = FALSE
-DEBUG     = FALSE
+USE_MPI = FALSE
+USE_OMP  = FALSE
+DEBUG    = FALSE
 
-# ------------------------------
-# Physics choices (no chemistry)
-# ------------------------------
+# --- physics choices (you can flip to Davis later) ---
 Eos_Model        := Fuego
 Chemistry_Model  := Null
 Transport_Model  := Simple
 
-# ------------------------------
-# Disable SUNDIALS entirely (MUST be before include)
-# ------------------------------
-USE_SUNDIALS = FALSE
-PELE_USE_KLU = FALSE
-PELE_USE_MAGMA = FALSE
+# --- point to the *installed* SUNDIALS, not the source tree ---
+PELE_HOME := ../../..
+# These three must come BEFORE including Make.PeleC
+SUNDIALS_HOME := $(PELE_HOME)/Submodules/PelePhysics/ThirdParty/INSTALL/gnu
+USE_SUNDIALS  = TRUE
+PELE_USE_KLU  = FALSE
+PELE_USE_MAGMA= FALSE
 
-# Exclude SUNDIALS and Reactions packages so their .cpp never enter CEXE_sources
-EXCLUDE_PKGS += $(AMREX_HOME)/Src/Extern/SUNDIALS
-EXCLUDE_PKGS += $(PELE_PHYSICS_HOME)/Source/Reactions
-
-# ------------------------------
-# Standard glue
-# ------------------------------
+# standard glue
 Bpack := ./Make.package
 Blocs := .
-PELE_HOME := ../../..
 include $(PELE_HOME)/Exec/Make.PeleC
 
-# ------------------------------
-# Scrub all SUNDIALS leftovers computed during include
-# (AMReX precomputes rpath flags; nuke them explicitly)
-# ------------------------------
-DEFINES          := $(filter-out -DAMREX_USE_SUNDIALS,$(DEFINES))
-INCLUDE_LOCATIONS:= $(filter-out %/sundials/% %/Extern/SUNDIALS/%,$(INCLUDE_LOCATIONS))
-LIB_LOCATIONS    := $(filter-out %/sundials/% %/ThirdParty/INSTALL/%,$(LIB_LOCATIONS))
-RPATH_LOCATIONS  :=
-LIBRARIES        := $(filter-out -lsundials_%,$(LIBRARIES))
-
-# These are the important ones — AMReX uses this on the link line.
-amrex_rpath_flags :=
-# Belt & suspenders: strip any stray -Wl,-rpath added elsewhere.
-LDFLAGS   := $(filter-out -Wl,-rpath=%,$(LDFLAGS))
-LINKFLAGS := $(filter-out -Wl,-rpath=%,$(LINKFLAGS))
-
-# Also ensure no SUNDIALS/Reaction sources slipped in
-CEXE_sources := $(filter-out %/Source/Reactions/% %/Src/Extern/SUNDIALS/%,$(CEXE_sources))
-CEXE_headers := $(filter-out %/Source/Reactions/% %/Src/Extern/SUNDIALS/%,$(CEXE_headers))
+# ---- after include: make sure only the installed headers/libs are used ----
+# drop any source-tree sundials include dirs that might have crept in
+INCLUDE_LOCATIONS := $(filter-out %/Submodules/sundials/include,$(INCLUDE_LOCATIONS))
+# keep installed include (SUNDIALS_HOME/include) at the end for clarity
+INCLUDE_LOCATIONS += $(SUNDIALS_HOME)/include
+# ensure we link only against installed libs
+LIB_LOCATIONS := $(filter-out %/Submodules/sundials/lib%,$(LIB_LOCATIONS))
+LIB_LOCATIONS += $(SUNDIALS_HOME)/lib
