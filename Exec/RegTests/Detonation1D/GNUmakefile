@@ -26,6 +26,23 @@ Blocs := .
 PELE_HOME := ../../..
 include $(PELE_HOME)/Exec/Make.PeleC
 
+# --- hard-disable SUNDIALS & reactions after the core includes ---
+# Drop the AMReX_SUNDIALS macro if any package set it
+DEFINES := $(filter-out -DAMREX_USE_SUNDIALS,$(DEFINES))
+
+# Nuke any sundials include/lib paths that packages might have added
+INCLUDE_LOCATIONS := $(filter-out %/sundials/%,$(INCLUDE_LOCATIONS))
+LIB_LOCATIONS     := $(filter-out %/sundials/%,$(LIB_LOCATIONS))
+LIBRARIES         := $(filter-out -lsundials_%,$(LIBRARIES))
+
+# Make absolutely sure no PelePhysics reaction sources are compiled
+CEXE_sources := $(filter-out %/Source/Reactions/%,$(CEXE_sources))
+CEXE_headers := $(filter-out %/Source/Reactions/%,$(CEXE_headers))
+
+# (Optional but helpful) also filter any AMReX SUNDIALS externs that slipped in
+CEXE_sources := $(filter-out %AMReX_Sundials_% %AMReX_NVector_MultiFab.cpp,$(CEXE_sources))
+
+
 # --- hard-disable SUNDIALS link step ---
 USE_SUNDIALS = FALSE
 PELE_USE_MAGMA = FALSE
