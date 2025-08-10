@@ -1,32 +1,19 @@
-EXCLUDE_PKGS := Source/Utility/BlackBoxFunction
-
-
 # Basic settings
-DIM = 3
+DIM = 3          # PeleC is multi-D only; do 1D by setting Ny=Nz=1 in inputs
 COMP = gnu
 PRECISION = DOUBLE
 
 USE_MPI = FALSE
-USE_OMP = FALSE
-DEBUG = FALSE
+USE_OMP  = FALSE
+DEBUG    = FALSE
 
-Eos_Model := Fuego
-Chemistry_Model := Davis
-Transport_Model := Simple
+# Physics for a Sod-like case (no chemistry)
+Eos_Model := GammaLaw
+Chemistry_Model := Null
+Transport_Model := Constant   # or Simple
 
-# 🛑 Place this BEFORE including Make.PeleC!
-EXCLUDE_PKGS += Source/Utility/BlackBoxFunction
-
-# Make system
+# Standard boilerplate
 Bpack := ./Make.package
-# Blocs := .
-# EXCLUDE_PKGS := BlackBoxFunction
-INCLUDE_LOCATIONS += $(PELE_PHYSICS_HOME)/Mechanisms/Davis
+Blocs := .
 PELE_HOME := ../../..
 include $(PELE_HOME)/Exec/Make.PeleC
-
-Blocs := . ../../../Source ../../../Source/Params/param_includes
-
-INCLUDE_LOCATIONS += /home/jbishop6/PeleC/Submodules/PelePhysics/Submodules/sundials/include
-INCLUDE_LOCATIONS += /home/jbishop6/PeleC/Submodules/PelePhysics/Submodules/sundials/install/include
-INCLUDE_LOCATIONS += .
