@@ -4,13 +4,13 @@ DIM = 3
 COMP = gnu
 PRECISION = DOUBLE
 USE_MPI = FALSE
-USE_OMP  = FALSE
-DEBUG    = FALSE
+USE_OMP = FALSE
+DEBUG = FALSE
 
 # --- physics choices ---
-Eos_Model        := Fuego
-Chemistry_Model  := Davis
-Transport_Model  := Simple
+Eos_Model := Fuego
+Chemistry_Model := Davis
+Transport_Model := Simple
 
 # --- keep SUNDIALS libs OFF for this case ---
 USE_SUNDIALS = FALSE
