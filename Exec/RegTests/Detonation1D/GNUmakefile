@@ -1,57 +1,51 @@
 # --- basic build knobs ---
-DIM = 3
-COMP = gnu
+DIM       = 3
+COMP      = gnu
 PRECISION = DOUBLE
-USE_MPI = FALSE
-USE_OMP  = FALSE
-DEBUG    = FALSE
+USE_MPI   = FALSE
+USE_OMP   = FALSE
+DEBUG     = FALSE
 
-# --- physics choices (no chemistry) ---
-Eos_Model        := Fuego
-Chemistry_Model  := Null
-Transport_Model  := Simple
+# --- physics choices (no chemistry for this case) ---
+Eos_Model       := Fuego
+Chemistry_Model := Null
+Transport_Model := Simple
 
-# --- do NOT use sundials for this case ---
+# --- do NOT use SUNDIALS for this case ---
 USE_SUNDIALS = FALSE
+PELE_USE_MAGMA = FALSE
+PELE_USE_KLU   = FALSE
 
-# --- exclude all SUNDIALS/Reactor translation units explicitly ---
-EXCLUDE_FILES += ReactorCvode.cpp ReactorCvodeUtils.cpp ReactorCvodeJacobian.cpp \
-                 ReactorCvodePreconditioner.cpp ReactorCvodeCustomLinSolver.cpp \
-                 ReactorBDF.cpp ReactorArkode.cpp ReactorRK64.cpp \
-                 AMReX_Sundials_Core.cpp AMReX_SUNMemory.cpp AMReX_NVector_MultiFab.cpp
+# --- keep PelePhysics from pulling in BlackBoxFunction ---
+# (must be BEFORE including Make.PeleC)
+EXCLUDE_PKGS += Source/Utility/BlackBoxFunction
 
-# --- standard glue ---
+# --- case glue ---
 Bpack := ./Make.package
 Blocs := .
 PELE_HOME := ../../..
 include $(PELE_HOME)/Exec/Make.PeleC
 
-# --- hard-disable SUNDIALS & reactions after the core includes ---
-# Drop the AMReX_SUNDIALS macro if any package set it
+# --------------- post-include sanitizing (belt & suspenders) ---------------
+
+# Drop any SUNDIALS define a package may have set
 DEFINES := $(filter-out -DAMREX_USE_SUNDIALS,$(DEFINES))
 
-# Nuke any sundials include/lib paths that packages might have added
+# Purge SUNDIALS headers & paths that packages might have added
 INCLUDE_LOCATIONS := $(filter-out %/sundials/% %/Src/Extern/SUNDIALS%,$(INCLUDE_LOCATIONS))
-LIB_LOCATIONS     := $(filter-out %/sundials/%,$(LIB_LOCATIONS))
+LIB_LOCATIONS     := $(filter-out %/sundials/% %/ThirdParty/INSTALL/%,$(LIB_LOCATIONS))
 LIBRARIES         := $(filter-out -lsundials_%,$(LIBRARIES))
+LDFLAGS           := $(filter-out -Wl,-rpath,%/sundials/%,$(LDFLAGS))
 
-# drop any SUNDIALS-related translation units
+# Keep ANY reactions & AMReX SUNDIALS translation units out of the build
+EXCLUDE_FILES += \
+  ReactorCvode.cpp ReactorCvodeUtils.cpp ReactorCvodeJacobian.cpp \
+  ReactorCvodePreconditioner.cpp ReactorCvodeCustomLinSolver.cpp \
+  ReactorBDF.cpp ReactorArkode.cpp ReactorRK64.cpp \
+  AMReX_Sundials_Core.cpp AMReX_SUNMemory.cpp AMReX_NVector_MultiFab.cpp
+
+# Also strip whole directories from what the case tries to compile (extra safe)
 CEXE_sources := $(filter-out %/Source/Reactions/%,$(CEXE_sources))
 CEXE_headers := $(filter-out %/Source/Reactions/%,$(CEXE_headers))
 CEXE_sources := $(filter-out %/Src/Extern/SUNDIALS/%,$(CEXE_sources))
 CEXE_headers := $(filter-out %/Src/Extern/SUNDIALS/%,$(CEXE_headers))
-
-# also cover the common filenames directly (belt & suspenders)
-EXCLUDE_FILES += AMReX_SUNMemory.cpp AMReX_Sundials_Core.cpp AMReX_NVector_MultiFab.cpp
-EXCLUDE_FILES += ReactorCvode.cpp ReactorCvodeUtils.cpp ReactorCvodeJacobian.cpp \
-                 ReactorCvodePreconditioner.cpp ReactorCvodeCustomLinSolver.cpp \
-                 ReactorBDF.cpp ReactorArkode.cpp ReactorRK64.cpp
-
-# --- hard-disable SUNDIALS link step ---
-USE_SUNDIALS = FALSE
-PELE_USE_MAGMA = FALSE
-PELE_USE_KLU   = FALSE
-
-# Remove any SUNDIALS libraries/paths that Make.ThirdParty may have added
-LIBRARIES := $(filter-out -lsundials_cvode -lsundials_arkode -lsundials_core -lsundials_nvecserial,$(LIBRARIES))
-LIB_LOCATIONS := $(filter-out %/ThirdParty/INSTALL/%,$(LIB_LOCATIONS))
