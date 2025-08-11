@@ -16,6 +16,7 @@ Bpack := ./Make.package
 Blocs := .
 PELE_HOME := ../../..
 INCLUDE_LOCATIONS := $(abspath ./stubs) $(INCLUDE_LOCATIONS)
+INCLUDE_LOCATIONS += $(abspath $(CURDIR)/stubs)
 include $(PELE_HOME)/Exec/Make.PeleC
 
 # ========= hard-disable BlackBoxFunction / manifold, and SUNDIALS =========
