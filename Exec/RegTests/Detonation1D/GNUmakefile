@@ -18,6 +18,7 @@ PELE_HOME := ../../..
 INCLUDE_LOCATIONS := $(abspath ./stubs) $(INCLUDE_LOCATIONS)
 INCLUDE_LOCATIONS += $(abspath $(CURDIR)/stubs)
 CEXTRA_INCLUDES += -I$(CURDIR)/stubs
+CEXTRA_INCLUDES := $(abspath ./stubs)
 include $(PELE_HOME)/Exec/Make.PeleC
 
 # ========= hard-disable BlackBoxFunction / manifold, and SUNDIALS =========
