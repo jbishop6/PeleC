@@ -1,11 +1,12 @@
 #pragma once
 #include <memory>
 #include <string>
-#include <vector>
 
-// Minimal placeholder payload referenced by EosParams.H
+namespace pele {
+namespace physics {
+
 struct BlackBoxFunctionData {
-    std::string parm_parse_prefix;  // <- required by EosParams.H
+    std::string parm_parse_prefix;  // required field
 };
 
 class BlackBoxFunction {
@@ -16,3 +17,6 @@ public:
 };
 
 using BlackBoxFunctionPtr = std::shared_ptr<BlackBoxFunction>;
+
+} // namespace physics
+} // namespace pele
