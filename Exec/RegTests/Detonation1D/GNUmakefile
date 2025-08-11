@@ -15,6 +15,7 @@ Transport_Model  := Simple
 Bpack := ./Make.package
 Blocs := .
 PELE_HOME := ../../..
+INCLUDE_LOCATIONS := $(abspath ./stubs) $(INCLUDE_LOCATIONS)
 include $(PELE_HOME)/Exec/Make.PeleC
 
 # ========= hard-disable BlackBoxFunction / manifold, and SUNDIALS =========
