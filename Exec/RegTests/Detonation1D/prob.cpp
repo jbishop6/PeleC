@@ -12,10 +12,10 @@ using namespace amrex;
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
-pc_initdata(int i, int j, int k,
-            Array4<Real> const& state,
-            GeometryData const& geomdata,
-            ProbParm const& /*prob*/)
+// pc_initdata(int i, int j, int k,
+         //   Array4<Real> const& state,
+           // GeometryData const& geomdata,
+            //ProbParm const& /*prob*/)
 {
     const auto problo = geomdata.ProbLo();
     const auto dx = geomdata.CellSize();
@@ -58,7 +58,7 @@ pc_initdata(int i, int j, int k,
 }
 
 //extern "C" void pc_prob_close() {}
-void pc_prob_close();  // C++ linkage
+// void pc_prob_close();  // C++ linkage
 
 // Optionals can remain empty if your case doesn't need them
 void PeleC::problem_post_init() {}
