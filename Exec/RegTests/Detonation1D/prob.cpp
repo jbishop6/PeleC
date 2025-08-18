@@ -57,7 +57,8 @@ pc_initdata(int i, int j, int k,
     }
 }
 
-extern "C" void pc_prob_close() {}
+//extern "C" void pc_prob_close() {}
+void pc_prob_close();  // C++ linkage
 
 // Optionals can remain empty if your case doesn't need them
 void PeleC::problem_post_init() {}
