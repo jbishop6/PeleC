@@ -140,7 +140,9 @@ bcnormal(
   }
 }
 
-void pc_prob_close();
+// void pc_prob_close();
+
+inline void pc_prob_close() {}
 
 using ProblemSpecificFunctions = DefaultProblemSpecificFunctions;
 
