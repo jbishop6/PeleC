@@ -2,7 +2,7 @@
 #include <PeleC.H>
 #include <IndexDefines.H>
 #include <EOS.H>
-#include <prob_parm.H>   // <-- ensure ProbParm is declared
+#include "prob_parm.H"   // <-- ensure ProbParm is declared
 #include "prob.H"
 
 using namespace amrex;
