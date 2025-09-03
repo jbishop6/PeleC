@@ -65,3 +65,20 @@ prob.idir = 1
 prob.frac = 0.5
 prob.left_gas = N2
 prob.right_gas = HE
+
+# --- EB build ---
+eb2.max_coarsening_level = 0
+# some PeleC branches also want:
+# eb2.build_type = all
+
+# geometry knobs (domain units)
+geo.W  = 0.05
+geo.H  = 0.05
+geo.L  = 0.05
+geo.xs = 0.25
+geo.xr = 0.85
+geo.t  = 0.004
+
+# helpful to visualize solids vs fluid
+amr.derive_plot_vars = pressure vfrac
+
