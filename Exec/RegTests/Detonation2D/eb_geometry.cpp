@@ -8,10 +8,14 @@ using namespace amrex;
 
 static EB2::BoxIF make_box(Real x0, Real y0, Real x1, Real y1, bool has_fluid_inside)
 {
-    // Ensure bounds are ordered
-    return EB2::BoxIF(EB2::RealVect({std::min(x0,x1), std::min(y0,y1)}),
-                      EB2::RealVect({std::max(x0,x1), std::max(y0,y1)}),
-                      has_fluid_inside);
+    const Real xlo = std::min(x0, x1);
+    const Real ylo = std::min(y0, y1);
+    const Real xhi = std::max(x0, x1);
+    const Real yhi = std::max(y0, y1);
+
+    RealVect lo(AMREX_D_DECL(xlo, ylo, 0.0));
+    RealVect hi(AMREX_D_DECL(xhi, yhi, 0.0));
+    return EB2::BoxIF(lo, hi, has_fluid_inside);
 }
 
 void Initialize_EB2 (const Geometry& geom,
