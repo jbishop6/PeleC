@@ -79,6 +79,17 @@ void Initialize_EB2 (const Geometry& geom,
     // Walls = complement of the fluid channel
     auto walls = makeComplement(channel);
 
-    GeometryShop gshop(walls);
-    Build(gshop, required_coarsening_level, max_coarsening_level, /*ngrow*/4, /*extend_domain_face*/true);
+    EB2::GeometryShop gshop(walls);
+
+    // pick something reasonable
+    int max_grid_size = 128;   // 64–256 is fine
+    int ngrow         = 4;
+
+    // use the overload that takes the Geometry
+    EB2::Build(gshop, geom,
+           required_coarsening_level,
+           max_coarsening_level,
+           max_grid_size,
+           ngrow);
+
 }
