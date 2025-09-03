@@ -52,34 +52,36 @@ void Initialize_EB2 (const Geometry& geom,
     xr = std::max(xs + 1e-12, std::min(xr, xhi));
     t  = std::max(1e-6*(xhi-xlo), std::min(t, xr-xs - 1e-12));
 
-    // --- Fluid rectangles (has_fluid_inside = true) ---
-    // Main straight duct across entire domain
-    auto main_duct = make_box(xlo, ymid - 0.5*W, xhi, ymid + 0.5*W, true);
+  // --- Fluid rectangles (has_fluid_inside = true) ---
 
-    // Upper branch run (raised by +H) between xs and xr
-    auto upper_run = make_box(xs, ymid - 0.5*W + H, xr, ymid + 0.5*W + H, true);
+// Main duct only to the LEFT of xs and to the RIGHT of xr
+auto left_main  = make_box(xlo, ymid-0.5*W, xs, ymid+0.5*W, true);
+auto right_main = make_box(xr,  ymid-0.5*W, xhi, ymid+0.5*W, true);
 
-    // Lower branch run (lowered by -L) between xs and xr
-    auto lower_run = make_box(xs, ymid - 0.5*W - L, xr, ymid + 0.5*W - L, true);
+// Upper branch run (raised by +H) between xs and xr
+auto upper_run = make_box(xs,  ymid-0.5*W+H, xr,  ymid+0.5*W+H, true);
 
-    // Vertical connectors so the channel is contiguous
-    auto up_conn_L = make_box(xs,     ymid + 0.5*W,        xs + t, ymid + 0.5*W + H, true);
-    auto up_conn_R = make_box(xr - t, ymid + 0.5*W,        xr,     ymid + 0.5*W + H, true);
-    auto lo_conn_L = make_box(xs,     ymid - 0.5*W - L,    xs + t, ymid - 0.5*W,     true);
-    auto lo_conn_R = make_box(xr - t, ymid - 0.5*W - L,    xr,     ymid - 0.5*W,     true);
+// Lower branch run (lowered by -L) between xs and xr
+auto lower_run = make_box(xs,  ymid-0.5*W-L, xr,  ymid+0.5*W-L, true);
 
-    // Union (chain unions to support older AMReX)
-    auto u1 = makeUnion(main_duct, upper_run);
-    auto u2 = makeUnion(u1, lower_run);
-    auto u3 = makeUnion(u2, up_conn_L);
-    auto u4 = makeUnion(u3, up_conn_R);
-    auto u5 = makeUnion(u4, lo_conn_L);
-    auto channel = makeUnion(u5, lo_conn_R);
+// Vertical connectors at split (xs) and rejoin (xr)
+auto up_conn_L = make_box(xs,     ymid+0.5*W,     xs+t, ymid+0.5*W+H, true);
+auto up_conn_R = make_box(xr-t,   ymid+0.5*W,     xr,   ymid+0.5*W+H, true);
+auto lo_conn_L = make_box(xs,     ymid-0.5*W-L,   xs+t, ymid-0.5*W,   true);
+auto lo_conn_R = make_box(xr-t,   ymid-0.5*W-L,   xr,   ymid-0.5*W,   true);
 
-    // Walls = complement of the fluid channel
-    auto walls = makeComplement(channel);
+// Pairwise unions (older AMReX prefers chaining)
+auto u1 = EB2::makeUnion(left_main, right_main);
+auto u2 = EB2::makeUnion(u1, upper_run);
+auto u3 = EB2::makeUnion(u2, lower_run);
+auto u4 = EB2::makeUnion(u3, up_conn_L);
+auto u5 = EB2::makeUnion(u4, up_conn_R);
+auto u6 = EB2::makeUnion(u5, lo_conn_L);
+auto channel = EB2::makeUnion(u6, lo_conn_R);
 
-    EB2::GeometryShop gshop(walls);
+// Walls = complement of the fluid channel
+auto walls = EB2::makeComplement(channel);
+
 
     // pick something reasonable
     int max_grid_size = 128;   // 64–256 is fine
