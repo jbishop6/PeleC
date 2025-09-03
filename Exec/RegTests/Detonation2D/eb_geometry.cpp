@@ -6,6 +6,7 @@
 
 using namespace amrex;
 
+// helper to build a BoxIF from 2D bounds (z=0 for 2D build)
 static EB2::BoxIF make_box(Real x0, Real y0, Real x1, Real y1, bool has_fluid_inside)
 {
     const Real xlo = std::min(x0, x1);
@@ -13,8 +14,10 @@ static EB2::BoxIF make_box(Real x0, Real y0, Real x1, Real y1, bool has_fluid_in
     const Real xhi = std::max(x0, x1);
     const Real yhi = std::max(y0, y1);
 
-    RealVect lo(AMREX_D_DECL(xlo, ylo, 0.0));
-    RealVect hi(AMREX_D_DECL(xhi, yhi, 0.0));
+    amrex::Array<Real, AMREX_SPACEDIM> lo{AMREX_D_DECL(xlo, ylo, 0.0)};
+    amrex::Array<Real, AMREX_SPACEDIM> hi{AMREX_D_DECL(xhi, yhi, 0.0)};
+
+    // Older AMReX: BoxIF(lo, hi, has_fluid_inside)
     return EB2::BoxIF(lo, hi, has_fluid_inside);
 }
 
