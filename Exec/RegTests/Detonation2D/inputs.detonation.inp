@@ -71,14 +71,14 @@ eb2.max_coarsening_level = 0
 # some PeleC branches also want:
 # eb2.build_type = all
 
-# geometry knobs (domain units)
-geo.W  = 0.05
-geo.H  = 0.05
-geo.L  = 0.05
+# clear two-branch shape
+geo.W  = 0.04
+geo.H  = 0.04
+geo.L  = 0.04
 geo.xs = 0.25
-geo.xr = 0.85
-geo.t  = 0.004
+geo.xr = 0.75
+geo.t  = 0.006
 
-# helpful to visualize solids vs fluid
+# so you can see solids vs fluid
 amr.derive_plot_vars = pressure vfrac
 
