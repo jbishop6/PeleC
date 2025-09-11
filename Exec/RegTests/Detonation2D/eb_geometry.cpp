@@ -3,6 +3,7 @@
 #include <AMReX_EB2_IF.H>
 #include <AMReX_EB2_GeometryShop.H>
 #include <AMReX_ParmParse.H>
+#include <AMReX_Print.H>        // <-- for amrex::Print()
 #include <algorithm>
 
 using namespace amrex;
@@ -40,6 +41,10 @@ void Initialize_EB2 (const Geometry& geom,
     pp.query("xs", xs);
     pp.query("xr", xr);
     pp.query("t",  t);
+
+    // ---- debug: confirm EB params are being read/used ----
+    amrex::Print() << "EB2 two-branch: W="<<W<<" H="<<H<<" L="<<L
+                   <<" xs="<<xs<<" xr="<<xr<<" t="<<t<<"\n";
 
     const RealBox& rb = geom.ProbDomain();
     const Real xlo = rb.lo(0), xhi = rb.hi(0);
