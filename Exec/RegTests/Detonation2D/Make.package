@@ -2,3 +2,4 @@ CEXE_headers += prob.H
 CEXE_headers += prob_parm.H
 CEXE_sources += prob.cpp
 CEXE_sources += eb_geometry.cpp
+CEXE_CPPDEFINES += PELEC_PROB_HAS_EB_GEOM
