@@ -73,8 +73,8 @@ eb2.max_coarsening_level = 0
 
 # clear two-branch shape
 geo.W  = 0.04
-geo.H  = 0.04
-geo.L  = 0.04
+geo.H  = 1
+geo.L  = 1.5
 geo.xs = 0.25
 geo.xr = 0.75
 geo.t  = 0.006
