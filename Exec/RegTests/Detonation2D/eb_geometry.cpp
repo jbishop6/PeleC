@@ -3,10 +3,11 @@
 #include <AMReX_EB2_IF.H>
 #include <AMReX_EB2_GeometryShop.H>
 #include <AMReX_ParmParse.H>
+#include <algorithm>
 
 using namespace amrex;
 
-// Build a BoxIF from 2D bounds (z=0 for 2D)
+// Helper: build a BoxIF from 2D bounds (z=0 for 2D)
 static EB2::BoxIF make_box(Real x0, Real y0, Real x1, Real y1, bool has_fluid_inside)
 {
     const Real xlo = std::min(x0, x1);
@@ -25,13 +26,13 @@ void Initialize_EB2 (const Geometry& geom,
 {
     using namespace EB2;
 
-    // ---- geometry knobs (domain units) ----
+    // ---------------- user parameters (domain units) ----------------
     ParmParse pp("geo");
     Real W   = 0.05;   // base duct height
-    Real H   = 0.03;   // raise upper branch
-    Real L   = 0.03;   // lower lower branch
-    Real xs  = 0.25;   // split x
-    Real xr  = 0.80;   // rejoin x
+    Real H   = 0.03;   // upward offset for upper branch
+    Real L   = 0.03;   // downward offset for lower branch
+    Real xs  = 0.25;   // split x-location
+    Real xr  = 0.80;   // rejoin x-location
     Real t   = 0.004;  // connector thickness
     pp.query("W",  W);
     pp.query("H",  H);
@@ -45,28 +46,27 @@ void Initialize_EB2 (const Geometry& geom,
     const Real ylo = rb.lo(1), yhi = rb.hi(1);
     const Real ymid = 0.5*(ylo+yhi);
 
-    // clamp inputs
+    // Clamp/guard
     xs = std::max(xlo, std::min(xs, xhi));
     xr = std::max(xs + 1e-12, std::min(xr, xhi));
-    t  = std::max(1e-6*(xhi-xlo), std::min(t, xr-xs - 1e-12));
+    t  = std::max(1e-6*(xhi-xlo), std::min(t, xr - xs - 1e-12));
 
-    // --- fluid rectangles (has_fluid_inside = true) ---
-
+    // --------- build FLUID channel (has_fluid_inside = true) ---------
     // Main duct only BEFORE xs and AFTER xr
-    auto left_main  = make_box(xlo, ymid-0.5*W, xs, ymid+0.5*W, true);
-    auto right_main = make_box(xr,  ymid-0.5*W, xhi, ymid+0.5*W, true);
+    auto left_main  = make_box(xlo, ymid - 0.5*W, xs, ymid + 0.5*W, true);
+    auto right_main = make_box(xr,  ymid - 0.5*W, xhi, ymid + 0.5*W, true);
 
-    // Upper & lower runs between xs and xr
-    auto upper_run = make_box(xs,  ymid-0.5*W+H, xr,  ymid+0.5*W+H, true);
-    auto lower_run = make_box(xs,  ymid-0.5*W-L, xr,  ymid+0.5*W-L, true);
+    // Branch runs between xs and xr
+    auto upper_run = make_box(xs, ymid - 0.5*W + H, xr, ymid + 0.5*W + H, true);
+    auto lower_run = make_box(xs, ymid - 0.5*W - L, xr, ymid + 0.5*W - L, true);
 
-    // Vertical connectors at split/rejoin
-    auto up_conn_L = make_box(xs,     ymid+0.5*W,     xs+t, ymid+0.5*W+H, true);
-    auto up_conn_R = make_box(xr-t,   ymid+0.5*W,     xr,   ymid+0.5*W+H, true);
-    auto lo_conn_L = make_box(xs,     ymid-0.5*W-L,   xs+t, ymid-0.5*W,   true);
-    auto lo_conn_R = make_box(xr-t,   ymid-0.5*W-L,   xr,   ymid-0.5*W,   true);
+    // Vertical connectors at split (xs) and rejoin (xr)
+    auto up_conn_L = make_box(xs,     ymid + 0.5*W,     xs + t, ymid + 0.5*W + H, true);
+    auto up_conn_R = make_box(xr - t, ymid + 0.5*W,     xr,     ymid + 0.5*W + H, true);
+    auto lo_conn_L = make_box(xs,     ymid - 0.5*W - L, xs + t, ymid - 0.5*W,     true);
+    auto lo_conn_R = make_box(xr - t, ymid - 0.5*W - L, xr,     ymid - 0.5*W,     true);
 
-    // chain unions (pairwise)
+    // Union all fluid pieces (pairwise unions per EB docs)
     auto u1 = EB2::makeUnion(left_main, right_main);
     auto u2 = EB2::makeUnion(u1, upper_run);
     auto u3 = EB2::makeUnion(u2, lower_run);
@@ -75,12 +75,12 @@ void Initialize_EB2 (const Geometry& geom,
     auto u6 = EB2::makeUnion(u5, lo_conn_L);
     auto channel = EB2::makeUnion(u6, lo_conn_R);
 
-    // Solid walls = complement of channel
+    // SOLIDS = complement of the fluid channel
     auto walls = EB2::makeComplement(channel);
 
-    // Build (AMReX overload that needs Geometry)
-    EB2::GeometryShop gshop(walls);           // <<== this was missing
-    int max_grid_size = 128;
+    // GeometryShop + Build (overload that includes Geometry)
+    EB2::GeometryShop gshop(walls);
+    int max_grid_size = 128;   // reasonable for EB build
     int ngrow         = 4;
     EB2::Build(gshop, geom,
                required_coarsening_level,
