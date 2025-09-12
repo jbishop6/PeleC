@@ -71,14 +71,20 @@ eb2.max_coarsening_level = 0
 # some PeleC branches also want:
 # eb2.build_type = all
 
-# clear two-branch shape
+# EB
+eb2.max_coarsening_level = 0
+eb2.geom_type = twobranch     # (alias 'test' also works, like the old input)
+
+# Two-branch knobs (domain units)
 geo.W  = 0.04
-geo.H  = 1
-geo.L  = 1.5
+geo.H  = 0.04
+geo.L  = 0.04
 geo.xs = 0.25
 geo.xr = 0.75
 geo.t  = 0.006
 
-# so you can see solids vs fluid
+# so you can see geometry
 amr.derive_plot_vars = pressure vfrac
+
+# (rest of your physics stays as-is for now)
 
