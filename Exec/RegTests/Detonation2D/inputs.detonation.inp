@@ -9,6 +9,10 @@ geometry.prob_lo     =  0     0
 geometry.prob_hi = 1.0 0.125
 amr.n_cell           = 512     64
 
+geometry.geom_type = twobranch
+eb2.geom_type      = twobranch     # harmless if unused; keeps you covered
+
+
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
 # Interior, UserBC, Symmetry, SlipWall, NoSlipWall
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
@@ -68,23 +72,15 @@ prob.right_gas = HE
 
 # --- EB build ---
 eb2.max_coarsening_level = 0
-# some PeleC branches also want:
-# eb2.build_type = all
-
-# EB
-eb2.max_coarsening_level = 0
 eb2.geom_type = twobranch     # (alias 'test' also works, like the old input)
 
 # Two-branch knobs (domain units)
-geo.W  = 0.04
-geo.H  = 0.04
-geo.L  = 0.04
-geo.xs = 0.25
-geo.xr = 0.75
-geo.t  = 0.006
+geo.W  = 0.04     # duct height
+geo.H  = 0.04     # upper offset
+geo.L  = 0.04     # lower offset
+geo.xs = 0.25     # split x
+geo.xr = 0.75     # rejoin x
+geo.t  = 0.006    # connector thickness
 
-# so you can see geometry
-amr.derive_plot_vars = pressure vfrac
 
-# (rest of your physics stays as-is for now)
 
