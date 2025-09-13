@@ -105,5 +105,14 @@ public:
   build(const amrex::Geometry& geom, const int max_coarsening_level) override;
 };
 
+class TwoBranch : public Geometry::Register<TwoBranch>
+{
+public:
+  static std::string identifier() { return "twobranch"; }
+  void build(const amrex::Geometry& geom, const int max_coarsening_level) override;
+};
+
+
+
 } // namespace pele::pelec
 #endif
