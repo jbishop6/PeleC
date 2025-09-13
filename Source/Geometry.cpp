@@ -348,6 +348,81 @@ RotatedBox::build(const amrex::Geometry& geom, const int max_coarsening_level)
   amrex::EB2::Build(
     gshop, geom, max_coarsening_level, max_coarsening_level, 4, false);
 }
+void
+TwoBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
+{
+  using namespace amrex;
+  using namespace amrex::EB2;
+
+  // Controls (domain units), read as "geo.*" from inputs
+  ParmParse pp("geo");
+  Real W  = 0.04;  // base duct height
+  Real H  = 0.04;  // upward offset (upper branch)
+  Real L  = 0.04;  // downward offset (lower branch)
+  Real xs = 0.25;  // split x
+  Real xr = 0.75;  // rejoin x
+  Real t  = 0.006; // connector thickness
+  pp.query("W",  W);
+  pp.query("H",  H);
+  pp.query("L",  L);
+  pp.query("xs", xs);
+  pp.query("xr", xr);
+  pp.query("t",  t);
+
+  const RealBox& rb = geom.ProbDomain();
+  const Real xlo = rb.lo(0), xhi = rb.hi(0);
+  const Real ylo = rb.lo(1), yhi = rb.hi(1);
+  const Real ymid = 0.5*(ylo+yhi);
+
+  // Clamp/guard
+  xs = std::max(xlo, std::min(xs, xhi));
+  xr = std::max(xs + 1e-12, std::min(xr, xhi));
+  t  = std::max(1e-6*(xhi-xlo), std::min(t, xr - xs - 1e-12));
+
+  amrex::Print() << "[EB] Geometry::TwoBranch  W="<<W<<" H="<<H<<" L="<<L
+                 <<" xs="<<xs<<" xr="<<xr<<" t="<<t<<"\n";
+
+  // Helper to make rectangular regions (2D: z extent is 0)
+  auto make_box = [] (Real x0, Real y0, Real x1, Real y1, bool has_fluid_inside)
+  {
+    Array<Real, AMREX_SPACEDIM> lo{AMREX_D_DECL(std::min(x0,x1),
+                                                std::min(y0,y1), 0.0)};
+    Array<Real, AMREX_SPACEDIM> hi{AMREX_D_DECL(std::max(x0,x1),
+                                                std::max(y0,y1), 0.0)};
+    return EB2::BoxIF(lo, hi, has_fluid_inside);
+  };
+
+  // ---- Build FLUID channel (has_fluid_inside = true) ----
+  // Single duct left of xs and right of xr
+  auto left_main  = make_box(xlo, ymid-0.5*W, xs, ymid+0.5*W, true);
+  auto right_main = make_box(xr,  ymid-0.5*W, xhi, ymid+0.5*W, true);
+
+  // Branch runs between xs and xr
+  auto upper_run  = make_box(xs, ymid-0.5*W+H, xr, ymid+0.5*W+H, true);
+  auto lower_run  = make_box(xs, ymid-0.5*W-L, xr, ymid+0.5*W-L, true);
+
+  // Vertical connectors at split/rejoin
+  auto up_conn_L  = make_box(xs,     ymid+0.5*W,     xs+t, ymid+0.5*W+H, true);
+  auto up_conn_R  = make_box(xr-t,   ymid+0.5*W,     xr,   ymid+0.5*W+H, true);
+  auto lo_conn_L  = make_box(xs,     ymid-0.5*W-L,   xs+t, ymid-0.5*W,   true);
+  auto lo_conn_R  = make_box(xr-t,   ymid-0.5*W-L,   xr,   ymid-0.5*W,   true);
+
+  // Pairwise unions (older AMReX style)
+  auto u1 = makeUnion(left_main, right_main);
+  auto u2 = makeUnion(u1, upper_run);
+  auto u3 = makeUnion(u2, lower_run);
+  auto u4 = makeUnion(u3, up_conn_L);
+  auto u5 = makeUnion(u4, up_conn_R);
+  auto u6 = makeUnion(u5, lo_conn_L);
+  auto channel = makeUnion(u6, lo_conn_R);
+
+  // SOLIDS = complement of the channel
+  auto walls = makeComplement(channel);
+
+  // Build EB (match the overload style used elsewhere in this file)
+  auto gshop = amrex::EB2::makeShop(walls);
+  EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level, 4, false);
+}
 
 void
 CheckpointFile::build(
