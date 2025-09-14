@@ -76,11 +76,11 @@ eb2.geom_type = twobranch     # (alias 'test' also works, like the old input)
 
 # Two-branch knobs (domain units)
 geo.W  = 0.04     # duct height
-geo.H  = 0.04     # upper offset
-geo.L  = 0.04     # lower offset
-geo.xs = 0.25     # split x
-geo.xr = 0.75     # rejoin x
-geo.t  = 0.006    # connector thickness
+geo.H  = 0.05     # upper offset
+geo.L  = 0.05     # lower offset
+geo.xs = 0.30     # split x
+geo.xr = 0.70     # rejoin x
+geo.t  = 0.01    # connector thickness
 
 
 
