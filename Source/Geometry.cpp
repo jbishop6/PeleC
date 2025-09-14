@@ -424,50 +424,6 @@ TwoBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level, 4, false);
 }
 
-  // Bands
-  const Real y_base_lo   = ymid - 0.5*W;
-  const Real y_base_hi   = ymid + 0.5*W;
-  const Real y_upper_lo  = y_base_hi;
-  const Real y_upper_hi  = y_base_hi + H;
-  const Real y_lower_lo  = y_base_lo - L;
-  const Real y_lower_hi  = y_base_lo;
-
-  // ---- SOLIDS union ----
-  // global top/bottom
-  auto s_top    = boxS(xlo, y_upper_hi, xhi, yhi);
-  auto s_bottom = boxS(xlo, ylo,       xhi, y_lower_lo);
-
-  // left of split (xlo..xs): outside the base duct is solid
-  auto s_left_upper = boxS(xlo, y_base_hi,  xs, y_upper_hi);
-  auto s_left_lower = boxS(xlo, y_lower_lo, xs, y_base_lo);
-
-  // right of rejoin (xr..xhi): outside the base duct is solid
-  auto s_right_upper = boxS(xr, y_base_hi,  xhi, y_upper_hi);
-  auto s_right_lower = boxS(xr, y_lower_lo, xhi, y_base_lo);
-
-  // middle (xs..xr): block the band between branches (keeps two separate ducts)
-  auto s_mid_between = boxS(xs, y_base_lo, xr, y_base_hi);
-
-  // upper branch band: allow only slits [xs,xs+t] and [xr-t,xr]; fill the rest
-  auto s_upper_fill = boxS(xs + t, y_upper_lo, xr - t, y_upper_hi);
-
-  // lower branch band: same idea
-  auto s_lower_fill = boxS(xs + t, y_lower_lo, xr - t, y_lower_hi);
-
-  // chain unions (older AMReX prefers pairwise)
-  auto u1 = makeUnion(s_top, s_bottom);
-  auto u2 = makeUnion(u1, s_left_upper);
-  auto u3 = makeUnion(u2, s_left_lower);
-  auto u4 = makeUnion(u3, s_right_upper);
-  auto u5 = makeUnion(u4, s_right_lower);
-  auto u6 = makeUnion(u5, s_mid_between);
-  auto u7 = makeUnion(u6, s_upper_fill);
-  auto walls = makeUnion(u7, s_lower_fill);
-
-  auto gshop = EB2::makeShop(walls);
-  EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level, 4, false);
-}
-
 void
 CheckpointFile::build(
   const amrex::Geometry& geom, const int max_coarsening_level)
