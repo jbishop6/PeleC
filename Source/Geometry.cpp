@@ -357,7 +357,7 @@ TwoBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
 
   // Controls (domain units)
   ParmParse pp("geo");
-  Real W=0.04, H=0.04, L=0.04, xs=0.25, xr=0.75, t=0.006;
+  Real W=0.04, H=0.05, L=0.05, xs=0.30, xr=0.70, t=0.01;
   pp.query("W",W); pp.query("H",H); pp.query("L",L);
   pp.query("xs",xs); pp.query("xr",xr); pp.query("t",t);
 
@@ -366,21 +366,63 @@ TwoBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   const Real ylo = rb.lo(1), yhi = rb.hi(1);
   const Real ymid = 0.5*(ylo+yhi);
 
-  // guard
+  // grid size (keep slits resolvable and avoid degenerate overlaps)
+  const Real dx = geom.CellSize(0);
   xs = std::max(xlo, std::min(xs, xhi));
-  xr = std::max(xs + 1e-12, std::min(xr, xhi));
-  t  = std::max(1e-6*(xhi-xlo), std::min(t, xr - xs - 1e-12));
+  xr = std::max(xs + 4*dx, std::min(xr, xhi));      // ensure gap ≥ 4dx
+  t  = std::max(4*dx, std::min(t, xr - xs - 4*dx)); // slit ≥ 4dx and not too wide
 
-  Print() << "[EB] Geometry::TwoBranch SOLIDS  W="<<W<<" H="<<H<<" L="<<L
-          <<" xs="<<xs<<" xr="<<xr<<" t="<<t<<"\n";
+  // Base band and branch bands
+  const Real y_base_lo   = ymid - 0.5*W;
+  const Real y_base_hi   = ymid + 0.5*W;
+  const Real y_upper_lo  = y_base_hi;
+  const Real y_upper_hi  = y_base_hi + H;
+  const Real y_lower_lo  = y_base_lo - L;
+  const Real y_lower_hi  = y_base_lo;
 
-  auto boxS = [] (Real x0, Real y0, Real x1, Real y1) {
+  auto boxF = [] (Real x0, Real y0, Real x1, Real y1) {
     Array<Real,AMREX_SPACEDIM> lo{AMREX_D_DECL(std::min(x0,x1),
                                               std::min(y0,y1), 0.0)};
     Array<Real,AMREX_SPACEDIM> hi{AMREX_D_DECL(std::max(x0,x1),
                                               std::max(y0,y1), 0.0)};
-    return EB2::BoxIF(lo, hi, /*has_fluid_inside=*/false); // SOLID
+    return EB2::BoxIF(lo, hi, /*has_fluid_inside=*/true); // FLUID region
   };
+
+  // FLUID channel pieces
+  // single duct left of xs and right of xr
+  auto left_main   = boxF(xlo, y_base_lo, xs, y_base_hi);
+  auto right_main  = boxF(xr,  y_base_lo, xhi, y_base_hi);
+
+  // branches between xs and xr
+  auto upper_run   = boxF(xs,  y_upper_lo, xr,  y_upper_hi);
+  auto lower_run   = boxF(xs,  y_lower_lo, xr,  y_lower_hi);
+
+  // connector slits at xs and xr (fluid)
+  auto up_conn_L   = boxF(xs,     y_base_hi,   xs + t,  y_upper_hi);
+  auto up_conn_R   = boxF(xr - t, y_base_hi,   xr,      y_upper_hi);
+  auto low_conn_L  = boxF(xs,     y_lower_lo,  xs + t,  y_base_lo);
+  auto low_conn_R  = boxF(xr - t, y_lower_lo,  xr,      y_base_lo);
+
+  // Union all fluid pieces (pairwise)
+  auto u1 = makeUnion(left_main, right_main);
+  auto u2 = makeUnion(u1, upper_run);
+  auto u3 = makeUnion(u2, lower_run);
+  auto u4 = makeUnion(u3, up_conn_L);
+  auto u5 = makeUnion(u4, up_conn_R);
+  auto u6 = makeUnion(u5, low_conn_L);
+  auto fluid_channel = makeUnion(u6, low_conn_R);
+
+  // SOLIDS = complement of the fluid channel
+  auto walls = makeComplement(fluid_channel);
+
+  amrex::Print() << "[EB] Geometry::TwoBranch (FLUID union + complement) "
+                 << "W="<<W<<" H="<<H<<" L="<<L
+                 << " xs="<<xs<<" xr="<<xr<<" t="<<t
+                 << " dx="<<dx << "\n";
+
+  auto gshop = EB2::makeShop(walls);
+  EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level, 4, false);
+}
 
   // Bands
   const Real y_base_lo   = ymid - 0.5*W;
