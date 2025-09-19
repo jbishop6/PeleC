@@ -1,7 +1,9 @@
-# Minimal package for Detonation2D
+# Case sources/headers
 CEXE_sources += prob.cpp
 CEXE_headers += prob.H
 CEXE_headers += prob_parm.H
 
-# compile our local EB override:
-CEXE_sources += eb_geometry.cpp
+# Ensure std::thread resolves at link time
+CXXFLAGS   += -pthread
+LINKFLAGS  += -pthread
+LIBRARIES  += -Wl,--no-as-needed -lpthread
