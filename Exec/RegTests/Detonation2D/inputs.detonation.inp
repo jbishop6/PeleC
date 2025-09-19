@@ -75,12 +75,14 @@ eb2.max_coarsening_level = 0
 eb2.geom_type = twobranch     # (alias 'test' also works, like the old input)
 
 # Two-branch knobs (domain units)
-geo.W  = 0.04     # duct height
-geo.H  = 0.05     # upper offset
-geo.L  = 0.05     # lower offset
-geo.xs = 0.30     # split x
-geo.xr = 0.70     # rejoin x
-geo.t  = 0.01    # connector thickness
+geo.W  = 0.041015625    # 21 * dx
+geo.H  = 0.0390625      # 20 * dy
+geo.L  = 0.0390625      # 20 * dy
+geo.xs = 0.30078125     # 154 * dx
+geo.xr = 0.69921875     # 358 * dx
+geo.t  = 0.01171875     # 6 * dx
+
+
 
 
 
