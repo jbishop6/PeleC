@@ -1,5 +1,13 @@
 #include "Geometry.H"
 
+#include <AMReX_EB2.H>
+#include <AMReX_EB2_IF.H>
+#include <AMReX_EB2_IF_Union.H>
+#include <AMReX_EB2_GeometryShop.H>
+#include <AMReX_ParmParse.H>
+#include <AMReX_Print.H>
+
+
 namespace pele::pelec {
 
 void
@@ -355,7 +363,7 @@ TwoBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   using namespace amrex;
   using namespace amrex::EB2;
 
-  // Controls (domain units)
+  // Read parameters
   ParmParse pp("geo");
   Real W=0.04, H=0.05, L=0.05, xs=0.30, xr=0.70, t=0.01;
   pp.query("W",W); pp.query("H",H); pp.query("L",L);
@@ -366,13 +374,20 @@ TwoBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   const Real ylo = rb.lo(1), yhi = rb.hi(1);
   const Real ymid = 0.5*(ylo+yhi);
 
-  // grid size (keep slits resolvable and avoid degenerate overlaps)
+  // Guard and grid-awareness
   const Real dx = geom.CellSize(0);
+  const Real min_gap = 4*dx;                  // avoid EB >2-cuts issues
   xs = std::max(xlo, std::min(xs, xhi));
-  xr = std::max(xs + 4*dx, std::min(xr, xhi));      // ensure gap ≥ 4dx
-  t  = std::max(4*dx, std::min(t, xr - xs - 4*dx)); // slit ≥ 4dx and not too wide
+  xr = std::max(xs + min_gap, std::min(xr, xhi));
+  t  = std::max(min_gap, std::min(t, xr - xs - min_gap));
 
-  // Base band and branch bands
+  // Build SOLIDS; fluid is the complement
+  auto boxS = [] (Real x0, Real y0, Real x1, Real y1) {
+    Array<Real,AMREX_SPACEDIM> lo{AMREX_D_DECL(std::min(x0,x1), std::min(y0,y1), 0.0)};
+    Array<Real,AMREX_SPACEDIM> hi{AMREX_D_DECL(std::max(x0,x1), std::max(y0,y1), 0.0)};
+    return EB2::BoxIF(lo, hi, /*has_fluid_inside=*/false);
+  };
+
   const Real y_base_lo   = ymid - 0.5*W;
   const Real y_base_hi   = ymid + 0.5*W;
   const Real y_upper_lo  = y_base_hi;
@@ -380,49 +395,43 @@ TwoBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   const Real y_lower_lo  = y_base_lo - L;
   const Real y_lower_hi  = y_base_lo;
 
-  auto boxF = [] (Real x0, Real y0, Real x1, Real y1) {
-    Array<Real,AMREX_SPACEDIM> lo{AMREX_D_DECL(std::min(x0,x1),
-                                              std::min(y0,y1), 0.0)};
-    Array<Real,AMREX_SPACEDIM> hi{AMREX_D_DECL(std::max(x0,x1),
-                                              std::max(y0,y1), 0.0)};
-    return EB2::BoxIF(lo, hi, /*has_fluid_inside=*/true); // FLUID region
-  };
+  // Global top/bottom solids
+  auto s_top         = boxS(xlo, y_upper_hi, xhi, yhi);
+  auto s_bottom      = boxS(xlo, ylo,       xhi, y_lower_lo);
 
-  // FLUID channel pieces
-  // single duct left of xs and right of xr
-  auto left_main   = boxF(xlo, y_base_lo, xs, y_base_hi);
-  auto right_main  = boxF(xr,  y_base_lo, xhi, y_base_hi);
+  // Left of split (outside base duct)
+  auto s_left_upper  = boxS(xlo, y_base_hi,  xs,  y_upper_hi);
+  auto s_left_lower  = boxS(xlo, y_lower_lo, xs,  y_base_lo);
 
-  // branches between xs and xr
-  auto upper_run   = boxF(xs,  y_upper_lo, xr,  y_upper_hi);
-  auto lower_run   = boxF(xs,  y_lower_lo, xr,  y_lower_hi);
+  // Right of rejoin (outside base duct)
+  auto s_right_upper = boxS(xr,  y_base_hi,  xhi, y_upper_hi);
+  auto s_right_lower = boxS(xr,  y_lower_lo, xhi, y_base_lo);
 
-  // connector slits at xs and xr (fluid)
-  auto up_conn_L   = boxF(xs,     y_base_hi,   xs + t,  y_upper_hi);
-  auto up_conn_R   = boxF(xr - t, y_base_hi,   xr,      y_upper_hi);
-  auto low_conn_L  = boxF(xs,     y_lower_lo,  xs + t,  y_base_lo);
-  auto low_conn_R  = boxF(xr - t, y_lower_lo,  xr,      y_base_lo);
+  // Middle band between branches (keeps two separate ducts)
+  auto s_mid_between = boxS(xs,  y_base_lo,  xr,  y_base_hi);
 
-  // Union all fluid pieces (pairwise)
-  auto u1 = makeUnion(left_main, right_main);
-  auto u2 = makeUnion(u1, upper_run);
-  auto u3 = makeUnion(u2, lower_run);
-  auto u4 = makeUnion(u3, up_conn_L);
-  auto u5 = makeUnion(u4, up_conn_R);
-  auto u6 = makeUnion(u5, low_conn_L);
-  auto fluid_channel = makeUnion(u6, low_conn_R);
+  // Fill branches except the thin slits near xs and xr
+  auto s_upper_fill  = boxS(xs + t, y_upper_lo, xr - t, y_upper_hi);
+  auto s_lower_fill  = boxS(xs + t, y_lower_lo, xr - t, y_lower_hi);
 
-  // SOLIDS = complement of the fluid channel
-  auto walls = makeComplement(fluid_channel);
+  // Pairwise unions
+  auto u1    = amrex::EB2::makeUnion(s_top, s_bottom);
+  auto u2    = amrex::EB2::makeUnion(u1, s_left_upper);
+  auto u3    = amrex::EB2::makeUnion(u2, s_left_lower);
+  auto u4    = amrex::EB2::makeUnion(u3, s_right_upper);
+  auto u5    = amrex::EB2::makeUnion(u4, s_right_lower);
+  auto u6    = amrex::EB2::makeUnion(u5, s_mid_between);
+  auto walls = amrex::EB2::makeUnion(u6, s_upper_fill, s_lower_fill);
 
-  amrex::Print() << "[EB] Geometry::TwoBranch (FLUID union + complement) "
+  amrex::Print() << "[EB] Geometry::TwoBranch SOLIDS "
                  << "W="<<W<<" H="<<H<<" L="<<L
-                 << " xs="<<xs<<" xr="<<xr<<" t="<<t
-                 << " dx="<<dx << "\n";
+                 << " xs="<<xs<<" xr="<<xr<<" t="<<t<<" dx="<<dx << "\n";
 
-  auto gshop = EB2::makeShop(walls);
-  EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level, 4, false);
+  auto gshop = amrex::EB2::makeShop(walls);
+  EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level,
+             /*ngrow=*/4, /*extend_domain_face=*/false);
 }
+
 
 void
 CheckpointFile::build(
