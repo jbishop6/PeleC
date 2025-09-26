@@ -1,98 +1,74 @@
-# ------------------  INPUTS TO MAIN PROGRAM  -------------------
+# ------------------ INPUTS TO MAIN PROGRAM -------------------
 max_step = 10000
-stop_time =  1.959e-6 #final time is 0.2*L*sqrt(rhoL/pL)
+stop_time = 1.959e-6
 
-# PROBLEM SIZE & GEOMETRY
-geometry.is_periodic = 0 0 
-geometry.coord_sys   = 0  # 0 => cart, 1 => RZ  2=>spherical
-geometry.prob_lo     =  0.0     0.0     
-geometry.prob_hi = 1.0 0.125
-amr.n_cell           = 512     64
-amr.blocking_factor = 8
-amr.max_grid_size   = 128
+# ------------------ GEOMETRY (2D) -------------------
+geometry.is_periodic = 0 0
+geometry.coord_sys   = 0           # 0 => Cartesian
+geometry.prob_lo     = 0.0  0.0
+geometry.prob_hi     = 1.0  0.125
+amr.n_cell           = 512  64
 
-geometry.geom_type = twobranch_typo
-eb2.build_type = all
-
-
-
-# >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
+# ------------------ BOUNDARY CONDITIONS -------------------
 # Interior, UserBC, Symmetry, SlipWall, NoSlipWall
-# >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
-pelec.lo_bc       = "SlipWall"   "SlipWall" 
-pelec.hi_bc       = "SlipWall"   "SlipWall" 
+pelec.lo_bc = "SlipWall" "SlipWall"
+pelec.hi_bc = "SlipWall" "SlipWall"
 
-# WHICH PHYSICS
-pelec.do_hydro = 1
-pelec.diffuse_vel = 0
+# ------------------ PHYSICS -------------------
+pelec.do_hydro     = 1
+pelec.diffuse_vel  = 0
 pelec.diffuse_temp = 0
 pelec.diffuse_spec = 0
-pelec.do_react = 0
+pelec.do_react     = 0
 
-# TIME STEP CONTROL
-pelec.cfl            = 0.9     # cfl number for hyperbolic system
-pelec.init_shrink    = 0.1     # scale back initial timestep
-pelec.change_max     = 1.05    # scale back initial timestep
-pelec.dt_cutoff      = 5.e-20  # level 0 timestep below which we halt
+# ------------------ TIME STEP CONTROL -------------------
+pelec.cfl         = 0.9
+pelec.init_shrink = 0.1
+pelec.change_max  = 1.05
+pelec.dt_cutoff   = 5.e-20
 
-# DIAGNOSTICS & VERBOSITY
-pelec.sum_interval   = 1       # timesteps between computing mass
-pelec.v              = 1       # verbosity in PeleC.cpp
-amr.v                = 1       # verbosity in Amr.cpp
-amr.data_log         = datlog
+# ------------------ DIAGNOSTICS & VERBOSITY -------------------
+pelec.v      = 1
+amr.v        = 1
+amr.data_log = datlog
 
-# REFINEMENT / REGRIDDING
-amr.max_level       = 0       # maximum level number allowed
-#amr.ref_ratio       = 2 2 2 2 # refinement ratio
-#amr.regrid_int      = 2 2 2 2 # how often to regrid
-amr.blocking_factor = 8       # block factor in grid generation
+# ------------------ REFINEMENT / GRIDS -------------------
+amr.max_level       = 0
+amr.blocking_factor = 8
 amr.max_grid_size   = 128
-amr.n_error_buf     = 2 2 2 2 # number of buffer cells in error est
+amr.n_error_buf     = 2
 
-# CHECKPOINT FILES
+# ------------------ CHECKPOINT FILES -------------------
 amr.checkpoint_files_output = 0
-amr.check_file      = chk        # root name of checkpoint file
-amr.check_int       = 100        # number of timesteps between checkpoints
+amr.check_file = chk
+amr.check_int  = 100
 
-# PLOTFILES
+# ------------------ PLOTFILES -------------------
 amr.plot_files_output = 1
-amr.plot_file = runs/twobranch_$(date +%Y%m%d_%H%M%S)/plt
-        # root name of plotfile
-amr.plot_int        = 1        # number of timesteps between plotfiles
-amr.plot_vars = vfrac pressure
-amr.derive_plot_vars = x_velocity y_velocity magvel magvort pressure
+amr.plot_file         = plt         # keep fixed while debugging
+amr.plot_int          = 1
+amr.plot_vars         = density Temp
+amr.derive_plot_vars  = vfrac pressure x_velocity y_velocity magvel magvort
 
-# PROBLEM PARAMETERS
-prob.p_l = 1e7
-prob.u_l = 0.0
+# ------------------ PROBLEM PARAMETERS (simple left/right) -------------------
+prob.p_l   = 1e7
+prob.u_l   = 0.0
 prob.rho_l = 9.6e-4
-prob.p_r = 1e6
-prob.u_r = 0.0
+prob.p_r   = 1e6
+prob.u_r   = 0.0
 prob.rho_r = 1.2e-4
-prob.idir = 1
-prob.frac = 0.5
-prob.left_gas = N2
+prob.idir  = 1
+prob.frac  = 0.5
+prob.left_gas  = N2
 prob.right_gas = HE
 
-# --- EB build ---
-eb2.max_coarsening_level = 0
-eb2.geom_type = rotated_box     # (alias 'test' also works, like the old input)
+# ------------------ EMBEDDED BOUNDARY (EB) -------------------
+# Force EB codepath on, and use a built-in box so we *see* a cut.
+pelec.eb_in_domain = 1
 
+eb2.geom_type = box               # built-in AMReX EB (no custom factory needed)
 eb2.box_lo = 0.40 0.03
 eb2.box_hi = 0.60 0.09
-eb2.box_has_fluid_inside = 0
-eb2.box_rotation = 0
-eb2.box_rotation_axe = 2
+eb2.box_has_fluid_inside = 0      # inside the box is SOLID
 
-# Two-branch knobs (domain units)
-geo.W  = 0.041015625    # 21 * dx
-geo.H  = 0.0390625      # 20 * dy
-geo.L  = 0.0390625      # 20 * dy
-geo.xs = 0.30078125     # 154 * dx
-geo.xr = 0.69921875     # 358 * dx
-geo.t  = 0.01171875     # 6 * dx
-
-
-
-
-
+eb2.max_coarsening_level = 0
