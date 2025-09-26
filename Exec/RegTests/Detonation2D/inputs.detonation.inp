@@ -11,9 +11,9 @@ amr.n_cell           = 512     64
 amr.blocking_factor = 8
 amr.max_grid_size   = 128
 
-geometry.geom_type = twobranch
+geometry.geom_type = twobranch_typo
 eb2.build_type = all
-eb2.geom_type      = twobranch     # harmless if unused; keeps you covered
+
 
 
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
@@ -75,7 +75,7 @@ prob.right_gas = HE
 
 # --- EB build ---
 eb2.max_coarsening_level = 0
-eb2.geom_type = twobranch     # (alias 'test' also works, like the old input)
+eb2.geom_type = twobranch_typo     # (alias 'test' also works, like the old input)
 
 # Two-branch knobs (domain units)
 geo.W  = 0.041015625    # 21 * dx
