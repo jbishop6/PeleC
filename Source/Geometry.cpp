@@ -358,16 +358,18 @@ RotatedBox::build(const amrex::Geometry& geom, const int max_coarsening_level)
 }
 
 void
-TwoBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
+TwoBranch::build (const amrex::Geometry& geom, const int max_coarsening_level)
 {
   using namespace amrex;
   using namespace amrex::EB2;
 
+  // -------- parameters (can be overridden in inputs via 'geo.') --------
   ParmParse pp("geo");
-  Real W=0.04, H=0.04, L=0.04, xs=0.30, xr=0.70, t=0.008;
+  Real W=0.04, H=0.04, L=0.04, xs=0.30, xr=0.70, t=0.012; // t default a bit wider
   pp.query("W",W);  pp.query("H",H);  pp.query("L",L);
   pp.query("xs",xs); pp.query("xr",xr); pp.query("t",t);
 
+  // domain & resolution
   const RealBox& rb = geom.ProbDomain();
   const Real xlo = rb.lo(0), xhi = rb.hi(0);
   const Real ylo = rb.lo(1), yhi = rb.hi(1);
@@ -377,58 +379,56 @@ TwoBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   const Real dy = geom.CellSize(1);
   const Real h  = std::max(dx,dy);
 
-  // Keep features resolvable and avoid degenerate overlaps
-  xs = std::min(std::max(xs, xlo+2*h),         xhi-2*h);
-  xr = std::min(std::max(xr, xs+6*h),          xhi-2*h);
-  t  = std::min(std::max(t,  3*h),             xr - xs - 3*h);
+  // keep features resolvable and non-degenerate
+  xs = std::min(std::max(xs, xlo + 2*h),   xhi - 2*h);
+  xr = std::min(std::max(xr, xs + 6*h),    xhi - 2*h);
+  t  = std::min(std::max(t,  4*h),         xr - xs - 4*h);
 
-  // Helper: SOLID rectangles (has_fluid_inside = false)
-  auto boxS = [] (Real x0, Real y0, Real x1, Real y1) {
-    Array<Real,AMREX_SPACEDIM> lo{AMREX_D_DECL(std::min(x0,x1),
-                                               std::min(y0,y1), 0.0)};
-    Array<Real,AMREX_SPACEDIM> hi{AMREX_D_DECL(std::max(x0,x1),
-                                               std::max(y0,y1), 0.0)};
-    return BoxIF(lo, hi, /*has_fluid_inside=*/false);
+  // vertical bands
+  const Real y_base_lo   = ymid - 0.5*W;
+  const Real y_base_hi   = ymid + 0.5*W;
+  const Real y_upper_lo  = y_base_hi;
+  const Real y_upper_hi  = y_base_hi + H;
+  const Real y_lower_lo  = y_base_lo - L;
+  const Real y_lower_hi  = y_base_lo;
+
+  // helper: FLUID rectangles
+  auto boxF = [] (Real x0, Real y0, Real x1, Real y1) {
+    Array<Real,AMREX_SPACEDIM> lo{AMREX_D_DECL(std::min(x0,x1), std::min(y0,y1), 0.0)};
+    Array<Real,AMREX_SPACEDIM> hi{AMREX_D_DECL(std::max(x0,x1), std::max(y0,y1), 0.0)};
+    return BoxIF(lo, hi, /*has_fluid_inside=*/true);
   };
 
-  // Bands
-  const Real y_base_lo  = ymid - 0.5*W;
-  const Real y_base_hi  = ymid + 0.5*W;
-  const Real y_upper_lo = y_base_hi;
-  const Real y_upper_hi = y_base_hi + H;
-  const Real y_lower_lo = y_base_lo - L;
-  const Real y_lower_hi = y_base_lo;
+  // base duct only before xs and after xr
+  auto left_main   = boxF(xlo, y_base_lo, xs,  y_base_hi);
+  auto right_main  = boxF(xr,  y_base_lo, xhi, y_base_hi);
 
-  // ---- SOLID union (pairwise to be AMReX-friendly) ----
-  // Global top/bottom solids
-  auto s_top    = boxS(xlo, y_upper_hi, xhi, yhi);
-  auto s_bottom = boxS(xlo, ylo,       xhi, y_lower_lo);
+  // branches between xs and xr
+  auto upper_run   = boxF(xs,  y_upper_lo, xr,  y_upper_hi);
+  auto lower_run   = boxF(xs,  y_lower_lo, xr,  y_lower_hi);
 
-  // Outside the base duct before xs and after xr
-  auto s_left_upper  = boxS(xlo, y_base_hi,  xs,  y_upper_hi);
-  auto s_left_lower  = boxS(xlo, y_lower_lo, xs,  y_base_lo);
-  auto s_right_upper = boxS(xr,  y_base_hi,  xhi, y_upper_hi);
-  auto s_right_lower = boxS(xr,  y_lower_lo, xhi, y_base_lo);
+  // FLUID connector gaps at split (xs) and rejoin (xr)
+  auto up_conn_L   = boxF(xs,     y_base_hi,  xs + t,  y_upper_hi);
+  auto up_conn_R   = boxF(xr - t, y_base_hi,  xr,      y_upper_hi);
+  auto lo_conn_L   = boxF(xs,     y_lower_lo, xs + t,  y_base_lo);
+  auto lo_conn_R   = boxF(xr - t, y_lower_lo, xr,      y_base_lo);
 
-  // Block the middle band between branches (keeps two separate ducts)
-  auto s_mid_between = boxS(xs, y_base_lo, xr, y_base_hi);
+  // pairwise unions (AMReX-friendly)
+  auto f1      = makeUnion(left_main, right_main);
+  auto f2      = makeUnion(f1, upper_run);
+  auto f3      = makeUnion(f2, lower_run);
+  auto f4      = makeUnion(f3, up_conn_L);
+  auto f5      = makeUnion(f4, up_conn_R);
+  auto f6      = makeUnion(f5, lo_conn_L);
+  auto channel = makeUnion(f6, lo_conn_R);
 
-  auto u1    = makeUnion(s_top, s_bottom);
-  auto u2    = makeUnion(u1, s_left_upper);
-  auto u3    = makeUnion(u2, s_left_lower);
-  auto u4    = makeUnion(u3, s_right_upper);
-  auto u5    = makeUnion(u4, s_right_lower);
+  // walls are the complement of the channel
+  auto walls = makeComplement(channel);
 
-  // Keep the mid band blocked to split the duct,
-  // but leave the entire upper & lower bands open from xs..xr.
-  auto walls = makeUnion(u5, s_mid_between);
-
-  
-
-  amrex::Print() << "[EB] TwoBranch "
-                 << "W="<<W<<" H="<<H<<" L="<<L
-                 << " xs="<<xs<<" xr="<<xr<<" t="<<t
-                 << " dx="<<dx<<" dy="<<dy << "\n";
+  Print() << "[EB] TwoBranch (fluid+complement) "
+          << "W="<<W<<" H="<<H<<" L="<<L
+          << " xs="<<xs<<" xr="<<xr<<" t="<<t
+          << " dx="<<dx<<" dy="<<dy << "\n";
 
   auto gshop = makeShop(walls);
   EB2::Build(gshop, geom,
