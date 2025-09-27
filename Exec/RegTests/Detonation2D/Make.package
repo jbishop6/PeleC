@@ -13,6 +13,9 @@ CEXE_sources += prob.cpp
 CEXE_headers += prob.H
 CEXE_headers += prob_parm.H
 
+CXXFLAGS += -Wno-deprecated-declarations
+
+
 # Ensure std::thread resolves
 CXXFLAGS   += -pthread
 LINKFLAGS  += -pthread
