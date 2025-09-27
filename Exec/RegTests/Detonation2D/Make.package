@@ -1,3 +1,10 @@
+# --- Force SUNDIALS from site package ---
+SUNDIALS_HOME ?= /opt/ohpc/pub/anaconda/anaconda3/pkgs/sundials-7.3.0-h13d7cbe_0
+CEXE_INCLUDES += -I$(SUNDIALS_HOME)/include
+CXXFLAGS      += -I$(SUNDIALS_HOME)/include
+LINKFLAGS     += -L$(SUNDIALS_HOME)/lib
+LIBRARIES     += -Wl,-rpath,$(SUNDIALS_HOME)/lib
+
 # Case sources/headers
 CEXE_sources += prob.cpp
 CEXE_headers += prob.H
