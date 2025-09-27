@@ -357,14 +357,14 @@ RotatedBox::build(const amrex::Geometry& geom, const int max_coarsening_level)
     gshop, geom, max_coarsening_level, max_coarsening_level, 4, false);
 }
 
-void
+
 void
 TwoBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
 {
   using namespace amrex;
   using namespace amrex::EB2;
 
-  // User knobs (keep t in the input for compatibility; it's unused here)
+  // User knobs (t kept for compatibility; unused here)
   ParmParse pp("geo");
   Real W=0.04, H=0.04, L=0.04, xs=0.30, xr=0.70, t=0.008;
   pp.query("W",W);  pp.query("H",H);  pp.query("L",L);
