@@ -360,78 +360,27 @@ RotatedBox::build(const amrex::Geometry& geom, const int max_coarsening_level)
 void
 TwoBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
 {
-  using namespace amrex;
-  using namespace amrex::EB2;
+  amrex::Print() << "[EB] TwoBranch (rotated_box clone) called\n";
 
-  // Read parameters
-  ParmParse pp("geo");
-  Real W=0.04, H=0.05, L=0.05, xs=0.30, xr=0.70, t=0.01;
-  pp.query("W",W); pp.query("H",H); pp.query("L",L);
-  pp.query("xs",xs); pp.query("xr",xr); pp.query("t",t);
+  amrex::ParmParse pp("eb2");
 
-  const RealBox& rb = geom.ProbDomain();
-  const Real xlo = rb.lo(0), xhi = rb.hi(0);
-  const Real ylo = rb.lo(1), yhi = rb.hi(1);
-  const Real ymid = 0.5*(ylo+yhi);
+  amrex::RealArray lo; pp.get("box_lo", lo);
+  amrex::RealArray hi; pp.get("box_hi", hi);
 
-  // Guard and grid-awareness
-  const Real dx = geom.CellSize(0);
-  const Real min_gap = 4*dx;                  // avoid EB >2-cuts issues
-  xs = std::max(xlo, std::min(xs, xhi));
-  xr = std::max(xs + min_gap, std::min(xr, xhi));
-  t  = std::max(min_gap, std::min(t, xr - xs - min_gap));
+  bool has_fluid_inside; pp.get("box_has_fluid_inside", has_fluid_inside);
 
-  // Build SOLIDS; fluid is the complement
-  auto boxS = [] (Real x0, Real y0, Real x1, Real y1) {
-    Array<Real,AMREX_SPACEDIM> lo{AMREX_D_DECL(std::min(x0,x1), std::min(y0,y1), 0.0)};
-    Array<Real,AMREX_SPACEDIM> hi{AMREX_D_DECL(std::max(x0,x1), std::max(y0,y1), 0.0)};
-    return EB2::BoxIF(lo, hi, /*has_fluid_inside=*/false);
-  };
+  amrex::Real rotation = 0.0;
+  int rotation_axe = 0;
+  pp.query("box_rotation", rotation);
+  pp.query("box_rotation_axe", rotation_axe);
+  rotation = (rotation / 180.) * constants::PI();
 
-  const Real y_base_lo   = ymid - 0.5*W;
-  const Real y_base_hi   = ymid + 0.5*W;
-  const Real y_upper_lo  = y_base_hi;
-  const Real y_upper_hi  = y_base_hi + H;
-  const Real y_lower_lo  = y_base_lo - L;
-  const Real y_lower_hi  = y_base_lo;
-
-  // Global top/bottom solids
-  auto s_top         = boxS(xlo, y_upper_hi, xhi, yhi);
-  auto s_bottom      = boxS(xlo, ylo,       xhi, y_lower_lo);
-
-  // Left of split (outside base duct)
-  auto s_left_upper  = boxS(xlo, y_base_hi,  xs,  y_upper_hi);
-  auto s_left_lower  = boxS(xlo, y_lower_lo, xs,  y_base_lo);
-
-  // Right of rejoin (outside base duct)
-  auto s_right_upper = boxS(xr,  y_base_hi,  xhi, y_upper_hi);
-  auto s_right_lower = boxS(xr,  y_lower_lo, xhi, y_base_lo);
-
-  // Middle band between branches (keeps two separate ducts)
-  auto s_mid_between = boxS(xs,  y_base_lo,  xr,  y_base_hi);
-
-  // Fill branches except the thin slits near xs and xr
-  auto s_upper_fill  = boxS(xs + t, y_upper_lo, xr - t, y_upper_hi);
-  auto s_lower_fill  = boxS(xs + t, y_lower_lo, xr - t, y_lower_hi);
-
-  // Pairwise unions
-  auto u1    = amrex::EB2::makeUnion(s_top, s_bottom);
-  auto u2    = amrex::EB2::makeUnion(u1, s_left_upper);
-  auto u3    = amrex::EB2::makeUnion(u2, s_left_lower);
-  auto u4    = amrex::EB2::makeUnion(u3, s_right_upper);
-  auto u5    = amrex::EB2::makeUnion(u4, s_right_lower);
-  auto u6    = amrex::EB2::makeUnion(u5, s_mid_between);
-  auto walls = amrex::EB2::makeUnion(u6, s_upper_fill, s_lower_fill);
-
-  amrex::Print() << "[EB] Geometry::TwoBranch SOLIDS "
-                 << "W="<<W<<" H="<<H<<" L="<<L
-                 << " xs="<<xs<<" xr="<<xr<<" t="<<t<<" dx="<<dx << "\n";
-
-  auto gshop = amrex::EB2::makeShop(walls);
-  EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level,
-             /*ngrow=*/4, /*extend_domain_face=*/false);
+  amrex::EB2::BoxIF bf(lo, hi, has_fluid_inside);
+  auto bf_rot = amrex::EB2::rotate(bf, rotation, rotation_axe);
+  auto gshop  = amrex::EB2::makeShop(bf_rot);
+  amrex::EB2::Build(
+      gshop, geom, max_coarsening_level, max_coarsening_level, 4, false);
 }
-
 
 void
 CheckpointFile::build(
