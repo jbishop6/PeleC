@@ -423,8 +423,8 @@ TwoBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   auto u4    = makeUnion(u3, s_right_upper);
   auto u5    = makeUnion(u4, s_right_lower);
   auto u6    = makeUnion(u5, s_mid_between);
-  auto walls = makeUnion(u6, s_upper_fill);
-  walls      = makeUnion(walls, s_lower_fill);
+  auto u7    = makeUnion(u6, s_upper_fill);
+  auto walls = makeUnion(u7, s_lower_fill);
 
   amrex::Print() << "[EB] TwoBranch "
                  << "W="<<W<<" H="<<H<<" L="<<L
