@@ -1,16 +1,19 @@
-# --- Force SUNDIALS from site package ---
+# --- Use site SUNDIALS everywhere (AMReX needs this in INCLUDES) ---
 SUNDIALS_HOME ?= /opt/ohpc/pub/anaconda/anaconda3/pkgs/sundials-7.3.0-h13d7cbe_0
-CEXE_INCLUDES += -I$(SUNDIALS_HOME)/include
-CXXFLAGS      += -I$(SUNDIALS_HOME)/include
-LINKFLAGS     += -L$(SUNDIALS_HOME)/lib
-LIBRARIES     += -Wl,-rpath,$(SUNDIALS_HOME)/lib
+
+# GLOBAL include so AMReX's Extern/SUNDIALS compile units see headers
+INCLUDES   += -I$(SUNDIALS_HOME)/include
+
+# Link path + rpath (so the runtime loader finds the libs)
+LINKFLAGS  += -L$(SUNDIALS_HOME)/lib
+LIBRARIES  += -Wl,-rpath,$(SUNDIALS_HOME)/lib
 
 # Case sources/headers
 CEXE_sources += prob.cpp
 CEXE_headers += prob.H
 CEXE_headers += prob_parm.H
 
-# Ensure std::thread resolves at link time
+# Ensure std::thread resolves
 CXXFLAGS   += -pthread
 LINKFLAGS  += -pthread
 LIBRARIES  += -Wl,--no-as-needed -lpthread
