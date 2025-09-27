@@ -393,8 +393,8 @@ TwoBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   };
 
   // Bands
-  const Real y_base_lo  = ymid - 0.5*W;
-  const Real y_base_hi  = ymid + 0.5*W;
+  const Real y_base_lo  = ymid - 0.75*W;
+  const Real y_base_hi  = ymid + 0.75*W;
   const Real y_upper_lo = y_base_hi;
   const Real y_upper_hi = y_base_hi + H;
   const Real y_lower_lo = y_base_lo - L;
