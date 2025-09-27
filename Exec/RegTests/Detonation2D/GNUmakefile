@@ -3,6 +3,10 @@ DIM = 2
 COMP = gnu
 PRECISION = DOUBLE
 
+# Force SUNDIALS headers visible to every compile unit (AMReX included)
+CPPFLAGS += -I/opt/ohpc/pub/anaconda/anaconda3/pkgs/sundials-7.3.0-h13d7cbe_0/include
+
+
 # Profiling
 PROFILE = FALSE
 TINY_PROFILE = FALSE
