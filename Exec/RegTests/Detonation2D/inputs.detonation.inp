@@ -76,3 +76,11 @@ eb2.box_hi = 0.60 0.09
 eb2.box_has_fluid_inside = 0
 eb2.box_rotation = 0
 eb2.box_rotation_axe = 2
+
+# Two-branch geometry knobs (domain units; tweak as you like)
+geo.W  = 0.04      # base duct height
+geo.H  = 0.04      # upper offset
+geo.L  = 0.04      # lower offset
+geo.xs = 0.25      # split x
+geo.xr = 0.75      # rejoin x
+geo.t  = 0.010     # slit/connector thickness (>= ~3*max(dx,dy) recommended)
