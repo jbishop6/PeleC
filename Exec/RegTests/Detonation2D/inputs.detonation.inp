@@ -4,13 +4,12 @@ stop_time = 1.959e-6
 
 # ------------------ GEOMETRY (2D) -------------------
 geometry.is_periodic = 0 0
-geometry.coord_sys   = 0           # 0 => Cartesian
+geometry.coord_sys   = 0
 geometry.prob_lo     = 0.0  0.0
 geometry.prob_hi     = 1.0  0.125
 amr.n_cell           = 512  64
 
 # ------------------ BOUNDARY CONDITIONS -------------------
-# Interior, UserBC, Symmetry, SlipWall, NoSlipWall
 pelec.lo_bc = "SlipWall" "SlipWall"
 pelec.hi_bc = "SlipWall" "SlipWall"
 
@@ -45,12 +44,13 @@ amr.check_int  = 100
 
 # ------------------ PLOTFILES -------------------
 amr.plot_files_output = 1
-amr.plot_file         = plt         # keep fixed while debugging
+amr.plot_file         = plt
 amr.plot_int          = 1
-amr.plot_vars         = density Temp
-amr.derive_plot_vars  = vfrac pressure x_velocity y_velocity magvel magvort
+# put vfrac in plot_vars (not derive) so it is guaranteed to appear
+amr.plot_vars         = vfrac density Temp
+amr.derive_plot_vars  = pressure x_velocity y_velocity magvel magvort
 
-# ------------------ PROBLEM PARAMETERS (simple left/right) -------------------
+# ------------------ PROBLEM PARAMETERS -------------------
 prob.p_l   = 1e7
 prob.u_l   = 0.0
 prob.rho_l = 9.6e-4
@@ -63,12 +63,16 @@ prob.left_gas  = N2
 prob.right_gas = HE
 
 # ------------------ EMBEDDED BOUNDARY (EB) -------------------
-# Force EB codepath on, and use a built-in box so we *see* a cut.
 pelec.eb_in_domain = 1
 
-eb2.geom_type = box               # built-in AMReX EB (no custom factory needed)
+# Use your new factory-registered geometry: TwoBranch::identifier() == "twobranch"
+eb2.build_type = all
+eb2.max_coarsening_level = 0
+eb2.geom_type = twobranch
+
+# same params the rotated_box uses (your TwoBranch currently clones that)
 eb2.box_lo = 0.40 0.03
 eb2.box_hi = 0.60 0.09
-eb2.box_has_fluid_inside = 0      # inside the box is SOLID
-
-eb2.max_coarsening_level = 0
+eb2.box_has_fluid_inside = 0
+eb2.box_rotation = 0
+eb2.box_rotation_axe = 2
