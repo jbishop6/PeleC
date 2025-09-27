@@ -413,18 +413,17 @@ TwoBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   // Block the middle band between branches (keeps two separate ducts)
   auto s_mid_between = boxS(xs, y_base_lo, xr, y_base_hi);
 
-  // Fill upper/lower branch spans except for slit gaps near xs/xr
-  auto s_upper_fill  = boxS(xs + t, y_upper_lo, xr - t, y_upper_hi);
-  auto s_lower_fill  = boxS(xs + t, y_lower_lo, xr - t, y_lower_hi);
-
   auto u1    = makeUnion(s_top, s_bottom);
   auto u2    = makeUnion(u1, s_left_upper);
   auto u3    = makeUnion(u2, s_left_lower);
   auto u4    = makeUnion(u3, s_right_upper);
   auto u5    = makeUnion(u4, s_right_lower);
-  auto u6    = makeUnion(u5, s_mid_between);
-  auto u7    = makeUnion(u6, s_upper_fill);
-  auto walls = makeUnion(u7, s_lower_fill);
+
+  // Keep the mid band blocked to split the duct,
+  // but leave the entire upper & lower bands open from xs..xr.
+  auto walls = makeUnion(u5, s_mid_between);
+
+  
 
   amrex::Print() << "[EB] TwoBranch "
                  << "W="<<W<<" H="<<H<<" L="<<L
