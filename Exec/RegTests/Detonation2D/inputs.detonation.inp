@@ -78,7 +78,7 @@ eb2.box_rotation = 0
 eb2.box_rotation_axe = 2
 
 # Two-branch geometry knobs (domain units; tweak as you like)
-geo.W   = 0.040       # base duct height
+geo.W   = 0.030       # base duct height
 geo.H   = 0.040       # upper band offset
 geo.L   = 0.040       # lower band offset
 geo.xs  = 0.15        # split x
