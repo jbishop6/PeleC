@@ -1,16 +1,16 @@
-# --- Use site SUNDIALS everywhere (AMReX needs this in INCLUDES) ---
-SUNDIALS_HOME ?= /opt/ohpc/pub/anaconda/anaconda3/pkgs/sundials-7.3.0-h13d7cbe_0
+# --- Use SUNDIALS from your user conda env ---
+SUNDIALS_HOME := $(HOME)/.conda/envs/pele-sundials7
 
-# Pick lib64 if it exists, otherwise lib
+# Pick lib64 if present, else lib
 SUNDIALS_LIBDIR := $(SUNDIALS_HOME)/lib
 ifneq ($(wildcard $(SUNDIALS_HOME)/lib64),)
   SUNDIALS_LIBDIR := $(SUNDIALS_HOME)/lib64
 endif
 
-# GLOBAL include so AMReX's Extern/SUNDIALS units see headers
+# Make headers visible to AMReX Extern/SUNDIALS units
 INCLUDES   += -I$(SUNDIALS_HOME)/include
 
-# Link path + rpath (so the runtime loader finds the libs)
+# Link path + rpath
 LINKFLAGS  += -L$(SUNDIALS_LIBDIR)
 LIBRARIES  += -Wl,-rpath,$(SUNDIALS_LIBDIR)
 
@@ -19,10 +19,10 @@ CEXE_sources += prob.cpp
 CEXE_headers += prob.H
 CEXE_headers += prob_parm.H
 
-# quiet the SUNDIALS deprecation warnings (optional)
+# Quiet deprecation spam (optional)
 CXXFLAGS += -Wno-deprecated-declarations
 
 # Ensure std::thread resolves
-CXXFLAGS   += -pthread
-LINKFLAGS  += -pthread
-LIBRARIES  += -Wl,--no-as-needed -lpthread
+CXXFLAGS  += -pthread
+LINKFLAGS += -pthread
+LIBRARIES += -Wl,--no-as-needed -lpthread
