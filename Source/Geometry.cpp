@@ -361,10 +361,12 @@ RotatedBox::build(const amrex::Geometry& geom, const int max_coarsening_level)
 void
 TwoBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
 {
+  using amrex::Real;
+  using amrex::Array;
   using namespace amrex;
+
   using namespace amrex::EB2;
 
-  // User knobs (t kept for compatibility; unused here)
   ParmParse pp("geo");
   Real W=0.04, H=0.04, L=0.04, xs=0.30, xr=0.70, t=0.008;
   pp.query("W",W);  pp.query("H",H);  pp.query("L",L);
@@ -379,20 +381,21 @@ TwoBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   const Real dy = geom.CellSize(1);
   const Real h  = std::max(dx,dy);
 
-  // Keep features resolvable and ordered
-  xs = std::min(std::max(xs, xlo+2*h), xhi-2*h);
-  xr = std::min(std::max(xr, xs+6*h),  xhi-2*h);
+  // keep features resolvable
+  xs = std::min(std::max(xs, xlo + 2*h), xhi - 2*h);
+  xr = std::min(std::max(xr, xs  + 6*h), xhi - 2*h);
+  t  = std::min(std::max(t,  3*h),       xr - xs - 3*h);
 
-  // SOLID rectangle helper
+  // SOLID rectangles helper
   auto boxS = [] (Real x0, Real y0, Real x1, Real y1) {
     Array<Real,AMREX_SPACEDIM> lo{AMREX_D_DECL(std::min(x0,x1),
                                                std::min(y0,y1), 0.0)};
     Array<Real,AMREX_SPACEDIM> hi{AMREX_D_DECL(std::max(x0,x1),
                                                std::max(y0,y1), 0.0)};
-    return EB2::BoxIF(lo, hi, /*has_fluid_inside=*/false);
+    return amrex::EB2::BoxIF(lo, hi, /*has_fluid_inside=*/false);
   };
 
-  // Bands
+  // bands
   const Real y_base_lo  = ymid - 0.5*W;
   const Real y_base_hi  = ymid + 0.5*W;
   const Real y_upper_lo = y_base_hi;
@@ -400,17 +403,20 @@ TwoBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   const Real y_lower_lo = y_base_lo - L;
   const Real y_lower_hi = y_base_lo;
 
-// Outside the base duct before xs and after xr
-// Leave a vertical gap of width t at xs and xr so fluid can connect.
-auto s_left_upper  = boxS(xlo,      y_base_hi,  xs - t,  y_upper_hi);
-auto s_left_lower  = boxS(xlo,      y_lower_lo, xs - t,  y_base_lo);
-auto s_right_upper = boxS(xr + t,   y_base_hi,  xhi,     y_upper_hi);
-auto s_right_lower = boxS(xr + t,   y_lower_lo, xhi,     y_base_lo);
+  // global top/bottom solids
+  auto s_top         = boxS(xlo, y_upper_hi, xhi, yhi);
+  auto s_bottom      = boxS(xlo, ylo,       xhi, y_lower_lo);
 
-// Keep the middle band blocked to split upper vs lower
-auto s_mid_between = boxS(xs, y_base_lo, xr, y_base_hi);
+  // outside the base duct before xs and after xr, but leave a slit of width t
+  auto s_left_upper  = boxS(xlo,      y_base_hi,  xs - t,  y_upper_hi);
+  auto s_left_lower  = boxS(xlo,      y_lower_lo, xs - t,  y_base_lo);
+  auto s_right_upper = boxS(xr + t,   y_base_hi,  xhi,     y_upper_hi);
+  auto s_right_lower = boxS(xr + t,   y_lower_lo, xhi,     y_base_lo);
 
-  // Pairwise union (AMReX-friendly)
+  // block the middle band to split upper vs lower between xs..xr
+  auto s_mid_between = boxS(xs, y_base_lo, xr, y_base_hi);
+
+  // pairwise unions (older AMReX prefers this)
   auto u1    = EB2::makeUnion(s_top, s_bottom);
   auto u2    = EB2::makeUnion(u1, s_left_upper);
   auto u3    = EB2::makeUnion(u2, s_left_lower);
@@ -418,14 +424,17 @@ auto s_mid_between = boxS(xs, y_base_lo, xr, y_base_hi);
   auto u5    = EB2::makeUnion(u4, s_right_lower);
   auto walls = EB2::makeUnion(u5, s_mid_between);
 
-  amrex::Print() << "[EB] TwoBranch (reverted) "
+  amrex::Print() << "[EB] TwoBranch walls-only "
                  << "W="<<W<<" H="<<H<<" L="<<L
-                 << " xs="<<xs<<" xr="<<xr
+                 << " xs="<<xs<<" xr="<<xr<<" t="<<t
                  << " dx="<<dx<<" dy="<<dy << "\n";
 
   auto gshop = EB2::makeShop(walls);
-  EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level, 4, false);
+  EB2::Build(gshop, geom,
+             max_coarsening_level, max_coarsening_level,
+             /*max_grid_size*/128, /*ngrow*/4);
 }
+
 
 
 void
