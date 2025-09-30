@@ -83,4 +83,4 @@ geo.H  = 0.04      # upper offset
 geo.L  = 0.04      # lower offset
 geo.xs = 0.20      # split x
 geo.xr = 0.85      # rejoin x
-geo.t  = 0.03     # slit/connector thickness (>= ~3*max(dx,dy) recommended)
+geo.t  = 0.04     # slit/connector thickness (>= ~3*max(dx,dy) recommended)
