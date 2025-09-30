@@ -81,6 +81,6 @@ eb2.box_rotation_axe = 2
 geo.W  = 0.041      # base duct height
 geo.H  = 0.04      # upper offset
 geo.L  = 0.04      # lower offset
-geo.xs = 0.20      # split x
+geo.xs = 0.25      # split x
 geo.xr = 0.85      # rejoin x
 geo.t  = 0.04     # slit/connector thickness (>= ~3*max(dx,dy) recommended)
