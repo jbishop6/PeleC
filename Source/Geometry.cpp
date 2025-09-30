@@ -395,19 +395,20 @@ TwoBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   // Bands
   const Real y_base_lo  = ymid - 0.5*W;
   const Real y_base_hi  = ymid + 0.5*W;
-  const Real y_upper_lo = y_base_hi + 0.5*W;
+  const Real y_upper_lo = y_base_hi;
   const Real y_upper_hi = y_base_hi + H;
   const Real y_lower_lo = y_base_lo - L;
   const Real y_lower_hi = y_base_lo;
 
-  // SOLIDS: top/bottom; outside base duct on left/right; block middle band
-  auto s_top          = boxS(xlo, y_upper_hi, xhi, yhi);
-  auto s_bottom       = boxS(xlo, ylo,       xhi, y_lower_lo);
-  auto s_left_upper   = boxS(xlo, y_base_hi,  xs,  y_upper_hi);
-  auto s_left_lower   = boxS(xlo, y_lower_lo, xs,  y_base_lo);
-  auto s_right_upper  = boxS(xr,  y_base_hi,  xhi, y_upper_hi);
-  auto s_right_lower  = boxS(xr,  y_lower_lo, xhi, y_base_lo);
-  auto s_mid_between  = boxS(xs,  y_base_lo,  xr,  y_base_hi);
+// Outside the base duct before xs and after xr
+// Leave a vertical gap of width t at xs and xr so fluid can connect.
+auto s_left_upper  = boxS(xlo,      y_base_hi,  xs - t,  y_upper_hi);
+auto s_left_lower  = boxS(xlo,      y_lower_lo, xs - t,  y_base_lo);
+auto s_right_upper = boxS(xr + t,   y_base_hi,  xhi,     y_upper_hi);
+auto s_right_lower = boxS(xr + t,   y_lower_lo, xhi,     y_base_lo);
+
+// Keep the middle band blocked to split upper vs lower
+auto s_mid_between = boxS(xs, y_base_lo, xr, y_base_hi);
 
   // Pairwise union (AMReX-friendly)
   auto u1    = EB2::makeUnion(s_top, s_bottom);
