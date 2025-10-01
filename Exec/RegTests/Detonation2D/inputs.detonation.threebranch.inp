@@ -65,7 +65,7 @@ prob.right_gas = HE
 pelec.eb_in_domain = 1
 eb2.build_type = all
 eb2.max_coarsening_level = 0
-eb2.geom_type = threebranch_typo   # <-- use your new factory
+eb2.geom_type = threebranch   # <-- use your new factory
 
 # remove any rotated-box stuff; it is not used by 'threebranch'
 
