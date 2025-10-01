@@ -443,6 +443,8 @@ void
 ThreeBranch::build (const amrex::Geometry& geom,
                     const int max_coarsening_level)
 {
+  amrex::Abort("HELLO from ThreeBranch");
+
   using namespace amrex;
   using namespace amrex::EB2;
 
