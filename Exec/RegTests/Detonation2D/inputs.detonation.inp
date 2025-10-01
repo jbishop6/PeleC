@@ -78,9 +78,13 @@ eb2.box_rotation = 0
 eb2.box_rotation_axe = 2
 
 # Two-branch geometry knobs (domain units; tweak as you like)
-geo.W   = 0.030       # base duct height
-geo.H   = 0.040       # upper band offset
-geo.L   = 0.040       # lower band offset
-geo.xs  = 0.15        # split x
-geo.xr  = 0.85        # rejoin x
-geo.mid = 0.03       # center wall thickness (smaller -> larger fluid slots)
+geo.W  = 0.041015625
+geo.H  = 0.0390625
+geo.L  = 0.0390625
+geo.xs = 0.30
+geo.xr = 0.70
+geo.mid = 0.02
+
+# NEW: retract mid-wall from each end to connect branches
+geo.cL = 0.05    # left-side connection length
+geo.cR = 0.05    # right-side connection length
