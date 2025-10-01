@@ -366,13 +366,10 @@ void TwoBranch::build (const amrex::Geometry& geom,
 
   ParmParse pp("geo");
   Real W=0.04, H=0.04, L=0.04, xs=0.30, xr=0.70;
-  Real mid = 0.02;          // center wall thickness
-  Real tL  = 0.03;          // LEFT (x=xs) gate width
-  Real tR  = 0.03;          // RIGHT (x=xr) gate width
+  Real mid = 0.02;                 // center wall thickness
   pp.query("W",W);  pp.query("H",H);  pp.query("L",L);
   pp.query("xs",xs); pp.query("xr",xr);
   pp.query("mid",mid);
-  pp.query("tL",tL); pp.query("tR",tR);
 
   const RealBox& rb = geom.ProbDomain();
   const Real xlo = rb.lo(0), xhi = rb.hi(0);
@@ -383,15 +380,10 @@ void TwoBranch::build (const amrex::Geometry& geom,
   const Real dy = geom.CellSize(1);
   const Real h  = std::max(dx,dy);
 
-  // keep features resolvable & consistent
-  xs  = std::min(std::max(xs, xlo+2*h), xhi-2*h);
-  xr  = std::min(std::max(xr, xs+8*h),  xhi-2*h);
+  // sanity & resolvability
+  xs  = std::min(std::max(xs, xlo+2*h),    xhi-2*h);
+  xr  = std::min(std::max(xr, xs+6*h),     xhi-2*h);
   mid = std::min(std::max(mid, 4*h), std::max(W-4*h, 4*h+1e-12));
-
-  // connectors can't exceed half the span
-  const Real halfSpan = 0.5*(xr - xs);
-  tL = std::min(std::max(tL, 3*h), halfSpan - 3*h);
-  tR = std::min(std::max(tR, 3*h), halfSpan - 3*h);
 
   auto boxS = [] (Real x0, Real y0, Real x1, Real y1) {
     Array<Real,AMREX_SPACEDIM> lo{AMREX_D_DECL(std::min(x0,x1),
@@ -401,7 +393,7 @@ void TwoBranch::build (const amrex::Geometry& geom,
     return BoxIF(lo, hi, /*has_fluid_inside=*/false); // SOLID
   };
 
-  // base & branches
+  // base/branch bands
   const Real y_base_lo  = ymid - 0.5*W;
   const Real y_base_hi  = ymid + 0.5*W;
   const Real y_upper_lo = y_base_hi;
@@ -413,40 +405,34 @@ void TwoBranch::build (const amrex::Geometry& geom,
   auto s_top    = boxS(xlo, y_upper_hi, xhi, yhi);
   auto s_bottom = boxS(xlo, ylo,       xhi, y_lower_lo);
 
-  // outside base duct before xs and after xr
+  // outside the base duct to the left/right
   auto s_left_upper  = boxS(xlo, y_base_hi,  xs,  y_upper_hi);
   auto s_left_lower  = boxS(xlo, y_lower_lo, xs,  y_base_lo);
   auto s_right_upper = boxS(xr,  y_base_hi,  xhi, y_upper_hi);
   auto s_right_lower = boxS(xr,  y_lower_lo, xhi, y_base_lo);
 
-  // center wall (splits the branches)
+  // center wall only (branches fully open xs..xr)
   const Real y_mid_lo = ymid - 0.5*mid;
   const Real y_mid_hi = ymid + 0.5*mid;
   auto s_mid_between  = boxS(xs, y_mid_lo, xr, y_mid_hi);
 
-  // fill the upper/lower branch spans except for OPEN slits near xs & xr
-  auto s_upper_fill = boxS(xs + tL, y_upper_lo, xr - tR, y_upper_hi);
-  auto s_lower_fill = boxS(xs + tL, y_lower_lo, xr - tR, y_lower_hi);
+  // union solids (pairwise)
+  auto u1    = EB2::makeUnion(s_top, s_bottom);
+  auto u2    = EB2::makeUnion(u1, s_left_upper);
+  auto u3    = EB2::makeUnion(u2, s_left_lower);
+  auto u4    = EB2::makeUnion(u3, s_right_upper);
+  auto u5    = EB2::makeUnion(u4, s_right_lower);
+  auto walls = EB2::makeUnion(u5, s_mid_between);
 
-  // union all solids (pairwise)
-  auto u1 = EB2::makeUnion(s_top, s_bottom);
-  auto u2 = EB2::makeUnion(u1, s_left_upper);
-  auto u3 = EB2::makeUnion(u2, s_left_lower);
-  auto u4 = EB2::makeUnion(u3, s_right_upper);
-  auto u5 = EB2::makeUnion(u4, s_right_lower);
-  auto u6 = EB2::makeUnion(u5, s_mid_between);
-  auto u7 = EB2::makeUnion(u6, s_upper_fill);
-  auto walls = EB2::makeUnion(u7, s_lower_fill);
-
-  amrex::Print() << "[EB] TwoBranch mid="<<mid
-                 << " tL="<<tL<<" tR="<<tR
-                 << " xs="<<xs<<" xr="<<xr
-                 << " W="<<W<<" H="<<H<<" L="<<L
+  amrex::Print() << "[EB] TwoBranch (mid-wall only) "
+                 << "W="<<W<<" H="<<H<<" L="<<L
+                 << " xs="<<xs<<" xr="<<xr<<" mid="<<mid
                  << " dx="<<dx<<" dy="<<dy << "\n";
 
   auto gshop = EB2::makeShop(walls);
   EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
 }
+
 
 
 
