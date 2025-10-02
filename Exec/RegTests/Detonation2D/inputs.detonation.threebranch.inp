@@ -44,8 +44,9 @@ amr.check_int  = 100
 
 # ------------------ PLOTFILES -------------------
 amr.plot_files_output = 1
-amr.plot_file         = threebranch/plt   # <-- new folder so we don't mix with old plots
+amr.plot_file         = plt
 amr.plot_int          = 1
+# put vfrac in plot_vars (not derive) so it is guaranteed to appear
 amr.plot_vars         = vfrac density Temp
 amr.derive_plot_vars  = pressure x_velocity y_velocity magvel magvort
 
@@ -63,26 +64,27 @@ prob.right_gas = HE
 
 # ------------------ EMBEDDED BOUNDARY (EB) -------------------
 pelec.eb_in_domain = 1
+
+# Use your new factory-registered geometry: TwoBranch::identifier() == "twobranch"
 eb2.build_type = all
 eb2.max_coarsening_level = 0
-eb2.geom_type = threebranch
+eb2.geom_type = twobranch
 
-# --------- Three-branch parameters (prefix: geo3) ----------
-# main two-branch body
-geo3.W   = 0.041015625
-geo3.H   = 0.0390625
-geo3.L   = 0.0390625
-geo3.xs  = 0.30
-geo3.xr  = 0.70
-geo3.mid = 0.020
+# same params the rotated_box uses (your TwoBranch currently clones that)
+eb2.box_lo = 0.40 0.03
+eb2.box_hi = 0.60 0.09
+eb2.box_has_fluid_inside = 0
+eb2.box_rotation = 0
+eb2.box_rotation_axe = 2
 
-# retract mid-wall at both ends to open the joins
-geo3.cL  = 0.05
-geo3.cR  = 0.05
+# Two-branch geometry knobs (domain units; tweak as you like)
+geo.W  = 0.041015625
+geo.H  = 0.0390625
+geo.L  = 0.0390625
+geo.xs = 0.30
+geo.xr = 0.70
+geo.mid = 0.02
 
-# third-branch (delay) path
-geo3.Zlen  = 0.20
-geo3.Hd    = 0.03
-geo3.h3    = 0.012
-geo3.wslot = 0.010
-geo3.x3s   = 0.38
+# NEW: retract mid-wall from each end to connect branches
+geo.cL = 0.05    # left-side connection length
+geo.cR = 0.05    # right-side connection length
