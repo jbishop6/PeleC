@@ -443,42 +443,20 @@ void
 ThreeBranch::build (const amrex::Geometry& geom,
                     const int max_coarsening_level)
 {
-  
-
   using namespace amrex;
   using namespace amrex::EB2;
 
-  // ------------------- Controls (domain units) -------------------
-  // We use a separate ParmParse prefix so you can tune independently
-  // from your existing "geo.*" for TwoBranch.
+  // Read with a separate prefix so you don't collide with geo.*
   ParmParse pp("geo3");
-
-  // Main two-branch parameters (same meaning as your TwoBranch)
-  Real W  = 0.04;   // base duct height
-  Real H  = 0.04;   // upper branch offset above base
-  Real L  = 0.04;   // lower branch offset below base
-  Real xs = 0.30;   // split x
-  Real xr = 0.70;   // rejoin x
-  Real mid = 0.02;  // center wall thickness (keeps upper/lower separated)
-  Real cL  = 0.02;  // retract mid-wall from left end (opens mixing region)
-  Real cR  = 0.02;  // retract mid-wall from right end
-
-  // Third-branch (delay) parameters
-  Real Zlen  = 0.20;  // horizontal length of the delay branch
-  Real Hd    = 0.03;  // vertical drop from upper branch down to third branch
-  Real h3    = 0.012; // vertical thickness (height) of the third branch
-  Real wslot = 0.010; // width of the two vertical slots (drop/rise)
-  Real x3s   = 0.38;  // x-location where the drop from upper begins
-
-  pp.query("W",W);    pp.query("H",H);    pp.query("L",L);
-  pp.query("xs",xs);  pp.query("xr",xr);  pp.query("mid",mid);
-  pp.query("cL",cL);  pp.query("cR",cR);
-
-  pp.query("Zlen",Zlen);
-  pp.query("Hd",Hd);
-  pp.query("h3",h3);
-  pp.query("wslot",wslot);
-  pp.query("x3s",x3s);
+  Real W=0.04, H=0.04, L=0.04, xs=0.30, xr=0.70;
+  Real mid = 0.02;   // center-wall thickness
+  Real cL  = 0.00;   // open connector at left
+  Real cR  = 0.00;   // open connector at right
+  pp.query("W",W);  pp.query("H",H);  pp.query("L",L);
+  pp.query("xs",xs); pp.query("xr",xr);
+  pp.query("mid",mid);
+  pp.query("cL",cL);
+  pp.query("cR",cR);
 
   const RealBox& rb = geom.ProbDomain();
   const Real xlo = rb.lo(0), xhi = rb.hi(0);
@@ -489,32 +467,21 @@ ThreeBranch::build (const amrex::Geometry& geom,
   const Real dy = geom.CellSize(1);
   const Real h  = std::max(dx,dy);
 
-  // --------------- Sanity / resolvability clamps ----------------
-  xs   = std::min(std::max(xs,  xlo+3*h),        xhi-3*h);
-  xr   = std::min(std::max(xr,  xs + 8*h),       xhi-3*h);
-  mid  = std::min(std::max(mid, 4*h),            std::max(W-4*h, 4*h+1e-12));
-  cL   = std::min(std::max(cL,  0.0),            0.5*(xr-xs)-4*h);
-  cR   = std::min(std::max(cR,  0.0),            0.5*(xr-xs)-4*h);
+  // Sanity / resolvability
+  xs  = std::min(std::max(xs, xlo+2*h),    xhi-2*h);
+  xr  = std::min(std::max(xr, xs+6*h),     xhi-2*h);
+  mid = std::min(std::max(mid, 4*h), std::max(W-4*h, 4*h+1e-12));
+  const Real max_pad = std::max(0.0, 0.5*(xr - xs) - 3*h);
+  cL = std::min(std::max(cL, 0.0), max_pad);
+  cR = std::min(std::max(cR, 0.0), max_pad);
 
-  // Delay branch geometry
-  x3s  = std::min(std::max(x3s, xs + cL + 4*h),  xr - cR - 8*h);
-  Zlen = std::max(Zlen, 8*h);
-  Real x3e = std::min(x3s + Zlen, xr - cR - 4*h);
-  wslot = std::max(wslot, 4*h);
-  h3    = std::max(h3,    4*h);
-  Hd    = std::max(Hd,    h3 + 4*h); // drop at least the branch thickness
-
-  // -------------------- Helper: FLUID rectangles -----------------
-  // We'll construct the FLUID geometry explicitly and take complement.
-  auto boxF = [] (Real x0, Real y0, Real x1, Real y1) {
-    Array<Real,AMREX_SPACEDIM> lo{AMREX_D_DECL(std::min(x0,x1),
-                                               std::min(y0,y1), 0.0)};
-    Array<Real,AMREX_SPACEDIM> hi{AMREX_D_DECL(std::max(x0,x1),
-                                               std::max(y0,y1), 0.0)};
-    return BoxIF(lo, hi, /*has_fluid_inside=*/true);
+  auto boxS = [] (Real x0, Real y0, Real x1, Real y1) {
+    Array<Real,AMREX_SPACEDIM> lo{AMREX_D_DECL(std::min(x0,x1), std::min(y0,y1), 0.0)};
+    Array<Real,AMREX_SPACEDIM> hi{AMREX_D_DECL(std::max(x0,x1), std::max(y0,y1), 0.0)};
+    return BoxIF(lo, hi, /*has_fluid_inside=*/false); // SOLID
   };
 
-  // Bands (like TwoBranch)
+  // Bands
   const Real y_base_lo  = ymid - 0.5*W;
   const Real y_base_hi  = ymid + 0.5*W;
   const Real y_upper_lo = y_base_hi;
@@ -522,55 +489,33 @@ ThreeBranch::build (const amrex::Geometry& geom,
   const Real y_lower_lo = y_base_lo - L;
   const Real y_lower_hi = y_base_lo;
 
-  // -------------------- FLUID: main ducts ------------------------
-  auto left_main   = boxF(xlo, y_base_lo, xs,  y_base_hi);
-  auto right_main  = boxF(xr,  y_base_lo, xhi, y_base_hi);
+  // Domain caps & outside-of-duct solids
+  auto s_top         = boxS(xlo, y_upper_hi, xhi, yhi);
+  auto s_bottom      = boxS(xlo, ylo,       xhi, y_lower_lo);
+  auto s_left_upper  = boxS(xlo, y_base_hi,  xs,  y_upper_hi);
+  auto s_left_lower  = boxS(xlo, y_lower_lo, xs,  y_base_lo);
+  auto s_right_upper = boxS(xr,  y_base_hi,  xhi, y_upper_hi);
+  auto s_right_lower = boxS(xr,  y_lower_lo, xhi, y_base_lo);
 
-  // Upper & lower branch runs (between xs..xr)
-  auto upper_run   = boxF(xs,  y_upper_lo, xr, y_upper_hi);
-  auto lower_run   = boxF(xs,  y_lower_lo, xr, y_lower_hi);
+  // Mid-wall **retracted** by cL and cR (opens joins to the main duct)
+  const Real y_mid_lo = ymid - 0.5*mid;
+  const Real y_mid_hi = ymid + 0.5*mid;
+  const Real mw_x0 = xs + cL;
+  const Real mw_x1 = xr - cR;
+  auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
 
-  // Open connectors at ends (so upper & lower meet the main duct)
-  auto up_conn_L   = boxF(xs,     y_base_hi,   xs + cL,  y_upper_hi);
-  auto up_conn_R   = boxF(xr - cR, y_base_hi,  xr,       y_upper_hi);
-  auto low_conn_L  = boxF(xs,     y_lower_lo,  xs + cL,  y_base_lo);
-  auto low_conn_R  = boxF(xr - cR, y_lower_lo, xr,       y_base_lo);
+  // Union (pairwise)
+  auto u1    = makeUnion(s_top, s_bottom);
+  auto u2    = makeUnion(u1, s_left_upper);
+  auto u3    = makeUnion(u2, s_left_lower);
+  auto u4    = makeUnion(u3, s_right_upper);
+  auto u5    = makeUnion(u4, s_right_lower);
+  auto walls = makeUnion(u5, s_mid_between);
 
-  // -------------------- FLUID: third (delay) branch --------------
-  // The third branch sits Hd below the upper branch floor, with thickness h3.
-  const Real y3_hi = y_upper_lo - Hd;
-  const Real y3_lo = y3_hi - h3;
-
-  // Horizontal delay run
-  auto third_run = boxF(x3s, y3_lo, x3e, y3_hi);
-
-  // Vertical "drop" from upper branch down to third_run at x3s
-  auto drop_L = boxF(x3s - 0.5*wslot, y3_hi, x3s + 0.5*wslot, y_upper_lo);
-
-  // Vertical "rise" back up to upper branch at x3e
-  auto rise_R = boxF(x3e - 0.5*wslot, y3_hi, x3e + 0.5*wslot, y_upper_lo);
-
-  // -------------------- Union all FLUID pieces -------------------
-  // Chain pairwise to keep AMReX happy (avoid deep variadics).
-  auto f1 = makeUnion(left_main, right_main);
-  auto f2 = makeUnion(f1, upper_run);
-  auto f3 = makeUnion(f2, lower_run);
-  auto f4 = makeUnion(f3, up_conn_L);
-  auto f5 = makeUnion(f4, up_conn_R);
-  auto f6 = makeUnion(f5, low_conn_L);
-  auto f7 = makeUnion(f6, low_conn_R);
-  auto f8 = makeUnion(f7, third_run);
-  auto f9 = makeUnion(f8, drop_L);
-  auto fluid = makeUnion(f9, rise_R);
-
-  // -------------------- Make walls = complement ------------------
-  auto walls = makeComplement(fluid);
-
-  amrex::Print() << "[EB] ThreeBranch  "
-                 << "W="<<W<<" H="<<H<<" L="<<L<<" xs="<<xs<<" xr="<<xr
+  amrex::Print() << "[EB] ThreeBranch (stub=TwoBranch) "
+                 << "W="<<W<<" H="<<H<<" L="<<L
+                 << " xs="<<xs<<" xr="<<xr
                  << " mid="<<mid<<" cL="<<cL<<" cR="<<cR
-                 << " | third: Zlen="<<Zlen<<" Hd="<<Hd<<" h3="<<h3
-                 << " wslot="<<wslot<<" x3s="<<x3s
                  << " dx="<<dx<<" dy="<<dy << "\n";
 
   auto gshop = makeShop(walls);
