@@ -446,12 +446,11 @@ ThreeBranch::build (const amrex::Geometry& geom,
   using namespace amrex;
   using namespace amrex::EB2;
 
-  // Read with a separate prefix so you don't collide with geo.*
-  ParmParse pp("geo3");
+  ParmParse pp("geo");
   Real W=0.04, H=0.04, L=0.04, xs=0.30, xr=0.70;
-  Real mid = 0.02;   // center-wall thickness
-  Real cL  = 0.00;   // open connector at left
-  Real cR  = 0.00;   // open connector at right
+  Real mid = 0.02;                 // center-wall thickness
+  Real cL  = 0.00;                 // NEW: left connector length (retract from xs)
+  Real cR  = 0.00;                 // NEW: right connector length (retract from xr)
   pp.query("W",W);  pp.query("H",H);  pp.query("L",L);
   pp.query("xs",xs); pp.query("xr",xr);
   pp.query("mid",mid);
@@ -467,10 +466,12 @@ ThreeBranch::build (const amrex::Geometry& geom,
   const Real dy = geom.CellSize(1);
   const Real h  = std::max(dx,dy);
 
-  // Sanity / resolvability
+  // sanity / resolvability
   xs  = std::min(std::max(xs, xlo+2*h),    xhi-2*h);
   xr  = std::min(std::max(xr, xs+6*h),     xhi-2*h);
   mid = std::min(std::max(mid, 4*h), std::max(W-4*h, 4*h+1e-12));
+
+  // clamp connector lengths so wall still has positive span
   const Real max_pad = std::max(0.0, 0.5*(xr - xs) - 3*h);
   cL = std::min(std::max(cL, 0.0), max_pad);
   cR = std::min(std::max(cR, 0.0), max_pad);
@@ -481,7 +482,7 @@ ThreeBranch::build (const amrex::Geometry& geom,
     return BoxIF(lo, hi, /*has_fluid_inside=*/false); // SOLID
   };
 
-  // Bands
+  // bands
   const Real y_base_lo  = ymid - 0.5*W;
   const Real y_base_hi  = ymid + 0.5*W;
   const Real y_upper_lo = y_base_hi;
@@ -489,36 +490,35 @@ ThreeBranch::build (const amrex::Geometry& geom,
   const Real y_lower_lo = y_base_lo - L;
   const Real y_lower_hi = y_base_lo;
 
-  // Domain caps & outside-of-duct solids
-  auto s_top         = boxS(xlo, y_upper_hi, xhi, yhi);
-  auto s_bottom      = boxS(xlo, ylo,       xhi, y_lower_lo);
+  // domain caps & outside-of-duct solids (unchanged)
+  auto s_top    = boxS(xlo, y_upper_hi, xhi, yhi);
+  auto s_bottom = boxS(xlo, ylo,       xhi, y_lower_lo);
   auto s_left_upper  = boxS(xlo, y_base_hi,  xs,  y_upper_hi);
   auto s_left_lower  = boxS(xlo, y_lower_lo, xs,  y_base_lo);
   auto s_right_upper = boxS(xr,  y_base_hi,  xhi, y_upper_hi);
   auto s_right_lower = boxS(xr,  y_lower_lo, xhi, y_base_lo);
 
-  // Mid-wall **retracted** by cL and cR (opens joins to the main duct)
+  // mid-wall **retracted** by cL (left) and cR (right)
   const Real y_mid_lo = ymid - 0.5*mid;
   const Real y_mid_hi = ymid + 0.5*mid;
   const Real mw_x0 = xs + cL;
   const Real mw_x1 = xr - cR;
   auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
 
-  // Union (pairwise)
-  auto u1    = makeUnion(s_top, s_bottom);
-  auto u2    = makeUnion(u1, s_left_upper);
-  auto u3    = makeUnion(u2, s_left_lower);
-  auto u4    = makeUnion(u3, s_right_upper);
-  auto u5    = makeUnion(u4, s_right_lower);
-  auto walls = makeUnion(u5, s_mid_between);
+  // union
+  auto u1    = EB2::makeUnion(s_top, s_bottom);
+  auto u2    = EB2::makeUnion(u1, s_left_upper);
+  auto u3    = EB2::makeUnion(u2, s_left_lower);
+  auto u4    = EB2::makeUnion(u3, s_right_upper);
+  auto u5    = EB2::makeUnion(u4, s_right_lower);
+  auto walls = EB2::makeUnion(u5, s_mid_between);
 
-  amrex::Print() << "[EB] ThreeBranch (stub=TwoBranch) "
-                 << "W="<<W<<" H="<<H<<" L="<<L
-                 << " xs="<<xs<<" xr="<<xr
-                 << " mid="<<mid<<" cL="<<cL<<" cR="<<cR
+  amrex::Print() << "[EB] TwoBranch connect: "
+                 << "xs="<<xs<<" xr="<<xr<<" mid="<<mid
+                 << " cL="<<cL<<" cR="<<cR
                  << " dx="<<dx<<" dy="<<dy << "\n";
 
-  auto gshop = makeShop(walls);
+  auto gshop = EB2::makeShop(walls);
   EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
 }
 
