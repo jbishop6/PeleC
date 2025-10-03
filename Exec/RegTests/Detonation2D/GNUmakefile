@@ -41,7 +41,7 @@ Blocs := .
 PELE_HOME := ../../..
 PROB_SRC += prob.cpp
 
-SRCS += eb_geometry.cpp
+SRCS += Exec/RegTests/Detonation2D/eb_geometry.cpp
 vpath %.cpp Exec/RegTests/Detonation2D
 
 
