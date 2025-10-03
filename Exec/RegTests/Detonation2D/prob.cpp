@@ -33,6 +33,7 @@ void amrex_probinit(const int* /*init*/,
                     const amrex::Real* problo,
                     const amrex::Real* probhi)
 {
+    
     auto* P = PeleC::h_prob_parm_device;
 
     // defaults then override from inputs
@@ -79,6 +80,8 @@ void amrex_probinit(const int* /*init*/,
     if (P->right_gas_id >= 0 && P->right_gas_id < NUM_SPECIES) Yr[P->right_gas_id] = 1.0;
     eos.RYP2E(P->rho_r, Yr, P->p_r, e);
     P->rhoe_r = P->rho_r * e;
+    setupEBGeometry();
+
 }
 } // extern "C"
 
