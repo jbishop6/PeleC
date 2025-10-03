@@ -2,6 +2,7 @@
 #include "prob.H"
 #include <AMReX_ParmParse.H>
 #include <string>
+#include "eb_geometry.H"
 
 using namespace amrex;
 
