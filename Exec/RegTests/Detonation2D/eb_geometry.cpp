@@ -8,6 +8,7 @@
 #include <algorithm>
 
 using namespace amrex;
+int eb_geometry_dummy_symbol = 42;
 
 // small helper: FLUID rectangle in 2D
 static EB2::BoxIF fluid_box(Real x0, Real y0, Real x1, Real y1)
