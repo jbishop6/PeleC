@@ -7,7 +7,7 @@
 #include <AMReX_Print.H>
 
 using namespace amrex;
-void setupEBGeometry()
+void setupEBGeometry(geom, 0, 0)
 {
     const amrex::Geometry& geom = PeleC::top()->Geom(0);
     amrex::Print() << "[EB] setupEBGeometry called\n";

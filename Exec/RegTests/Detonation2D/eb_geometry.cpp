@@ -20,8 +20,8 @@ static EB2::BoxIF fluid_box(Real x0, Real y0, Real x1, Real y1)
     return EB2::BoxIF(lo, hi, /*has_fluid_inside=*/true);
 }
 
-void setupEBGeometry()
+void setupEBGeometry(const amrex::Geometry& geom, int required, int max)
 {
-    const Geometry& geom = PeleC::top()->Geom(0);
-    Initialize_EB2(geom, 0, 0);  // or inline the logic directly
+    Initialize_EB2(geom, required, max);
 }
+
