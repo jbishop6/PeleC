@@ -22,7 +22,5 @@ static EB2::BoxIF fluid_box(Real x0, Real y0, Real x1, Real y1)
 void setupEBGeometry()
 {
     const Geometry& geom = PeleC::top()->Geom(0);
-    int required = 0;
-    int max = 0;
-    Initialize_EB2(geom, required, max);  // or inline the logic directly
+    Initialize_EB2(geom, 0, 0);  // or inline the logic directly
 }
