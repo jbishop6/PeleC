@@ -6,9 +6,6 @@ PRECISION = DOUBLE
 # Force SUNDIALS headers visible to every compile unit (AMReX included)
 CPPFLAGS += -I/opt/ohpc/pub/anaconda/anaconda3/pkgs/sundials-7.3.0-h13d7cbe_0/include
 
-vpath %.cpp Exec/RegTests/Detonation2D
-
-
 # Profiling
 PROFILE = FALSE
 TINY_PROFILE = FALSE
@@ -43,6 +40,9 @@ Bpack := ./Make.package
 Blocs := .
 PELE_HOME := ../../..
 PROB_SRC += prob.cpp
+
 SRCS += eb_geometry.cpp
+vpath %.cpp Exec/RegTests/Detonation2D
+
 
 include $(PELE_HOME)/Exec/Make.PeleC
