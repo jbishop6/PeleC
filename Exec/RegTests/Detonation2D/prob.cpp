@@ -3,9 +3,16 @@
 #include <AMReX_ParmParse.H>
 #include <string>
 #include "eb_geometry.H"
+#include <AMReX_EB2.H>
+#include <AMReX_Print.H>
 
 using namespace amrex;
-
+void setupEBGeometry()
+{
+    const amrex::Geometry& geom = PeleC::top()->Geom(0);
+    amrex::Print() << "[EB] setupEBGeometry called\n";
+    // You can call your Initialize_EB2 here if needed
+}
 // Map species name -> index for your 14-spec mechanism
 static int species_id_from_name(const std::string& s)
 {
