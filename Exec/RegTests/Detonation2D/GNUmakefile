@@ -41,5 +41,6 @@ Bpack := ./Make.package
 Blocs := .
 PELE_HOME := ../../..
 PROB_SRC += prob.cpp
+SRCS += eb_geometry.cpp
 
 include $(PELE_HOME)/Exec/Make.PeleC
