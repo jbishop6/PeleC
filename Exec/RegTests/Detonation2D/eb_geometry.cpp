@@ -19,10 +19,13 @@ static EB2::BoxIF fluid_box(Real x0, Real y0, Real x1, Real y1)
     return EB2::BoxIF(lo, hi, /*has_fluid_inside=*/true);
 }
 
-void Initialize_EB2 (const Geometry& geom,
-                     int required_coarsening_level,
-                     int max_coarsening_level)
+void setupEBGeometry()
 {
+    const Geometry& geom = PeleC::top()->Geom(0);
+    int required = 0;
+    int max = 0;
+    Initialize_EB2(geom, required, max);  // or inline the logic directly
+
     // --- user knobs (domain units) ---
     ParmParse pp("geo");
     Real W=0.04, H=0.05, L=0.05, xs=0.30, xr=0.70, t=0.01; // width, branch offsets, split/rejoin, slit thickness
