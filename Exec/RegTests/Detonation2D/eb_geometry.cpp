@@ -1,7 +1,7 @@
 #include <AMReX_EB2.H>
 #include <AMReX_EB2_IF_Box.H>
 #include <AMReX_EB2_IF_Rotation.H>
-//#include <AMReX_EB2_IF_Transform.H>   // ✅ For translate()
+#include <AMReX_EB2_IF_Transform.H>   // ✅ For translate()
 #include <AMReX_EB2_GeometryShop.H>
 #include <AMReX_Print.H>
 #include <AMReX_Array.H>              // ✅ For RealArray
