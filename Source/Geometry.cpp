@@ -1,13 +1,5 @@
 #include "Geometry.H"
 
-#include <AMReX_EB2.H>
-#include <AMReX_EB2_IF.H>
-#include <AMReX_EB2_IF_Union.H>
-#include <AMReX_EB2_GeometryShop.H>
-#include <AMReX_ParmParse.H>
-#include <AMReX_Print.H>
-
-
 namespace pele::pelec {
 
 void
@@ -167,23 +159,27 @@ ExtrudedTriangles::build(
   problo = geom.ProbLo();
   probhi = geom.ProbHi();
 
-  maxlen = amrex::max<amrex::Real>(
-    amrex::max<amrex::Real>(geom.ProbLength(0), geom.ProbLength(1)),
-    geom.ProbLength(2));
+  AMREX_D_TERM(
+    maxlen = geom.ProbLength(0);
+    , maxlen = amrex::max<amrex::Real>(maxlen, geom.ProbLength(1));
+    , maxlen = amrex::max<amrex::Real>(maxlen, geom.ProbLength(2)););
 
   // setting all triangles to be waaay outside the domain initially
   for (int itri = 0; itri < max_tri; itri++) {
-    alltri[npts_in_tri * itri + 0][0] = problo[0] + 100.0 * maxlen;
-    alltri[npts_in_tri * itri + 0][1] = problo[1] - 100.0 * maxlen;
-    alltri[npts_in_tri * itri + 0][2] = 0.0;
+    AMREX_D_TERM(
+      alltri[npts_in_tri * itri + 0][0] = problo[0] + 100.0 * maxlen;
+      , alltri[npts_in_tri * itri + 0][1] = problo[1] - 100.0 * maxlen;
+      , alltri[npts_in_tri * itri + 0][2] = 0.0;);
 
-    alltri[npts_in_tri * itri + 1][0] = probhi[0] + 100.0 * maxlen;
-    alltri[npts_in_tri * itri + 1][1] = problo[1] - 100.0 * maxlen;
-    alltri[npts_in_tri * itri + 1][2] = 0.0;
+    AMREX_D_TERM(
+      alltri[npts_in_tri * itri + 1][0] = probhi[0] + 100.0 * maxlen;
+      , alltri[npts_in_tri * itri + 1][1] = problo[1] - 100.0 * maxlen;
+      , alltri[npts_in_tri * itri + 1][2] = 0.0;);
 
-    alltri[npts_in_tri * itri + 2][0] = probhi[0] + 100.0 * maxlen;
-    alltri[npts_in_tri * itri + 2][1] = problo[1] + 100.0 * maxlen;
-    alltri[npts_in_tri * itri + 2][2] = 0.0;
+    AMREX_D_TERM(
+      alltri[npts_in_tri * itri + 2][0] = probhi[0] + 100.0 * maxlen;
+      , alltri[npts_in_tri * itri + 2][1] = problo[1] + 100.0 * maxlen;
+      , alltri[npts_in_tri * itri + 2][2] = 0.0;);
   }
 
   // get user defined number of triangles
@@ -225,17 +221,17 @@ ExtrudedTriangles::build(
     point1 = alltri[npts_in_tri * itri + 1];
     point2 = alltri[npts_in_tri * itri + 2];
 
-    norm0[0] = -(point1[1] - point0[1]);
-    norm0[1] = (point1[0] - point0[0]);
-    norm0[2] = 0.0;
+    AMREX_D_TERM(
+      norm0[0] = -(point1[1] - point0[1]);, norm0[1] = (point1[0] - point0[0]);
+      , norm0[2] = 0.0;);
 
-    norm1[0] = -(point2[1] - point1[1]);
-    norm1[1] = (point2[0] - point1[0]);
-    norm1[2] = 0.0;
+    AMREX_D_TERM(
+      norm1[0] = -(point2[1] - point1[1]);, norm1[1] = (point2[0] - point1[0]);
+      , norm1[2] = 0.0;);
 
-    norm2[0] = -(point0[1] - point2[1]);
-    norm2[1] = (point0[0] - point2[0]);
-    norm2[2] = 0.0;
+    AMREX_D_TERM(
+      norm2[0] = -(point0[1] - point2[1]);, norm2[1] = (point0[0] - point2[0]);
+      , norm2[2] = 0.0;);
 
     // normalize so that magnitude is 1
     amrex::Real norm = sqrt(norm0[0] * norm0[0] + norm0[1] * norm0[1]);
@@ -356,174 +352,6 @@ RotatedBox::build(const amrex::Geometry& geom, const int max_coarsening_level)
   amrex::EB2::Build(
     gshop, geom, max_coarsening_level, max_coarsening_level, 4, false);
 }
-
-void TwoBranch::build (const amrex::Geometry& geom,
-                       const int max_coarsening_level)
-{
-  using namespace amrex;
-  using namespace amrex::EB2;
-
-  ParmParse pp("geo");
-  Real W=0.04, H=0.04, L=0.04, xs=0.30, xr=0.70;
-  Real mid = 0.02;                 // center-wall thickness
-  Real cL  = 0.00;                 // NEW: left connector length (retract from xs)
-  Real cR  = 0.00;                 // NEW: right connector length (retract from xr)
-  pp.query("W",W);  pp.query("H",H);  pp.query("L",L);
-  pp.query("xs",xs); pp.query("xr",xr);
-  pp.query("mid",mid);
-  pp.query("cL",cL);
-  pp.query("cR",cR);
-
-  const RealBox& rb = geom.ProbDomain();
-  const Real xlo = rb.lo(0), xhi = rb.hi(0);
-  const Real ylo = rb.lo(1), yhi = rb.hi(1);
-  const Real ymid = 0.5*(ylo+yhi);
-
-  const Real dx = geom.CellSize(0);
-  const Real dy = geom.CellSize(1);
-  const Real h  = std::max(dx,dy);
-
-  // sanity / resolvability
-  xs  = std::min(std::max(xs, xlo+2*h),    xhi-2*h);
-  xr  = std::min(std::max(xr, xs+6*h),     xhi-2*h);
-  mid = std::min(std::max(mid, 4*h), std::max(W-4*h, 4*h+1e-12));
-
-  // clamp connector lengths so wall still has positive span
-  const Real max_pad = std::max(0.0, 0.5*(xr - xs) - 3*h);
-  cL = std::min(std::max(cL, 0.0), max_pad);
-  cR = std::min(std::max(cR, 0.0), max_pad);
-
-  auto boxS = [] (Real x0, Real y0, Real x1, Real y1) {
-    Array<Real,AMREX_SPACEDIM> lo{AMREX_D_DECL(std::min(x0,x1), std::min(y0,y1), 0.0)};
-    Array<Real,AMREX_SPACEDIM> hi{AMREX_D_DECL(std::max(x0,x1), std::max(y0,y1), 0.0)};
-    return BoxIF(lo, hi, /*has_fluid_inside=*/false); // SOLID
-  };
-
-  // bands
-  const Real y_base_lo  = ymid - 0.5*W;
-  const Real y_base_hi  = ymid + 0.5*W;
-  const Real y_upper_lo = y_base_hi;
-  const Real y_upper_hi = y_base_hi + H;
-  const Real y_lower_lo = y_base_lo - L;
-  const Real y_lower_hi = y_base_lo;
-
-  // domain caps & outside-of-duct solids (unchanged)
-  auto s_top    = boxS(xlo, y_upper_hi, xhi, yhi);
-  auto s_bottom = boxS(xlo, ylo,       xhi, y_lower_lo);
-  auto s_left_upper  = boxS(xlo, y_base_hi,  xs,  y_upper_hi);
-  auto s_left_lower  = boxS(xlo, y_lower_lo, xs,  y_base_lo);
-  auto s_right_upper = boxS(xr,  y_base_hi,  xhi, y_upper_hi);
-  auto s_right_lower = boxS(xr,  y_lower_lo, xhi, y_base_lo);
-
-  // mid-wall **retracted** by cL (left) and cR (right)
-  const Real y_mid_lo = ymid - 0.5*mid;
-  const Real y_mid_hi = ymid + 0.5*mid;
-  const Real mw_x0 = xs + cL;
-  const Real mw_x1 = xr - cR;
-  auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
-
-  // union
-  auto u1    = EB2::makeUnion(s_top, s_bottom);
-  auto u2    = EB2::makeUnion(u1, s_left_upper);
-  auto u3    = EB2::makeUnion(u2, s_left_lower);
-  auto u4    = EB2::makeUnion(u3, s_right_upper);
-  auto u5    = EB2::makeUnion(u4, s_right_lower);
-  auto walls = EB2::makeUnion(u5, s_mid_between);
-
-  amrex::Print() << "[EB] TwoBranch connect: "
-                 << "xs="<<xs<<" xr="<<xr<<" mid="<<mid
-                 << " cL="<<cL<<" cR="<<cR
-                 << " dx="<<dx<<" dy="<<dy << "\n";
-
-  auto gshop = EB2::makeShop(walls);
-  EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
-}
-
-void
-ThreeBranch::build (const amrex::Geometry& geom,
-                    const int max_coarsening_level)
-{
-  using namespace amrex;
-  using namespace amrex::EB2;
-
-  ParmParse pp("geo");
-  Real W=0.04, H=0.04, L=0.04, xs=0.30, xr=0.70;
-  Real mid = 0.02;                 // center-wall thickness
-  Real cL  = 0.00;                 // NEW: left connector length (retract from xs)
-  Real cR  = 0.00;                 // NEW: right connector length (retract from xr)
-  pp.query("W",W);  pp.query("H",H);  pp.query("L",L);
-  pp.query("xs",xs); pp.query("xr",xr);
-  pp.query("mid",mid);
-  pp.query("cL",cL);
-  pp.query("cR",cR);
-
-  const RealBox& rb = geom.ProbDomain();
-  const Real xlo = rb.lo(0), xhi = rb.hi(0);
-  const Real ylo = rb.lo(1), yhi = rb.hi(1);
-  const Real ymid = 0.5*(ylo+yhi);
-
-  const Real dx = geom.CellSize(0);
-  const Real dy = geom.CellSize(1);
-  const Real h  = std::max(dx,dy);
-
-  // sanity / resolvability
-  xs  = std::min(std::max(xs, xlo+2*h),    xhi-2*h);
-  xr  = std::min(std::max(xr, xs+6*h),     xhi-2*h);
-  mid = std::min(std::max(mid, 4*h), std::max(W-4*h, 4*h+1e-12));
-
-  // clamp connector lengths so wall still has positive span
-  const Real max_pad = std::max(0.0, 0.5*(xr - xs) - 3*h);
-  cL = std::min(std::max(cL, 0.0), max_pad);
-  cR = std::min(std::max(cR, 0.0), max_pad);
-
-  auto boxS = [] (Real x0, Real y0, Real x1, Real y1) {
-    Array<Real,AMREX_SPACEDIM> lo{AMREX_D_DECL(std::min(x0,x1), std::min(y0,y1), 0.0)};
-    Array<Real,AMREX_SPACEDIM> hi{AMREX_D_DECL(std::max(x0,x1), std::max(y0,y1), 0.0)};
-    return BoxIF(lo, hi, /*has_fluid_inside=*/false); // SOLID
-  };
-
-  // bands
-  const Real y_base_lo  = ymid - 0.5*W;
-  const Real y_base_hi  = ymid + 0.5*W;
-  const Real y_upper_lo = y_base_hi;
-  const Real y_upper_hi = y_base_hi + H;
-  const Real y_lower_lo = y_base_lo - L;
-  const Real y_lower_hi = y_base_lo;
-
-  // domain caps & outside-of-duct solids (unchanged)
-  auto s_top    = boxS(xlo, y_upper_hi, xhi, yhi);
-  auto s_bottom = boxS(xlo, ylo,       xhi, y_lower_lo);
-  auto s_left_upper  = boxS(xlo, y_base_hi,  xs,  y_upper_hi);
-  auto s_left_lower  = boxS(xlo, y_lower_lo, xs,  y_base_lo);
-  auto s_right_upper = boxS(xr,  y_base_hi,  xhi, y_upper_hi);
-  auto s_right_lower = boxS(xr,  y_lower_lo, xhi, y_base_lo);
-
-  // mid-wall **retracted** by cL (left) and cR (right)
-  const Real y_mid_lo = ymid - 0.5*mid;
-  const Real y_mid_hi = ymid + 0.5*mid;
-  const Real mw_x0 = xs + cL;
-  const Real mw_x1 = xr - cR;
-  auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
-
-  // union
-  auto u1    = EB2::makeUnion(s_top, s_bottom);
-  auto u2    = EB2::makeUnion(u1, s_left_upper);
-  auto u3    = EB2::makeUnion(u2, s_left_lower);
-  auto u4    = EB2::makeUnion(u3, s_right_upper);
-  auto u5    = EB2::makeUnion(u4, s_right_lower);
-  auto walls = EB2::makeUnion(u5, s_mid_between);
-
-  amrex::Print() << "[EB] TwoBranch connect: "
-                 << "xs="<<xs<<" xr="<<xr<<" mid="<<mid
-                 << " cL="<<cL<<" cR="<<cR
-                 << " dx="<<dx<<" dy="<<dy << "\n";
-
-  auto gshop = EB2::makeShop(walls);
-  EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
-}
-
-
-
 
 void
 CheckpointFile::build(

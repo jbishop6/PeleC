@@ -2,7 +2,7 @@
 #define GEOMETRY_H
 #include "Factory.H"
 #include "EB.H"
-#include "Utilities.H"
+#include "PeleCUtilities.H"
 
 namespace pele::pelec {
 
@@ -104,22 +104,6 @@ public:
   void
   build(const amrex::Geometry& geom, const int max_coarsening_level) override;
 };
-
-class TwoBranch : public Geometry::Register<TwoBranch>
-{
-public:
-  static std::string identifier() { return "twobranch"; }
-  void build(const amrex::Geometry& geom, const int max_coarsening_level) override;
-};
-
-class ThreeBranch : public Geometry::Register<ThreeBranch>
-{
-public:
-  static std::string identifier() { return "threebranch"; }
-  void build(const amrex::Geometry& geom,
-             const int max_coarsening_level) override;
-};
-
 
 } // namespace pele::pelec
 #endif
