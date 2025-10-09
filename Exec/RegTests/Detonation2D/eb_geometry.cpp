@@ -20,7 +20,8 @@ void makeGeometry(const Geometry& geom, int required_coarsening_level, int max_c
     EB2::Build(gshop, geom, required_coarsening_level, max_coarsening_level);
 }
 
-void setupEBGeometry(const Geometry& geom, int required, int max)
+void setupEBGeometry(const Geometry& geom, int required_level, int max_level)
 {
-    makeGeometry(geom, required, max);
+    auto shop = EB2::makeShop(makeGeometry(...));  // your custom function returns an implicit function
+    EB2::Build(shop, geom, required_level, max_level);
 }
