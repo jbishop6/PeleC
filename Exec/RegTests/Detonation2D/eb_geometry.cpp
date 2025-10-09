@@ -24,12 +24,12 @@ void setupEBGeometry(const amrex::Geometry& geom, int required_level, int max_le
 {
     amrex::Print() << "[EB] setupEBGeometry: Initialize + Build\n";
 
+    // Initialize EB2
     amrex::EB2::Initialize();
 
-    // Let AMReX pick up the right EB geometry based on `eb2.geom_type`
-    auto shop = amrex::EB2::makeShop();
-
-    amrex::EB2::Build(shop, geom, required_level, max_level);
+    // This builds EB based on what is in the input file (eb2.geom_type, etc.)
+    amrex::EB2::Build(geom, required_level, max_level);
 
     amrex::Print() << "[EB] Geometry built successfully.\n";
 }
+
