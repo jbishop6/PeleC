@@ -23,3 +23,16 @@ EB2::GeometryShop<EB2::BoxIF> makeGeometry()
     EB2::BoxIF box(lo, hi, false);  // false = fluid outside
     return EB2::makeShop(box);
 }
+
+void setupEBGeometry(const amrex::Geometry& geom, int required_level, int max_level)
+{
+    // (1) Initialize EB2
+    amrex::EB2::Initialize();
+
+    // (2) Build the geometry shop (your makeGeometry() function)
+    auto shop = makeGeometry();  // No arguments
+
+    // (3) Build EB2
+    amrex::EB2::Build(shop, geom, required_level, max_level);
+}
+
