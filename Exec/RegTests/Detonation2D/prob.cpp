@@ -5,6 +5,7 @@
 #include "eb_geometry.H"
 #include <AMReX_EB2.H>
 #include <AMReX_Print.H>
+#include <AMReX_EB2_GeometryShop.H> 
 
 using namespace amrex;
 
