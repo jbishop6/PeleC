@@ -69,7 +69,7 @@ pelec.eb_support = basic
 # Use your new factory-registered geometry: TwoBranch::identifier() == "twobranch"
 eb2.build_type = all
 eb2.max_coarsening_level = 0
-eb2.geom_type = twobranch
+eb2.geom_type = box
 eb2.file_geometry_check = 0
 
 # same params the rotated_box uses (your TwoBranch currently clones that)
