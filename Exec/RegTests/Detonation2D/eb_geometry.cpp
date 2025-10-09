@@ -1,39 +1,27 @@
 #include <AMReX_EB2.H>
-#include <AMReX_EB2_GeometryShop.H>
 #include <AMReX_EB2_IF_Box.H>
+#include <AMReX_EB2_GeometryShop.H>
 #include <AMReX_ParmParse.H>
+#include <AMReX_REAL.H>
 
 using namespace amrex;
 
-// Your custom TwoBranch geometry
-EB2::GeometryShop<EB2::IF<Box2D>> makeGeometry()
+EB2::GeometryShop<EB2::BoxIF> makeGeometry()
 {
-    Real xs, xr, mid, cL, cR, W, H, L;
-    ParmParse pp("geo");
-    pp.get("xs", xs);
-    pp.get("xr", xr);
-    pp.get("mid", mid);
-    pp.get("cL", cL);
-    pp.get("cR", cR);
-    pp.get("W", W);
-    pp.get("H", H);
-    pp.get("L", L);
+    // Read geometry parameters from input file
+    RealArray box_lo, box_hi;
+    int has_fluid_inside = 0;
 
-    // Example: just create a simple box for now to avoid segfaults
-    RealArray lo = {xs, 0.0};
-    RealArray hi = {xr, H};
-    auto box = EB2::BoxIF(lo, hi, false);  // false: fluid outside
+    ParmParse pp("eb2");
+    pp.getarr("box_lo", box_lo, 0, AMREX_SPACEDIM);       // e.g., 0.4 0.03
+    pp.getarr("box_hi", box_hi, 0, AMREX_SPACEDIM);       // e.g., 0.6 0.09
+    pp.query("box_has_fluid_inside", has_fluid_inside);   // 0 or 1
 
+    bool inside = (has_fluid_inside != 0);
+
+    // Build a simple box implicit function
+    EB2::BoxIF box(box_lo, box_hi, inside);
+
+    // Wrap it into a GeometryShop and return
     return EB2::makeShop(box);
 }
-
-void setupEBGeometry(const Geometry& geom, int required_level, int max_level)
-{
-    EB2::Initialize();  // Do not pass arguments
-
-    auto shop = makeGeometry();  // ✅ No args, just call it
-    EB2::Build(shop, geom, required_level, max_level);
-
-    amrex::Print() << "[EB] setupEBGeometry: Initialize + Build\n";
-}
-
