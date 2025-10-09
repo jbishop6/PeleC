@@ -29,3 +29,13 @@ EB2::GeometryShop<EB2::BoxIF> makeGeometry()
     // Wrap into a GeometryShop and return
     return EB2::makeShop(box);
 }
+
+void setupEBGeometry(const Geometry& geom, int required_level, int max_level)
+{
+    EB2::Initialize();
+
+    auto shop = makeGeometry();  // Now valid!
+    EB2::Build(shop, geom, required_level, max_level);
+
+    amrex::Print() << "[EB] setupEBGeometry: Initialize + Build\n";
+}
