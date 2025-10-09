@@ -20,14 +20,16 @@ EB2::GeometryShop<EB2::BoxIF> makeGeometry()
     return shop;
 }
 
-void setupEBGeometry(const Geometry& geom, int required_level, int max_level)
+void setupEBGeometry(const amrex::Geometry& geom, int required_level, int max_level)
 {
-    EB2::Initialize();  // only once per run
+    amrex::Print() << "[EB] setupEBGeometry: Initialize + Build\n";
 
-    auto shop = EB2::makeShop(EB2::GeometryFactory::create(EB2::TopLevelGeometry(), geom, required_level, max_level));
+    amrex::EB2::Initialize();
 
+    // Let AMReX pick up the right EB geometry based on `eb2.geom_type`
+    auto shop = amrex::EB2::makeShop();
 
-    EB2::Build(shop, geom, required_level, max_level);
+    amrex::EB2::Build(shop, geom, required_level, max_level);
 
     amrex::Print() << "[EB] Geometry built successfully.\n";
 }
