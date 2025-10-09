@@ -24,7 +24,8 @@ void setupEBGeometry(const Geometry& geom, int required_level, int max_level)
 {
     EB2::Initialize();  // only once per run
 
-    auto shop = makeGeometry();  // calls the BoxIF function above
+    auto shop = EB2::makeShop(EB2::GeometryFactory::create(EB2::TopLevelGeometry(), geom, required_level, max_level));
+
 
     EB2::Build(shop, geom, required_level, max_level);
 
