@@ -1,29 +1,16 @@
-// Exec/RegTests/Detonation1D/prob.cpp
 #include "prob.H"
 #include <AMReX_ParmParse.H>
 #include <string>
-#include "eb_geometry.H"
-#include <AMReX_EB2.H>
+#include "eb_geometry.H" // includes setupEBGeometry()
 #include <AMReX_Print.H>
-#include <AMReX_EB2_GeometryShop.H> 
+#include <AMReX_Box.H>
+#include <AMReX_RealBox.H>
+#include <AMReX_Geometry.H>
+#include <vector>
 
 using namespace amrex;
 
-// -----------------------------------------------------------------------------
-// Setup EB geometry (called from amrex_probinit)
-void setupEBGeometry(const amrex::Geometry& geom, int required, int max)
-{
-    amrex::Print() << "[EB] setupEBGeometry called\n";
-
-    // Example EB setup: initialize with default EB2 (no geometry yet)
-    Initialize_EB2(geom, required, max);
-
-    // TODO: optionally call your makeGeometry(...) here
-    // makeGeometry(geom, required, max);
-}
-// -----------------------------------------------------------------------------
-
-// Map species name -> index for your 14-spec mechanism
+// Map species name -> index
 static int species_id_from_name(const std::string& s)
 {
     if (s == "H2")   return 0;
@@ -52,7 +39,7 @@ void amrex_probinit(const int* /*init*/,
 {
     auto* P = PeleC::h_prob_parm_device;
 
-    // defaults then override from inputs
+    // Default values
     P->idir = 1;        P->frac = 0.5;
     P->rho_l = 9.6e-4;  P->rho_r = 1.2e-4;
     P->u_l = 0.0;       P->u_r = 0.0;
@@ -71,19 +58,16 @@ void amrex_probinit(const int* /*init*/,
     pp.query("p_l",   P->p_l);
     pp.query("p_r",   P->p_r);
 
-    // gas names -> species IDs used by prob.H
     std::string leftGas = "N2", rightGas = "HE";
     pp.query("left_gas",  leftGas);
     pp.query("right_gas", rightGas);
     P->left_gas_id  = species_id_from_name(leftGas);
     P->right_gas_id = species_id_from_name(rightGas);
 
-    // split position: lo + frac*(hi - lo)
     for (int d = 0; d < AMREX_SPACEDIM; ++d) {
         P->split[d] = problo[d] + P->frac * (probhi[d] - problo[d]);
     }
 
-    // compute rho*e on each side from (rho, P, Y)
     auto eos = pele::physics::PhysicsType::eos();
     amrex::Real e = 0.0;
 
@@ -97,13 +81,22 @@ void amrex_probinit(const int* /*init*/,
     eos.RYP2E(P->rho_r, Yr, P->p_r, e);
     P->rhoe_r = P->rho_r * e;
 
-    // ✅ Correct call: pass in actual geometry
-    const amrex::Geometry& geom = PeleC::top()->Geom(0);
+    // Define geometry manually
+    IntVect dom_lo(AMREX_D_DECL(0, 0, 0));
+    IntVect dom_hi(AMREX_D_DECL(63, 0, 0));  // <- adjust for 1D domain size
+
+    Box domain(dom_lo, dom_hi);
+    RealBox real_box({AMREX_D_DECL(problo[0], problo[1], 0)},
+                     {AMREX_D_DECL(probhi[0], probhi[1], 0)});
+
+    int coord_sys = 0;
+    Vector<int> is_periodic(AMREX_SPACEDIM, 0);
+    Geometry geom(domain, &real_box, coord_sys, is_periodic.data());
+
     setupEBGeometry(geom, 0, 0);
 }
-} // extern "C"
+}
 
-// Optional hooks
 void PeleC::problem_post_init() {}
 void PeleC::problem_post_timestep() {}
 void PeleC::problem_post_restart() {}
