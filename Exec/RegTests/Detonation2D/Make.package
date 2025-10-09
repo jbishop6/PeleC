@@ -18,6 +18,8 @@ LIBRARIES  += -Wl,-rpath,$(SUNDIALS_LIBDIR)
 CEXE_sources += prob.cpp
 CEXE_headers += prob.H
 CEXE_headers += prob_parm.H
+CEXE_sources += eb_geometry.cpp
+
 
 # Quiet deprecation spam (optional)
 CXXFLAGS += -Wno-deprecated-declarations
