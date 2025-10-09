@@ -64,12 +64,12 @@ prob.right_gas = HE
 
 # ------------------ EMBEDDED BOUNDARY (EB) -------------------
 pelec.eb_in_domain = 1
-pelec.eb_support = full
+pelec.eb_support = basic
 
 # Use your new factory-registered geometry: TwoBranch::identifier() == "twobranch"
 eb2.build_type = all
 eb2.max_coarsening_level = 0
-//eb2.geom_type = twobranch
+eb2.geom_type = twobranch
 eb2.file_geometry_check = 0
 
 # same params the rotated_box uses (your TwoBranch currently clones that)
