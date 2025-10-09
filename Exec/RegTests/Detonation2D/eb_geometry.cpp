@@ -26,3 +26,14 @@ EB2::GeometryShop<EB2::IF<Box2D>> makeGeometry()
 
     return EB2::makeShop(box);
 }
+
+void setupEBGeometry(const Geometry& geom, int required_level, int max_level)
+{
+    EB2::Initialize();  // Do not pass arguments
+
+    auto shop = makeGeometry();  // ✅ No args, just call it
+    EB2::Build(shop, geom, required_level, max_level);
+
+    amrex::Print() << "[EB] setupEBGeometry: Initialize + Build\n";
+}
+
