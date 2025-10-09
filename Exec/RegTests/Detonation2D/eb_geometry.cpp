@@ -1,38 +1,21 @@
 #include <AMReX_EB2.H>
 #include <AMReX_EB2_IF_Box.H>
+#include <AMReX_EB2_GeometryShop.H>
 #include <AMReX_ParmParse.H>
 
 using namespace amrex;
 
 EB2::GeometryShop<EB2::BoxIF> makeGeometry()
 {
-    ParmParse pp("eb2");
+    RealArray lo = {0.4, 0.03};  // lower corner of box
+    RealArray hi = {0.6, 0.09};  // upper corner of box
+    bool has_fluid_inside = false;
 
-    // Use std::vector to hold raw input first
-    std::vector<Real> lo_vec, hi_vec;
-    pp.getarr("box_lo", lo_vec, 0, AMREX_SPACEDIM);
-    pp.getarr("box_hi", hi_vec, 0, AMREX_SPACEDIM);
+    // Print for debug
+    amrex::Print() << "[EB] Drawing BoxIF from " << lo[0] << "," << lo[1]
+                   << " to " << hi[0] << "," << hi[1] << "\n";
 
-    // Copy to RealArray
-    RealArray lo, hi;
-    for (int i = 0; i < AMREX_SPACEDIM; ++i) {
-        lo[i] = lo_vec[i];
-        hi[i] = hi_vec[i];
-    }
-
-    EB2::BoxIF box(lo, hi, false);  // false = fluid outside
-    return EB2::makeShop(box);
+    EB2::BoxIF box(lo, hi, has_fluid_inside);
+    EB2::GeometryShop<EB2::BoxIF> shop(box);
+    return shop;
 }
-
-void setupEBGeometry(const amrex::Geometry& geom, int required_level, int max_level)
-{
-    // (1) Initialize EB2
-    amrex::EB2::Initialize();
-
-    // (2) Build the geometry shop (your makeGeometry() function)
-    auto shop = makeGeometry();  // No arguments
-
-    // (3) Build EB2
-    amrex::EB2::Build(shop, geom, required_level, max_level);
-}
-
