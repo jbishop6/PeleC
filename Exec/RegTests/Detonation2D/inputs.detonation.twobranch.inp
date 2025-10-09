@@ -14,7 +14,7 @@ pelec.lo_bc = "SlipWall" "SlipWall"
 pelec.hi_bc = "SlipWall" "SlipWall"
 
 # ------------------ PHYSICS -------------------
-pelec.do_hydro     = 1
+pelec.do_hydro     = 0
 pelec.diffuse_vel  = 0
 pelec.diffuse_temp = 0
 pelec.diffuse_spec = 0
@@ -64,12 +64,12 @@ prob.right_gas = HE
 
 # ------------------ EMBEDDED BOUNDARY (EB) -------------------
 pelec.eb_in_domain = 1
-pelec.eb_support = basic
+pelec.eb_support = full
 
 # Use your new factory-registered geometry: TwoBranch::identifier() == "twobranch"
 eb2.build_type = all
 eb2.max_coarsening_level = 0
-eb2.geom_type = box
+eb2.geom_type = twobranch
 eb2.file_geometry_check = 0
 
 # same params the rotated_box uses (your TwoBranch currently clones that)
