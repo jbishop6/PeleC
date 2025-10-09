@@ -19,3 +19,14 @@ EB2::GeometryShop<EB2::BoxIF> makeGeometry()
     EB2::GeometryShop<EB2::BoxIF> shop(box);
     return shop;
 }
+
+void setupEBGeometry(const Geometry& geom, int required_level, int max_level)
+{
+    EB2::Initialize();  // only once per run
+
+    auto shop = makeGeometry();  // calls the BoxIF function above
+
+    EB2::Build(shop, geom, required_level, max_level);
+
+    amrex::Print() << "[EB] Geometry built successfully.\n";
+}
