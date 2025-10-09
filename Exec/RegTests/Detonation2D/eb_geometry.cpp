@@ -1,8 +1,10 @@
 #include <AMReX_EB2.H>
 #include <AMReX_EB2_IF_Box.H>
 #include <AMReX_EB2_IF_Rotation.H>
+#include <AMReX_EB2_IF_Transform.H>   // ✅ For translate()
 #include <AMReX_EB2_GeometryShop.H>
 #include <AMReX_Print.H>
+#include <AMReX_Array.H>              // ✅ For RealArray
 
 using namespace amrex;
 
@@ -10,26 +12,25 @@ void makeGeometry(const Geometry& geom, int required_coarsening_level, int max_c
 {
     amrex::Print() << "[EB] makeGeometry() — building 2D rotated box.\n";
 
-    // Define lower/upper corners of the box in 2D
-    EB2::RealArray lo = {0.25, 0.25};
-    EB2::RealArray hi = {0.75, 0.75};
+    // Define lower and upper corners of the box
+    RealArray lo = {0.25, 0.25};
+    RealArray hi = {0.75, 0.75};
 
-    // Define a solid box (fluid outside)
+    // Make the EB shape: a solid box (fluid is outside)
     EB2::BoxIF box(lo, hi, false);
 
-    // Define a rotation: angle in radians, rotation axis direction
-    // For 2D, only one angle is needed (about z-axis, so dir=2)
-    Real angle = M_PI / 6.0; // 30 degrees rotation
-    int dir = 2;             // rotation axis (z in 3D, but ok in 2D)
+    // Rotate the box around the Z-axis (dir=2)
+    Real angle = M_PI / 6.0;  // 30 degrees
+    int dir = 2;
 
-    auto rotated_box = EB2::rotate(box, angle, dir);
+    auto rotated = EB2::rotate(box, angle, dir);
 
-    // Optionally, translate geometry
-    EB2::RealArray shift = {0.0, 0.0};
-    auto shifted_box = EB2::translate(rotated_box, shift);
+    // Optional translation (none here)
+    RealArray shift = {0.0, 0.0};
+    auto translated = EB2::translate(rotated, shift);
 
-    // Build the geometry
-    auto gshop = EB2::makeShop(shifted_box);
+    // Finalize EB shape
+    auto gshop = EB2::makeShop(translated);
     EB2::Build(gshop, geom, required_coarsening_level, max_coarsening_level);
 }
 
