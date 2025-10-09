@@ -1,25 +1,39 @@
 #include <AMReX_EB2.H>
-#include <AMReX_EB2_IF.H>
 #include <AMReX_EB2_GeometryShop.H>
-#include <AMReX_Print.H>
-#include <AMReX_Array.H>
+#include <AMReX_EB2_IF_Box.H>
+#include <AMReX_ParmParse.H>
 
 using namespace amrex;
 
-// Example 2D embedded boundary geometry
-EB2::BoxIF makeGeometry()
+// Your custom TwoBranch geometry
+EB2::GeometryShop<EB2::IF<Box2D>> makeGeometry()
 {
-    RealArray lo = {0.4, 0.03};
-    RealArray hi = {0.6, 0.09};
-    return EB2::BoxIF(lo, hi, false);  // false = solid in the box
+    Real xs, xr, mid, cL, cR, W, H, L;
+    ParmParse pp("geo");
+    pp.get("xs", xs);
+    pp.get("xr", xr);
+    pp.get("mid", mid);
+    pp.get("cL", cL);
+    pp.get("cR", cR);
+    pp.get("W", W);
+    pp.get("H", H);
+    pp.get("L", L);
+
+    // Example: just create a simple box for now to avoid segfaults
+    RealArray lo = {xs, 0.0};
+    RealArray hi = {xr, H};
+    auto box = EB2::BoxIF(lo, hi, false);  // false: fluid outside
+
+    return EB2::makeShop(box);
 }
 
 void setupEBGeometry(const Geometry& geom, int required_level, int max_level)
 {
-    amrex::Print() << "[EB] setupEBGeometry: Initialize + Build\n";
+    EB2::Initialize();  // Do not pass arguments
 
-    EB2::Initialize();  // ✅ AMReX 24.06+ requires no arguments
-
-    auto shop = EB2::makeShop(makeGeometry());  // Wrap the implicit function
+    auto shop = makeGeometry();  // ✅ No args, just call it
     EB2::Build(shop, geom, required_level, max_level);
+
+    amrex::Print() << "[EB] setupEBGeometry: Initialize + Build\n";
 }
+
