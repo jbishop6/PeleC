@@ -9,21 +9,23 @@ using namespace amrex;
 
 void makeGeometry(const Geometry& geom, int required_coarsening_level, int max_coarsening_level)
 {
-    amrex::Print() << "[EB] makeGeometry() — building 2D rotated box (no translate).\n";
+    amrex::Print() << "[EB] makeGeometry() — safe 2D box in domain\n";
 
-    // Define lower and upper corners of the box
-    RealArray lo = {0.25, 0.25};
-    RealArray hi = {0.75, 0.75};
+    // Safe bounds in your domain:
+    // X ∈ [0.4, 0.6] — matches your eb2.box_lo/hi
+    // Y ∈ [0.03, 0.09] — inside [0, 0.125]
+    RealArray lo = {0.40, 0.03};
+    RealArray hi = {0.60, 0.09};
 
-    // Create the EB box shape (false = solid inside)
+    // Box is solid (fluid outside)
     EB2::BoxIF box(lo, hi, false);
 
-    // Optional: rotate 30 degrees about z-axis (2D, so dir = 2)
-    Real angle = M_PI / 6.0;
-    int dir = 2;
+    // Optional rotation — set to 0.0 for now to avoid trouble
+    Real angle = 0.0;  // radians
+    int dir = 2;       // z-axis rotation (only axis in 2D)
+
     auto rotated = EB2::rotate(box, angle, dir);
 
-    // Build the EB geometry
     auto gshop = EB2::makeShop(rotated);
     EB2::Build(gshop, geom, required_coarsening_level, max_coarsening_level);
 }
