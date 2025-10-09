@@ -7,12 +7,21 @@
 #include <AMReX_Print.H>
 
 using namespace amrex;
-void setupEBGeometry(geom, 0, 0)
+
+// -----------------------------------------------------------------------------
+// Setup EB geometry (called from amrex_probinit)
+void setupEBGeometry(const amrex::Geometry& geom, int required, int max)
 {
-    const amrex::Geometry& geom = PeleC::top()->Geom(0);
     amrex::Print() << "[EB] setupEBGeometry called\n";
-    // You can call your Initialize_EB2 here if needed
+
+    // Example EB setup: initialize with default EB2 (no geometry yet)
+    Initialize_EB2(geom, required, max);
+
+    // TODO: optionally call your makeGeometry(...) here
+    // makeGeometry(geom, required, max);
 }
+// -----------------------------------------------------------------------------
+
 // Map species name -> index for your 14-spec mechanism
 static int species_id_from_name(const std::string& s)
 {
@@ -40,7 +49,6 @@ void amrex_probinit(const int* /*init*/,
                     const amrex::Real* problo,
                     const amrex::Real* probhi)
 {
-    
     auto* P = PeleC::h_prob_parm_device;
 
     // defaults then override from inputs
@@ -87,8 +95,10 @@ void amrex_probinit(const int* /*init*/,
     if (P->right_gas_id >= 0 && P->right_gas_id < NUM_SPECIES) Yr[P->right_gas_id] = 1.0;
     eos.RYP2E(P->rho_r, Yr, P->p_r, e);
     P->rhoe_r = P->rho_r * e;
-    setupEBGeometry();
 
+    // ✅ Correct call: pass in actual geometry
+    const amrex::Geometry& geom = PeleC::top()->Geom(0);
+    setupEBGeometry(geom, 0, 0);
 }
 } // extern "C"
 
