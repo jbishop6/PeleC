@@ -70,6 +70,7 @@ pelec.eb_support = full
 eb2.build_type = all
 eb2.max_coarsening_level = 0
 //eb2.geom_type = twobranch
+eb2.file_geometry_check = 0
 
 # same params the rotated_box uses (your TwoBranch currently clones that)
 eb2.box_lo = 0.40 0.03
