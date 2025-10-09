@@ -64,7 +64,7 @@ prob.right_gas = HE
 
 # ------------------ EMBEDDED BOUNDARY (EB) -------------------
 pelec.eb_in_domain = 1
-pelec.eb_support = basic
+pelec.eb_support = full
 
 # Use your new factory-registered geometry: TwoBranch::identifier() == "twobranch"
 eb2.build_type = all
