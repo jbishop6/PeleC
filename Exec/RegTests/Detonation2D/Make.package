@@ -1,4 +1,4 @@
-INCLUDES += -I$(CURDIR)
+INCLUDES += -I$(shell pwd)
 
 # --- Use SUNDIALS from your user conda env ---
 SUNDIALS_HOME := $(HOME)/.conda/envs/pele-sundials7
