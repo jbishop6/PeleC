@@ -10,24 +10,26 @@ public:
     using Real = amrex::Real;
     using RealArray = amrex::GpuArray<Real, AMREX_SPACEDIM>;
 
-    // Constructor
-    TwoBranchIF(Real xs_in, Real xr_in, Real mid_in, Real cL_in, Real cR_in)
-        : xs(xs_in), xr(xr_in), mid(mid_in), cL(cL_in), cR(cR_in) {}
+    // Constructor — initialize all member variables
+    TwoBranchIF(Real xs, Real xr, Real W, Real H, Real mid, Real cL, Real cR)
+        : m_xs(xs), m_xr(xr), m_W(W), m_H(H), m_mid(mid), m_cL(cL), m_cR(cR) {}
 
-    // Implicit function
+    // Implicit function operator
     Real operator()(const RealArray& p) const {
         Real x = p[0];
         Real y = p[1];
 
-        Real left_x  = std::max(xs - x, x - (xs + cL));
-        Real right_x = std::max(xr - x, x - (xr + cR));
-        Real mid_y   = std::abs(y - mid);
+        // ✅ Use member variables (m_xs, m_cL, etc.), not undefined locals
+        Real left_x  = std::max(m_xs - x, x - (m_xs + m_cL));
+        Real right_x = std::max(m_xr - x, x - (m_xr + m_cR));
+        Real mid_y   = std::abs(y - m_mid);
 
         return std::min({left_x, right_x, mid_y});
     }
 
 private:
-    Real xs, xr, mid, cL, cR;  // ✅ These are the missing variables
+    // ✅ Only these are stored in the class — no duplicates
+    Real m_xs, m_xr, m_W, m_H, m_mid, m_cL, m_cR;
 };
 
 #endif
