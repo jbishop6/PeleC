@@ -34,3 +34,5 @@ CXXFLAGS += -Wno-deprecated-declarations
 CXXFLAGS  += -pthread
 LINKFLAGS += -pthread
 LIBRARIES += -Wl,--no-as-needed -lpthread
+
+INCLUDES += -I$(CURDIR)
