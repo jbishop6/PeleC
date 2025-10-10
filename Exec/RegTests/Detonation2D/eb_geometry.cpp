@@ -20,3 +20,5 @@ void setupEBGeometry(const Geometry& geom, int required_level, int max_level)
 
     amrex::Print() << "[EB] Geometry built successfully.\n";
 }
+
+REGISTER_EB2_SHAPE(TwoBranchIF, "twobranch")
