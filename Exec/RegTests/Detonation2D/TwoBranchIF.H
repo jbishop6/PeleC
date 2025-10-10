@@ -1,24 +1,70 @@
-#include <AMReX_EB2.H>
+#ifndef AMREX_TWOBRANCH_IF_H_
+#define AMREX_TWOBRANCH_IF_H_
+
 #include <AMReX_EB2_IF.H>
 #include <AMReX_EB2_GeometryShop.H>
 #include <AMReX_ParmParse.H>
-#include "TwoBranchIF.H"   // your custom geometry class
+#include <AMReX_REAL.H>
+#include <cmath>
 
 using namespace amrex;
 using namespace amrex::EB2;
 
-void setupEBGeometry(const Geometry& geom, int required_level, int max_level)
+class TwoBranchIF
 {
-    amrex::Print() << "[EB] setupEBGeometry: Initialize + Build\n";
+public:
+    TwoBranchIF(amrex::Real xs, amrex::Real xr, amrex::Real W, amrex::Real H,
+                amrex::Real mid, amrex::Real cL, amrex::Real cR)
+        : m_xs(xs), m_xr(xr), m_W(W), m_H(H),
+          m_mid(mid), m_cL(cL), m_cR(cR)
+    {}
 
-    // Initialize Embedded Boundary
-    EB2::Initialize();
+    AMREX_GPU_HOST_DEVICE
+    Real operator()(const amrex::RealArray& p) const
+    {
+        Real x = p[0];
+        Real y = p[1];
 
-    // Build the geometry using the makeGeometry() from TwoBranchIF.H
-    auto shop = makeGeometry();
+        Real left_x = std::max(m_xs - x, x - (m_xs + m_cL));
+        Real left_y = std::max(y - m_H, -y);
+        Real d_left = std::max(left_x, left_y);
 
-    // Construct the EB representation
-    EB2::Build(shop, geom, required_level, max_level);
+        Real right_x = std::max((m_xr - m_cR) - x, x - m_xr);
+        Real right_y = std::max(y - m_H, -y);
+        Real d_right = std::max(right_x, right_y);
 
-    amrex::Print() << "[EB] Geometry built successfully.\n";
+        Real mid_x = std::max((m_xs + m_cL) - x, x - (m_xr - m_cR));
+        Real mid_y = std::max(std::abs(y - m_H / 2.0) - m_mid / 2.0, -m_mid / 2.0);
+        Real d_mid = std::max(mid_x, mid_y);
+
+        return std::min(std::min(d_left, d_right), d_mid);
+    }
+
+private:
+    amrex::Real m_xs, m_xr, m_W, m_H, m_mid, m_cL, m_cR;
+};
+
+inline GeometryShop<TwoBranchIF> makeGeometry()
+{
+    amrex::ParmParse pp("geo");
+
+    Real xs, xr, W, H, mid, cL, cR;
+    pp.get("xs", xs);
+    pp.get("xr", xr);
+    pp.get("W", W);
+    pp.get("H", H);
+    pp.get("mid", mid);
+    pp.get("cL", cL);
+    pp.get("cR", cR);
+
+    amrex::Print() << "[EB] TwoBranch connect: xs=" << xs
+                   << " xr=" << xr
+                   << " mid=" << mid
+                   << " cL=" << cL
+                   << " cR=" << cR << "\n";
+
+    TwoBranchIF twobranch(xs, xr, W, H, mid, cL, cR);
+    return GeometryShop<TwoBranchIF>(twobranch);
 }
+
+#endif
