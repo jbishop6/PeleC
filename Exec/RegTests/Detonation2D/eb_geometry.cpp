@@ -2,6 +2,10 @@
 #include <AMReX_EB2_IF_Box.H>
 #include <AMReX_EB2_GeometryShop.H>
 #include <AMReX_ParmParse.H>
+#include <AMReX_EB2_Register.H>
+#include "TwoBranch.H"  // <- Your geometry class header
+
+AMREX_EB2_DECLARE_GEOMETRY(TwoBranch, twobranch)
 
 using namespace amrex;
 
