@@ -1,4 +1,6 @@
 INCLUDES += -I$(PELEC_EXEC_DIR)/RegTests/Detonation2D
+INCLUDES += -I/home/jbishop6/PeleC/Submodules/PelePhysics/Submodules/amrex/Src/EB2
+
 
 # --- Use SUNDIALS from your user conda env ---
 SUNDIALS_HOME := $(HOME)/.conda/envs/pele-sundials7
