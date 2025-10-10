@@ -36,3 +36,6 @@ LINKFLAGS += -pthread
 LIBRARIES += -Wl,--no-as-needed -lpthread
 
 INCLUDES += -I$(CURDIR)
+
+INCLUDES += -I$(AMREX_HOME)/Src/EB2
+
