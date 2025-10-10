@@ -24,19 +24,19 @@ public:
         Real x = p[0];
         Real y = p[1];
 
-        // Left branch: from xs to xs + cL
-        Real left_x = std::max(xs - x, x - (xs + cL));
-        Real left_y = std::max(y - H, -y);
+        // Left branch: from m_xs to m_xs + m_cL
+        Real left_x = std::max(m_xs - x, x - (m_xs + m_cL));
+        Real left_y = std::max(y - m_H, -y);
         Real d_left = std::max(left_x, left_y);
 
-        // Right branch: from xr - cR to xr
-        Real right_x = std::max((xr - cR) - x, x - xr);
-        Real right_y = std::max(y - H, -y);
+        // Right branch: from m_xr - m_cR to m_xr
+        Real right_x = std::max((m_xr - m_cR) - x, x - m_xr);
+        Real right_y = std::max(y - m_H, -y);
         Real d_right = std::max(right_x, right_y);
 
-        // Mid wall: from xs + cL to xr - cR, has a small channel "mid"
-        Real mid_x = std::max((xs + cL) - x, x - (xr - cR));
-        Real mid_y = std::max(std::abs(y - H/2.0) - mid/2.0, -mid/2.0);
+        // Mid wall: from m_xs + m_cL to m_xr - m_cR, has a small channel "m_mid"
+        Real mid_x = std::max((m_xs + m_cL) - x, x - (m_xr - m_cR));
+        Real mid_y = std::max(std::abs(y - m_H/2.0) - m_mid/2.0, -m_mid/2.0);
         Real d_mid = std::max(mid_x, mid_y);
 
         // Combine using intersection
