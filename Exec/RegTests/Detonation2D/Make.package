@@ -19,6 +19,7 @@ CEXE_sources += prob.cpp
 CEXE_headers += prob.H
 CEXE_headers += prob_parm.H
 CEXE_sources += eb_geometry.cpp
+CEXE_headers += TwoBranchIF.H
 
 
 # Quiet deprecation spam (optional)
