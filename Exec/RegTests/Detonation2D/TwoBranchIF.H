@@ -69,6 +69,3 @@ inline GeometryShop<TwoBranchIF> makeGeometry()
 
 #endif
 
-#include <AMReX_EB2_Parser.H>
-REGISTER_EB2_SHAPE(TwoBranchIF, "twobranch")
-
