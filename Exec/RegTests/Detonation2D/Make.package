@@ -1,4 +1,4 @@
-INCLUDES += -I$(shell pwd)
+INCLUDES += -I$(PELEC_EXEC_DIR)/RegTests/Detonation2D
 
 # --- Use SUNDIALS from your user conda env ---
 SUNDIALS_HOME := $(HOME)/.conda/envs/pele-sundials7
