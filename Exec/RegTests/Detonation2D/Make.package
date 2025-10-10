@@ -1,3 +1,5 @@
+INCLUDES += -I$(CURDIR)
+
 # --- Use SUNDIALS from your user conda env ---
 SUNDIALS_HOME := $(HOME)/.conda/envs/pele-sundials7
 
@@ -10,8 +12,7 @@ endif
 # Make headers visible to AMReX Extern/SUNDIALS units
 INCLUDES   += -I$(SUNDIALS_HOME)/include
 
-# Include local directory (this folder)
-INCLUDES += -I.
+
 
 
 # Link path + rpath
