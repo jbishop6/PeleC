@@ -3,7 +3,7 @@
 #include <AMReX_EB2_GeometryShop.H>
 #include <AMReX_ParmParse.H>
 #include "TwoBranchIF.H"
-#include <AMReX_EB2_Register.H>
+//#include <AMReX_EB2_Register.H>
 
 
 using namespace amrex;
