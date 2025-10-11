@@ -1,0 +1,47 @@
+# ------------------------------
+# Detonation Box Geometry Input
+# ------------------------------
+
+# Problem type
+use_eb = 1
+geometry_type = "box"
+
+# Domain
+amr.n_cell = 64 64 1
+geometry.prob_lo = 0.0 0.0 0.0
+geometry.prob_hi = 1.0 1.0 0.1
+geometry.coord_sys = 0
+geometry.is_periodic = 0 0 1
+
+# EB Geometry (box bounds relative to domain)
+# These are parsed in your DetonationGeometry class
+prob.box_lo = 0.2 0.2
+prob.box_hi = 0.8 0.8
+
+# Boundary conditions
+pelec.lo_bc = 1 1 2
+pelec.hi_bc = 1 1 2
+
+# Initial conditions (left/right states)
+prob.rho_l = 1.0
+prob.u_l = 0.0
+prob.T_l = 300.0
+prob.p_l = 1.0
+
+prob.rho_r = 0.125
+prob.u_r = 0.0
+prob.T_r = 300.0
+prob.p_r = 0.1
+
+prob.frac = 0.5
+prob.idir = 0
+prob.use_Tinit = 1
+
+# Time stepping
+max_step = 1000
+stop_time = 1.0e-3
+cfl = 0.8
+
+# Output
+amr.plot_file = plt
+amr.plot_int = 50
