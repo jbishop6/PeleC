@@ -70,7 +70,7 @@ pelec.eb_support = full
 eb2.build_type = all
 eb2.max_coarsening_level = 0
 # eb2.geom_type = twobranch
-eb2.file_geometry_check = 0
+eb2.file_geometry_check = 1
 
 # same params the rotated_box uses (your TwoBranch currently clones that)
 eb2.box_lo = 0.40 0.03
@@ -80,13 +80,13 @@ eb2.box_rotation = 0
 eb2.box_rotation_axe = 2
 
 # Two-branch geometry knobs (domain units; tweak as you like)
-geo.W  = 0.041015625
-geo.H  = 0.0390625
+geo.W  = 0.01
+geo.H  = 0.02
 geo.L  = 0.0390625
 geo.xs = 0.30
 geo.xr = 0.70
-geo.mid = 0.05
+geo.mid = 0.02
 
 # NEW: retract mid-wall from each end to connect branches
-geo.cL = 0.05    # left-side connection length
-geo.cR = 0.05    # right-side connection length
+geo.cL = 0.02    # left-side connection length
+geo.cR = 0.02    # right-side connection length
