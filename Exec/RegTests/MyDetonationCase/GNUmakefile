@@ -36,3 +36,8 @@ Bpack := ./Make.package
 Blocs := .
 PELE_HOME := ../../..
 include $(PELE_HOME)/Exec/Make.PeleC
+
+SUNDIALS_HOME := /home/jbishop6/sundials-5.7.0-install
+SUNDIALS_INC := $(SUNDIALS_HOME)/include
+INCLUDE_LOCATIONS += $(SUNDIALS_INC)
+
