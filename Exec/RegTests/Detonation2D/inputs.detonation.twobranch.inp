@@ -85,7 +85,7 @@ geo.H  = 0.0390625
 geo.L  = 0.0390625
 geo.xs = 0.30
 geo.xr = 0.70
-geo.mid = 0.02
+geo.mid = 0.05
 
 # NEW: retract mid-wall from each end to connect branches
 geo.cL = 0.05    # left-side connection length
