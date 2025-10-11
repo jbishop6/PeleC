@@ -19,26 +19,13 @@ public:
           m_mid(mid), m_cL(cL), m_cR(cR)
     {}
 
-    AMREX_GPU_HOST_DEVICE
-    Real operator()(const amrex::RealArray& p) const
-    {
-        Real x = p[0];
-        Real y = p[1];
+   AMREX_GPU_HOST_DEVICE
+Real operator()(const amrex::RealArray& p) const
+{
+    // Always return positive (outside EB)
+    return 1.0;
+}
 
-        Real left_x = std::max(m_xs - x, x - (m_xs + m_cL));
-        Real left_y = std::max(y - m_H, -y);
-        Real d_left = std::max(left_x, left_y);
-
-        Real right_x = std::max((m_xr - m_cR) - x, x - m_xr);
-        Real right_y = std::max(y - m_H, -y);
-        Real d_right = std::max(right_x, right_y);
-
-        Real mid_x = std::max((m_xs + m_cL) - x, x - (m_xr - m_cR));
-        Real mid_y = std::max(std::abs(y - m_H / 2.0) - m_mid / 2.0, -m_mid / 2.0);
-        Real d_mid = std::max(mid_x, mid_y);
-
-        return std::min(std::min(d_left, d_right), d_mid);
-    }
 
 private:
     amrex::Real m_xs, m_xr, m_W, m_H, m_mid, m_cL, m_cR;
