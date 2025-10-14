@@ -71,7 +71,7 @@ eb2.file_name = Three_branch.stl
 eb2.file_format = stl
 
 eb2.max_coarsening_level = 0
-eb2.geom_type = twobranch
+#eb2.geom_type = twobranch
 
 # same params the rotated_box uses (your TwoBranch currently clones that)
 eb2.box_lo = 0.40 0.03
