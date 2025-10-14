@@ -5,9 +5,9 @@ stop_time = 1.959e-6
 # ------------------ GEOMETRY (2D) -------------------
 geometry.is_periodic = 0 0
 geometry.coord_sys   = 0
-geometry.prob_lo     = 0.0  0.0
-geometry.prob_hi     = 1.0  0.125
-amr.n_cell           = 512  64
+geometry.prob_lo     = -0.005  -0.005
+geometry.prob_hi     = 0.077  0.048
+amr.n_cell           = 550  320
 
 # ------------------ BOUNDARY CONDITIONS -------------------
 pelec.lo_bc = "SlipWall" "SlipWall"
