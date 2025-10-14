@@ -73,7 +73,7 @@ eb2.file_format = stl
 eb2.stl_scale = 0.001  # Converts mm → meters
 
 eb2.max_coarsening_level = 0
-eb2.verbose = 2
+eb2.verbose = 4
 
 #eb2.geom_type = twobranch
 
