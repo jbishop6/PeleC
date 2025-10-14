@@ -70,6 +70,8 @@ eb2.build_type = file
 eb2.file_name = Three_branch.stl
 eb2.file_format = stl
 
+eb2.stl_scale = 0.001  # Converts mm → meters
+
 eb2.max_coarsening_level = 0
 eb2.verbose = 2
 
