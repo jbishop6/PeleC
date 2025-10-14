@@ -1,0 +1,28 @@
+# --- Use SUNDIALS from your user conda env ---
+SUNDIALS_HOME := $(HOME)/.conda/envs/pele-sundials7
+
+# Pick lib64 if present, else lib
+SUNDIALS_LIBDIR := $(SUNDIALS_HOME)/lib
+ifneq ($(wildcard $(SUNDIALS_HOME)/lib64),)
+  SUNDIALS_LIBDIR := $(SUNDIALS_HOME)/lib64
+endif
+
+# Make headers visible to AMReX Extern/SUNDIALS units
+INCLUDES   += -I$(SUNDIALS_HOME)/include
+
+# Link path + rpath
+LINKFLAGS  += -L$(SUNDIALS_LIBDIR)
+LIBRARIES  += -Wl,-rpath,$(SUNDIALS_LIBDIR)
+
+# Case sources/headers
+CEXE_sources += prob.cpp
+CEXE_headers += prob.H
+CEXE_headers += prob_parm.H
+
+# Quiet deprecation spam (optional)
+CXXFLAGS += -Wno-deprecated-declarations
+
+# Ensure std::thread resolves
+CXXFLAGS  += -pthread
+LINKFLAGS += -pthread
+LIBRARIES += -Wl,--no-as-needed -lpthread
