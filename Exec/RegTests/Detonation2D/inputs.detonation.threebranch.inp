@@ -7,7 +7,7 @@ geometry.is_periodic = 0 0
 geometry.coord_sys   = 0
 geometry.prob_lo     = 0.0  -0.15
 geometry.prob_hi     = 1.0  0.15
-amr.n_cell           = 512  136
+amr.n_cell           = 512  160
 
 # ------------------ BOUNDARY CONDITIONS -------------------
 pelec.lo_bc = "SlipWall" "SlipWall"
