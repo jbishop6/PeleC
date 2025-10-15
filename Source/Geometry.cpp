@@ -449,31 +449,31 @@ ThreeBranch::build (const amrex::Geometry& geom,
   ParmParse pp("geo");
 
   // Input parameters
-  Real W=0.04, H=0.04, L=0.04, Z=0.04, xs=0.30, xr=0.70;
-  Real mid = 0.02;
-  Real cL = 0.00, cR = 0.00;
-  Real y_offset = 0.0;
+  amrex::Real W=0.04, H=0.04, L=0.04, Z=0.04, xs=0.30, xr=0.70;
+  amrex::Real mid = 0.02;
+  amrex::Real cL = 0.00, cR = 0.00;
+  amrex::Real y_offset = 0.0;
 
   // Parse inputs
   pp.query("W", W); pp.query("H", H); pp.query("L", L); pp.query("Z", Z);
   pp.query("xs", xs); pp.query("xr", xr); pp.query("mid", mid);
   pp.query("cL", cL); pp.query("cR", cR); pp.query("y_offset", y_offset);
 
-  const RealBox& rb = geom.ProbDomain();
-  const Real xlo = rb.lo(0), xhi = rb.hi(0);
-  const Real ylo = rb.lo(1), yhi = rb.hi(1);
-  const Real ymid = 0.5*(ylo + yhi) + y_offset;
+  const amrex::RealBox& rb = geom.ProbDomain();
+  const amrex::Real xlo = rb.lo(0), xhi = rb.hi(0);
+  const amrex::Real ylo = rb.lo(1), yhi = rb.hi(1);
+  const amrex::Real ymid = 0.5*(ylo + yhi) + y_offset;
 
-  const Real dx = geom.CellSize(0);
-  const Real dy = geom.CellSize(1);
-  const Real h = std::max(dx, dy);
+  const amrex::Real dx = geom.CellSize(0);
+  const amrex::Real dy = geom.CellSize(1);
+  const amrex::Real h = std::max(dx, dy);
 
   // Clamp inputs to avoid unresolved EB structures
   xs = std::min(std::max(xs, xlo + 2*h), xhi - 2*h);
   xr = std::min(std::max(xr, xs + 6*h), xhi - 2*h);
   mid = std::min(std::max(mid, 4*h), std::max(W - 4*h, 4*h + 1e-12));
 
-  const Real max_pad = std::max(0.0, 0.5*(xr - xs) - 3*h);
+  const amrex::Real max_pad = std::max(0.0, 0.5*(xr - xs) - 3*h);
   cL = std::min(std::max(cL, 0.0), max_pad);
   cR = std::min(std::max(cR, 0.0), max_pad);
 
@@ -485,22 +485,22 @@ ThreeBranch::build (const amrex::Geometry& geom,
   };
 
   // Main duct bands
-  const Real y_base_lo  = ymid - 0.5 * W;
-  const Real y_base_hi  = ymid + 0.5 * W;
-  const Real y_upper_lo = y_base_hi;
-  const Real y_upper_hi = y_base_hi + H;
-  const Real y_lower_lo = y_base_lo - L;
-  const Real y_lower_hi = y_base_lo;
+  const amrex::Real y_base_lo  = ymid - 0.5 * W;
+  const amrex::Real y_base_hi  = ymid + 0.5 * W;
+  const amrex::Real y_upper_lo = y_base_hi;
+  const amrex::Real y_upper_hi = y_base_hi + H;
+  const amrex::Real y_lower_lo = y_base_lo - L;
+  const amrex::Real y_lower_hi = y_base_lo;
 
   // Delay segment (middle branch, vertically below lower)
-  const Real y_delay_lo = y_lower_lo - Z;
-  const Real y_delay_hi = y_lower_lo;
+  const amrex::Real y_delay_lo = y_lower_lo - Z;
+  const amrex::Real y_delay_hi = y_lower_lo;
 
   // Mid-wall (retracted by cL/cR)
-  const Real y_mid_lo = ymid - 0.5 * mid;
-  const Real y_mid_hi = ymid + 0.5 * mid;
-  const Real mw_x0 = xs + cL;
-  const Real mw_x1 = xr - cR;
+  const amrex::Real y_mid_lo = ymid - 0.5 * mid;
+  const amrex::Real y_mid_hi = ymid + 0.5 * mid;
+  const amrex::Real mw_x0 = xs + cL;
+  const amrex::Real mw_x1 = xr - cR;
 
   // All EB2::BoxIF solids
   auto s_top          = boxS(xlo, y_upper_hi, xhi, yhi);
@@ -512,11 +512,11 @@ ThreeBranch::build (const amrex::Geometry& geom,
   auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
 
   // SOLID around delay segment "Z" (right side drop, left side return)
-  const Real z_branch_w = 0.5 * (xr - xs - mid); // width of Z-leg
-  const Real z_r_xlo = xr - z_branch_w;
-  const Real z_r_xhi = xr;
-  const Real z_l_xlo = xs;
-  const Real z_l_xhi = xs + z_branch_w;
+  const amrex::Real z_branch_w = 0.5 * (xr - xs - mid); // width of Z-leg
+  const amrex::Real z_r_xlo = xr - z_branch_w;
+  const amrex::Real z_r_xhi = xr;
+  const amrex::Real z_l_xlo = xs;
+  const amrex::Real z_l_xhi = xs + z_branch_w;
 
   auto s_right_delay = boxS(z_r_xlo, y_delay_lo, z_r_xhi, y_lower_lo);
   auto s_left_delay  = boxS(z_l_xlo, y_delay_lo, z_l_xhi, y_lower_lo);
