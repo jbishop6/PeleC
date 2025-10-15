@@ -502,7 +502,7 @@ ThreeBranch::build (const amrex::Geometry& geom,
   const amrex::Real mw_x0 = xs + cL;
   const amrex::Real mw_x1 = xr - cR;
 
-  // All EB2::BoxIF solids
+  // EB2::BoxIF solids
   auto s_top          = boxS(xlo, y_upper_hi, xhi, yhi);
   auto s_bottom       = boxS(xlo, ylo,       xhi, y_delay_lo);
   auto s_left_upper   = boxS(xlo, y_base_hi, xs,  y_upper_hi);
@@ -511,7 +511,7 @@ ThreeBranch::build (const amrex::Geometry& geom,
   auto s_right_lower  = boxS(xr,  y_delay_hi, xhi, y_base_lo);
   auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
 
-  // SOLID around delay segment "Z" (right side drop, left side return)
+  // Z-branch delay leg (right side drop, left side return)
   const amrex::Real z_branch_w = 0.5 * (xr - xs - mid); // width of Z-leg
   const amrex::Real z_r_xlo = xr - z_branch_w;
   const amrex::Real z_r_xhi = xr;
@@ -539,45 +539,6 @@ ThreeBranch::build (const amrex::Geometry& geom,
   EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
 }
 
-  // bands
-  const amrex::Real y_base_lo  = ymid - 0.5*W;
-  const amrex::Real y_base_hi  = ymid + 0.5*W;
-  const amrex::Real y_upper_lo = y_base_hi;
-  const amrex::Real y_upper_hi = y_base_hi + H;
-  const amrex::Real y_lower_lo = y_base_lo - L;
-  const amrex::Real y_lower_hi = y_base_lo;
-
-  // domain caps & outside-of-duct solids (unchanged)
-  auto s_top    = boxS(xlo, y_upper_hi, xhi, yhi);
-  auto s_bottom = boxS(xlo, ylo,       xhi, y_lower_lo);
-  auto s_left_upper  = boxS(xlo, y_base_hi,  xs,  y_upper_hi);
-  auto s_left_lower  = boxS(xlo, y_lower_lo, xs,  y_base_lo);
-  auto s_right_upper = boxS(xr,  y_base_hi,  xhi, y_upper_hi);
-  auto s_right_lower = boxS(xr,  y_lower_lo, xhi, y_base_lo);
-
-  // mid-wall **retracted** by cL (left) and cR (right)
-  const amrex::Real y_mid_lo = ymid - 0.5*mid;
-  const amrex::Real y_mid_hi = ymid + 0.5*mid;
-  const amrex::Real mw_x0 = xs + cL;
-  const amrex::Real mw_x1 = xr - cR;
-  auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
-
-  // union
-  auto u1    = EB2::makeUnion(s_top, s_bottom);
-  auto u2    = EB2::makeUnion(u1, s_left_upper);
-  auto u3    = EB2::makeUnion(u2, s_left_lower);
-  auto u4    = EB2::makeUnion(u3, s_right_upper);
-  auto u5    = EB2::makeUnion(u4, s_right_lower);
-  auto walls = EB2::makeUnion(u5, s_mid_between);
-
-  amrex::Print() << "[EB] TwoBranch connect: "
-                 << "xs="<<xs<<" xr="<<xr<<" mid="<<mid
-                 << " cL="<<cL<<" cR="<<cR
-                 << " dx="<<dx<<" dy="<<dy << "\n";
-
-  auto gshop = EB2::makeShop(walls);
-  EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
-}
 
 
 
