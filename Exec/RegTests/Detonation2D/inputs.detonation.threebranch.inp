@@ -7,7 +7,7 @@ geometry.is_periodic = 0 0
 geometry.coord_sys   = 0
 geometry.prob_lo     = 0.0  0
 geometry.prob_hi     = 1.0  0.25
-amr.n_cell           = 512  128
+amr.n_cell           = 256  128
 
 # ------------------ BOUNDARY CONDITIONS -------------------
 pelec.lo_bc = "SlipWall" "SlipWall"
@@ -85,8 +85,8 @@ geo.Z = 0.0390625
 
 geo.xs = 0.30
 geo.xr = 0.70
-geo.mid = 0.02
+geo.mid = 0.04
 
 # NEW: retract mid-wall from each end to connect branches
-geo.cL = 0.05    # left-side connection length
-geo.cR = 0.05    # right-side connection length
+geo.cL = 0.02    # left-side connection length
+geo.cR = 0.02    # right-side connection length
