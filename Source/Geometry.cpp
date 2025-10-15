@@ -374,14 +374,14 @@ void TwoBranch::build (const amrex::Geometry& geom,
   pp.query("cL",cL);
   pp.query("cR",cR);
 
-  const RealBox& rb = geom.ProbDomain();
-  const Real xlo = rb.lo(0), xhi = rb.hi(0);
-  const Real ylo = rb.lo(1), yhi = rb.hi(1);
-  const Real ymid = 0.5*(ylo+yhi);
+  const amrex::RealBox& rb = geom.ProbDomain();
+  const amrex::Real xlo = rb.lo(0), xhi = rb.hi(0);
+  const amrex::Real ylo = rb.lo(1), yhi = rb.hi(1);
+  const amrex::Real ymid = 0.5*(ylo+yhi);
 
-  const Real dx = geom.CellSize(0);
-  const Real dy = geom.CellSize(1);
-  const Real h  = std::max(dx,dy);
+  const amrex::Real dx = geom.CellSize(0);
+  const amrex::Real dy = geom.CellSize(1);
+  const amrex::Real h  = std::max(dx,dy);
 
   // sanity / resolvability
   xs  = std::min(std::max(xs, xlo+2*h),    xhi-2*h);
