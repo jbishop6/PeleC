@@ -389,7 +389,7 @@ void TwoBranch::build (const amrex::Geometry& geom,
   mid = std::min(std::max(mid, 4*h), std::max(W-4*h, 4*h+1e-12));
 
   // clamp connector lengths so wall still has positive span
-  const Real max_pad = std::max(0.0, 0.5*(xr - xs) - 3*h);
+  const amrex::Real max_pad = std::max(0.0, 0.5*(xr - xs) - 3*h);
   cL = std::min(std::max(cL, 0.0), max_pad);
   cR = std::min(std::max(cR, 0.0), max_pad);
 
@@ -400,12 +400,12 @@ void TwoBranch::build (const amrex::Geometry& geom,
   };
 
   // bands
-  const Real y_base_lo  = ymid - 0.5*W;
-  const Real y_base_hi  = ymid + 0.5*W;
-  const Real y_upper_lo = y_base_hi;
-  const Real y_upper_hi = y_base_hi + H;
-  const Real y_lower_lo = y_base_lo - L;
-  const Real y_lower_hi = y_base_lo;
+  const amrex::Real y_base_lo  = ymid - 0.5*W;
+  const amrex::Real y_base_hi  = ymid + 0.5*W;
+  const amrex::Real y_upper_lo = y_base_hi;
+  const amrex::Real y_upper_hi = y_base_hi + H;
+  const amrex::Real y_lower_lo = y_base_lo - L;
+  const amrex::Real y_lower_hi = y_base_lo;
 
   // domain caps & outside-of-duct solids (unchanged)
   auto s_top    = boxS(xlo, y_upper_hi, xhi, yhi);
@@ -416,10 +416,10 @@ void TwoBranch::build (const amrex::Geometry& geom,
   auto s_right_lower = boxS(xr,  y_lower_lo, xhi, y_base_lo);
 
   // mid-wall **retracted** by cL (left) and cR (right)
-  const Real y_mid_lo = ymid - 0.5*mid;
-  const Real y_mid_hi = ymid + 0.5*mid;
-  const Real mw_x0 = xs + cL;
-  const Real mw_x1 = xr - cR;
+  const amrex::Real y_mid_lo = ymid - 0.5*mid;
+  const amrex::Real y_mid_hi = ymid + 0.5*mid;
+  const amrex::Real mw_x0 = xs + cL;
+  const amrex::Real mw_x1 = xr - cR;
   auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
 
   // union
@@ -540,12 +540,12 @@ ThreeBranch::build (const amrex::Geometry& geom,
 }
 
   // bands
-  const Real y_base_lo  = ymid - 0.5*W;
-  const Real y_base_hi  = ymid + 0.5*W;
-  const Real y_upper_lo = y_base_hi;
-  const Real y_upper_hi = y_base_hi + H;
-  const Real y_lower_lo = y_base_lo - L;
-  const Real y_lower_hi = y_base_lo;
+  const amrex::Real y_base_lo  = ymid - 0.5*W;
+  const amrex::Real y_base_hi  = ymid + 0.5*W;
+  const amrex::Real y_upper_lo = y_base_hi;
+  const amrex::Real y_upper_hi = y_base_hi + H;
+  const amrex::Real y_lower_lo = y_base_lo - L;
+  const amrex::Real y_lower_hi = y_base_lo;
 
   // domain caps & outside-of-duct solids (unchanged)
   auto s_top    = boxS(xlo, y_upper_hi, xhi, yhi);
@@ -556,10 +556,10 @@ ThreeBranch::build (const amrex::Geometry& geom,
   auto s_right_lower = boxS(xr,  y_lower_lo, xhi, y_base_lo);
 
   // mid-wall **retracted** by cL (left) and cR (right)
-  const Real y_mid_lo = ymid - 0.5*mid;
-  const Real y_mid_hi = ymid + 0.5*mid;
-  const Real mw_x0 = xs + cL;
-  const Real mw_x1 = xr - cR;
+  const amrex::Real y_mid_lo = ymid - 0.5*mid;
+  const amrex::Real y_mid_hi = ymid + 0.5*mid;
+  const amrex::Real mw_x0 = xs + cL;
+  const amrex::Real mw_x1 = xr - cR;
   auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
 
   // union
