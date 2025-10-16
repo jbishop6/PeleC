@@ -87,6 +87,8 @@ geo.xs = 0.30
 geo.xr = 0.70
 geo.mid = 0.025390625
 
+geo.y_offset = 0.375
+
 # NEW: retract mid-wall from each end to connect branches
 geo.cL = 0.02    # left-side connection length
 geo.cR = 0.02    # right-side connection length
