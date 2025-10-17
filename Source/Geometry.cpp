@@ -443,101 +443,107 @@ void
 ThreeBranch::build (const amrex::Geometry& geom,
                     const int max_coarsening_level)
 {
-    using namespace amrex;
-    using namespace amrex::EB2;
+  using namespace amrex;
+  using namespace amrex::EB2;
 
-    ParmParse pp("geo");
+  ParmParse pp("geo");
 
-    // Geometry parameters
-    amrex::Real W=0.04, H=0.04, L=0.04, Z=0.04;
-    amrex::Real xs=0.30, xr=0.70;
-    amrex::Real mid=0.02;
-    amrex::Real cL=0.00, cR=0.00;
-    amrex::Real y_offset=0.0;
+  // Input parameters
+  Real W=0.04, H=0.04, L=0.04, Z=0.04, xs=0.30, xr=0.70;
+  Real mid = 0.02;
+  Real cL = 0.00, cR = 0.00;
+  Real y_offset = 0.0;
 
-    pp.query("W", W);  pp.query("H", H);  pp.query("L", L);  pp.query("Z", Z);
-    pp.query("xs", xs); pp.query("xr", xr);
-    pp.query("mid", mid);
-    pp.query("cL", cL); pp.query("cR", cR);
-    pp.query("y_offset", y_offset);
+  // Parse inputs
+  pp.query("W", W); pp.query("H", H); pp.query("L", L); pp.query("Z", Z);
+  pp.query("xs", xs); pp.query("xr", xr); pp.query("mid", mid);
+  pp.query("cL", cL); pp.query("cR", cR); pp.query("y_offset", y_offset);
 
-    const amrex::RealBox& rb = geom.ProbDomain();
-    const amrex::Real xlo = rb.lo(0), xhi = rb.hi(0);
-    const amrex::Real ylo = rb.lo(1), yhi = rb.hi(1);
-    const amrex::Real ymid = 0.5*(ylo + yhi) + y_offset;
+  const RealBox& rb = geom.ProbDomain();
+  const Real xlo = rb.lo(0), xhi = rb.hi(0);
+  const Real ylo = rb.lo(1), yhi = rb.hi(1);
+  const Real ymid = 0.5*(ylo + yhi) + y_offset;
 
-    const amrex::Real dx = geom.CellSize(0);
-    const amrex::Real dy = geom.CellSize(1);
-    const amrex::Real h  = std::max(dx, dy);
-    const amrex::Real epsilon = 1.5 * dy;  // spacing buffer to avoid over‑cuts
+  const Real dx = geom.CellSize(0);
+  const Real dy = geom.CellSize(1);
+  const Real h  = std::max(dx, dy);
 
-    // Clamp inputs
-    xs  = std::min(std::max(xs, xlo + 2*h), xhi - 2*h);
-    xr  = std::min(std::max(xr, xs + 6*h),  xhi - 2*h);
-    mid = std::min(std::max(mid, 4*h), std::max(W - 4*h, 4*h + 1e-12));
-    const amrex::Real max_pad = std::max(0.0, 0.5*(xr - xs) - 3*h);
-    cL = std::min(std::max(cL, 0.0), max_pad);
-    cR = std::min(std::max(cR, 0.0), max_pad);
+  // Clamp parameters
+  xs  = std::min(std::max(xs, xlo + 2*h), xhi - 2*h);
+  xr  = std::min(std::max(xr, xs + 6*h),  xhi - 2*h);
+  mid = std::min(std::max(mid, 4*h), std::max(W - 4*h, 4*h + 1e-12));
 
-    auto boxS = [] (Real x0, Real y0, Real x1, Real y1) {
-        Array<Real,AMREX_SPACEDIM> lo{AMREX_D_DECL(std::min(x0,x1), std::min(y0,y1), 0.0)};
-        Array<Real,AMREX_SPACEDIM> hi{AMREX_D_DECL(std::max(x0,x1), std::max(y0,y1), 0.0)};
-        return BoxIF(lo, hi, /*has_fluid_inside=*/false); // SOLID
-    };
+  const Real max_pad = std::max(0.0, 0.5*(xr - xs) - 3*h);
+  cL = std::min(std::max(cL, 0.0), max_pad);
+  cR = std::min(std::max(cR, 0.0), max_pad);
 
-    // --- Duct & branch coordinates (with spacing between levels) ---
-    const amrex::Real y_base_lo  = ymid - 0.5 * W;
-    const amrex::Real y_base_hi  = ymid + 0.5 * W;
-    const amrex::Real y_upper_lo = y_base_hi + epsilon;
-    const amrex::Real y_upper_hi = y_upper_lo + H;
-    const amrex::Real y_lower_hi = y_base_lo - epsilon;
-    const amrex::Real y_lower_lo = y_lower_hi - L;
-    const amrex::Real y_delay_hi = y_lower_lo - epsilon;
-    const amrex::Real y_delay_lo = y_delay_hi - Z;
+  // Helper: Create a solid box
+  auto boxS = [] (Real x0, Real y0, Real x1, Real y1) {
+    Array<Real,AMREX_SPACEDIM> lo{AMREX_D_DECL(std::min(x0,x1), std::min(y0,y1), 0.0)};
+    Array<Real,AMREX_SPACEDIM> hi{AMREX_D_DECL(std::max(x0,x1), std::max(y0,y1), 0.0)};
+    return BoxIF(lo, hi, /*has_fluid_inside=*/false); // SOLID
+  };
 
-    // Mid‑wall (retracted)
-    const amrex::Real y_mid_lo = ymid - 0.5 * mid;
-    const amrex::Real y_mid_hi = ymid + 0.5 * mid;
-    const amrex::Real mw_x0 = xs + cL;
-    const amrex::Real mw_x1 = xr - cR;
+  // Main bands
+  const Real y_base_lo  = ymid - 0.5*W;
+  const Real y_base_hi  = ymid + 0.5*W;
+  const Real y_upper_lo = y_base_hi;
+  const Real y_upper_hi = y_base_hi + H;
+  const Real y_lower_lo = y_base_lo - L;
+  const Real y_lower_hi = y_base_lo;
 
-    // --- EB2 solids ---
-    auto s_top          = boxS(xlo, y_upper_hi, xhi, yhi);
-    auto s_bottom       = boxS(xlo, ylo,       xhi, y_delay_lo);
-    auto s_left_upper   = boxS(xlo, y_base_hi, xs,  y_upper_hi);
-    auto s_right_upper  = boxS(xr,  y_base_hi, xhi, y_upper_hi);
-    auto s_left_lower   = boxS(xlo, y_lower_lo, xs, y_base_lo);
-    auto s_right_lower  = boxS(xr,  y_lower_lo, xhi, y_base_lo);
-    auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
+  // Z delay depth
+  const Real y_delay_lo = y_lower_lo - Z;
+  const Real y_delay_hi = y_lower_lo;
 
-    // --- Z‑branch sides ---
-    const amrex::Real z_branch_w = 0.5 * (xr - xs - mid);
-    const amrex::Real z_r_xlo = xr - z_branch_w;
-    const amrex::Real z_r_xhi = xr;
-    const amrex::Real z_l_xlo = xs;
-    const amrex::Real z_l_xhi = xs + z_branch_w;
+  // Mid-wall (retracted)
+  const Real y_mid_lo = ymid - 0.5*mid;
+  const Real y_mid_hi = ymid + 0.5*mid;
+  const Real mw_x0 = xs + cL;
+  const Real mw_x1 = xr - cR;
 
-    auto s_right_delay = boxS(z_r_xlo, y_delay_lo, z_r_xhi, y_lower_lo - epsilon);
-    auto s_left_delay  = boxS(z_l_xlo, y_delay_lo, z_l_xhi, y_lower_lo - epsilon);
+  // Domain & duct walls
+  auto s_top          = boxS(xlo, y_upper_hi, xhi, yhi);
+  auto s_bottom       = boxS(xlo, ylo,       xhi, y_delay_lo);
+  auto s_left_upper   = boxS(xlo, y_base_hi, xs,  y_upper_hi);
+  auto s_right_upper  = boxS(xr,  y_base_hi, xhi, y_upper_hi);
+  auto s_left_lower   = boxS(xlo, y_delay_hi, xs, y_base_lo);
+  auto s_right_lower  = boxS(xr,  y_delay_hi, xhi, y_base_lo);
+  auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
 
-    // --- Build full geometry ---
-    auto u1 = EB2::makeUnion(s_top, s_bottom);
-    auto u2 = EB2::makeUnion(u1, s_left_upper);
-    auto u3 = EB2::makeUnion(u2, s_right_upper);
-    auto u4 = EB2::makeUnion(u3, s_left_lower);
-    auto u5 = EB2::makeUnion(u4, s_right_lower);
-    auto u6 = EB2::makeUnion(u5, s_mid_between);
-    auto u7 = EB2::makeUnion(u6, s_right_delay);
-    auto walls = EB2::makeUnion(u7, s_left_delay);
+  // Z-branch vertical legs
+  const Real z_branch_w = 0.5 * (xr - xs - mid); // width of Z-leg
+  const Real z_r_xlo = xr - z_branch_w;
+  const Real z_r_xhi = xr;
+  const Real z_l_xlo = xs;
+  const Real z_l_xhi = xs + z_branch_w;
 
-    amrex::Print() << "[EB] ThreeBranch: xs=" << xs << " xr=" << xr
-                   << " mid=" << mid << " cL=" << cL << " cR=" << cR
-                   << " Z=" << Z << " eps=" << epsilon
-                   << " dx=" << dx << " dy=" << dy << "\n";
+  auto s_right_delay = boxS(z_r_xlo, y_delay_lo, z_r_xhi, y_lower_lo);
+  auto s_left_delay  = boxS(z_l_xlo, y_delay_lo, z_l_xhi, y_lower_lo);
 
-    auto gshop = EB2::makeShop(walls);
-    EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
+  // 🆕 Horizontal Z segment (bottom of the U-shape)
+  auto s_delay_horiz = boxS(z_l_xhi, y_delay_lo, z_r_xlo, y_delay_lo + mid);
+
+  // Combine all solid pieces
+  auto u1 = EB2::makeUnion(s_top, s_bottom);
+  auto u2 = EB2::makeUnion(u1, s_left_upper);
+  auto u3 = EB2::makeUnion(u2, s_right_upper);
+  auto u4 = EB2::makeUnion(u3, s_left_lower);
+  auto u5 = EB2::makeUnion(u4, s_right_lower);
+  auto u6 = EB2::makeUnion(u5, s_mid_between);
+  auto u7 = EB2::makeUnion(u6, s_right_delay);
+  auto u8 = EB2::makeUnion(u7, s_left_delay);
+  auto walls = EB2::makeUnion(u8, s_delay_horiz); // final with Z-bottom
+
+  Print() << "[EB] ThreeBranch: xs=" << xs << " xr=" << xr
+          << " mid=" << mid << " cL=" << cL << " cR=" << cR
+          << " Z=" << Z << " eps=" << h
+          << " dx=" << dx << " dy=" << dy << "\n";
+
+  auto gshop = EB2::makeShop(walls);
+  EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
 }
+
 
 void
 CheckpointFile::build(
