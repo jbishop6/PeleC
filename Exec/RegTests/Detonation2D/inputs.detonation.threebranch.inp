@@ -64,7 +64,7 @@ prob.right_gas = HE
 
 # ------------------ EMBEDDED BOUNDARY (EB) -------------------
 pelec.eb_in_domain = 1
-ebd.boundary_grad_stencil_type = ghostnodes
+ebd.boundary_grad_stencil_type = 1 # ghost nodes
 
 # Use your new factory-registered geometry: TwoBranch::identifier() == "twobranch"
 eb2.build_type = all
