@@ -464,6 +464,12 @@ ThreeBranch::build (const amrex::Geometry& geom,
   const amrex::Real ylo = rb.lo(1), yhi = rb.hi(1);
   const amrex::Real ymid = 0.5*(ylo + yhi) + y_offset;
 
+  amrex::Print() << "[ThreeBranch DEBUG] Domain bounds: "
+                 << "xlo=" << xlo << " xhi=" << xhi
+                 << " ylo=" << ylo << " yhi=" << yhi
+                 << " (height=" << (yhi - ylo) << ")\n";
+
+
   const amrex::Real dx = geom.CellSize(0);
   const amrex::Real dy = geom.CellSize(1);
   const amrex::Real h = std::max(dx, dy);
