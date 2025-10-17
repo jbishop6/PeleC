@@ -81,7 +81,7 @@ eb2.box_rotation_axe = 2
 geo.W  = 0.041015625
 geo.H  = 0.0390625
 geo.L  = 0.0390625
-geo.Z = 0.0
+geo.Z = 0.04
 
 geo.xs = 0.30
 geo.xr = 0.70
