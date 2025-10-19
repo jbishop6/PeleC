@@ -540,8 +540,8 @@ ThreeBranch::build (const amrex::Geometry& geom,
           << " Z=" << Z << " eps=" << h
           << " dx=" << dx << " dy=" << dy << "\n";
 
-  auto gshop = EB2::makeShop(walls);
-  EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
+  //auto gshop = EB2::makeShop(walls);
+  //EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
 }
 
 
