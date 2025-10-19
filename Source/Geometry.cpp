@@ -522,7 +522,7 @@ ThreeBranch::build (const amrex::Geometry& geom,
   //auto s_left_delay  = boxS(z_l_xlo, y_delay_lo, z_l_xhi, y_lower_lo);
 
   // 🆕 Horizontal Z segment (bottom of the U-shape)
-  auto s_delay_horiz = boxS(z_l_xhi, y_delay_lo, z_r_xlo, y_delay_lo + mid);
+  //auto s_delay_horiz = boxS(z_l_xhi, y_delay_lo, z_r_xlo, y_delay_lo + mid);
 
   // Combine all solid pieces
   auto u1 = EB2::makeUnion(s_top, s_bottom);
@@ -531,9 +531,9 @@ ThreeBranch::build (const amrex::Geometry& geom,
   auto u4 = EB2::makeUnion(u3, s_left_lower);
   auto u5 = EB2::makeUnion(u4, s_right_lower);
   auto u6 = EB2::makeUnion(u5, s_mid_between);
-  auto u7 = EB2::makeUnion(u6, s_right_delay);
-  auto u8 = EB2::makeUnion(u7, s_left_delay);
-  auto walls = EB2::makeUnion(u8, s_delay_horiz); // final with Z-bottom
+  //auto u7 = EB2::makeUnion(u6, s_right_delay);
+  //auto u8 = EB2::makeUnion(u7, s_left_delay);
+  //auto walls = EB2::makeUnion(u8, s_delay_horiz); // final with Z-bottom
 
   Print() << "[EB] ThreeBranch: xs=" << xs << " xr=" << xr
           << " mid=" << mid << " cL=" << cL << " cR=" << cR
