@@ -518,8 +518,8 @@ ThreeBranch::build (const amrex::Geometry& geom,
   const Real z_l_xlo = xs;
   const Real z_l_xhi = xs + z_branch_w;
 
-  auto s_right_delay = boxS(z_r_xlo, y_delay_lo, z_r_xhi, y_lower_lo);
-  auto s_left_delay  = boxS(z_l_xlo, y_delay_lo, z_l_xhi, y_lower_lo);
+  //auto s_right_delay = boxS(z_r_xlo, y_delay_lo, z_r_xhi, y_lower_lo);
+  //auto s_left_delay  = boxS(z_l_xlo, y_delay_lo, z_l_xhi, y_lower_lo);
 
   // 🆕 Horizontal Z segment (bottom of the U-shape)
   auto s_delay_horiz = boxS(z_l_xhi, y_delay_lo, z_r_xlo, y_delay_lo + mid);
