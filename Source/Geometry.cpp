@@ -507,43 +507,36 @@ ThreeBranch::build (const amrex::Geometry& geom,
   auto s_bottom       = boxS(xlo, ylo,       xhi, y_delay_lo);
   auto s_left_upper   = boxS(xlo, y_base_hi, xs,  y_upper_hi);
   auto s_right_upper  = boxS(xr,  y_base_hi, xhi, y_upper_hi);
-  auto s_left_lower   = boxS(xlo, y_delay_hi, xs, y_base_lo);
+  // ❌ Removed s_left_lower
   auto s_right_lower  = boxS(xr,  y_delay_hi, xhi, y_base_lo);
   auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
 
-  // Z-branch vertical legs
+  // Z-branch vertical legs and horizontal base
   const Real z_branch_w = 0.5 * (xr - xs - mid); // width of Z-leg
   const Real z_r_xlo = xr - z_branch_w;
   const Real z_r_xhi = xr;
-  const Real z_l_xlo = xs;
-  const Real z_l_xhi = xs + z_branch_w;
+  // ❌ Skipping z_l_xlo/z_l_xhi
 
-  //auto s_right_delay = boxS(z_r_xlo, y_delay_lo, z_r_xhi, y_lower_lo);
-  //auto s_left_delay  = boxS(z_l_xlo, y_delay_lo, z_l_xhi, y_lower_lo);
+  auto s_right_delay  = boxS(z_r_xlo, y_delay_lo, z_r_xhi, y_lower_lo);
+  auto s_delay_horiz  = boxS(xs + z_branch_w, y_delay_lo, z_r_xlo, y_delay_lo + mid);
 
-  // 🆕 Horizontal Z segment (bottom of the U-shape)
-  //auto s_delay_horiz = boxS(z_l_xhi, y_delay_lo, z_r_xlo, y_delay_lo + mid);
-
-  // Combine all solid pieces
+  // Combine solid components (skip left side lower and delay)
   auto u1 = EB2::makeUnion(s_top, s_bottom);
   auto u2 = EB2::makeUnion(u1, s_left_upper);
   auto u3 = EB2::makeUnion(u2, s_right_upper);
-  auto u4 = EB2::makeUnion(u3, s_left_lower);
-  auto u5 = EB2::makeUnion(u4, s_right_lower);
-  auto u6 = EB2::makeUnion(u5, s_mid_between);
-  //auto u7 = EB2::makeUnion(u6, s_right_delay);
-  //auto u8 = EB2::makeUnion(u7, s_left_delay);
-  //auto walls = EB2::makeUnion(u8, s_delay_horiz); // final with Z-bottom
+  auto u4 = EB2::makeUnion(u3, s_right_lower);
+  auto u5 = EB2::makeUnion(u4, s_mid_between);
+  auto u6 = EB2::makeUnion(u5, s_right_delay);
+  auto walls = EB2::makeUnion(u6, s_delay_horiz);
 
   Print() << "[EB] ThreeBranch: xs=" << xs << " xr=" << xr
           << " mid=" << mid << " cL=" << cL << " cR=" << cR
           << " Z=" << Z << " eps=" << h
           << " dx=" << dx << " dy=" << dy << "\n";
 
-  //auto gshop = EB2::makeShop(walls);
-  //EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
+  auto gshop = EB2::makeShop(walls);
+  EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
 }
-
 
 void
 CheckpointFile::build(
