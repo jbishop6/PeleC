@@ -451,21 +451,8 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   Real cL  = 0.00;
   Real cR  = 0.00;
   Real y_offset = 0.0;
-  Real Z = 0.04;     // Height of third branch (new)
-  Real zW = 0.005;   // Wall thickness of third branch (new)
-
-  // Z-branch (vertical downward branch at far right of lower duct)
-  const Real z_x0 = xr;
-  const Real z_x1 = xr + zW;
-  const Real z_y0 = y_lower_lo - Z;
-  const Real z_y1 = y_lower_lo;
-
-  // Left and right vertical walls of Z-branch
-  auto s_z_left  = boxS(z_x0, z_y0, z_x0 + zW, z_y1);
-  auto s_z_right = boxS(z_x1 - zW, z_y0, z_x1, z_y1);
-
-  // Optional: Bottom cap
-  auto s_z_bottom = boxS(z_x0, z_y0, z_x1, z_y0 + zW);
+  Real Z = 0.04;     // Height of third branch
+  Real zW = 0.005;   // Wall thickness of third branch
 
   pp.query("W", W);  pp.query("H", H);  pp.query("L", L);
   pp.query("xs", xs); pp.query("xr", xr); pp.query("mid", mid);
@@ -509,7 +496,7 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   const Real mw_x0 = xs + cL;
   const Real mw_x1 = xr - cR;
 
-  // Existing solids
+  // Base solids
   auto s_top          = boxS(xlo, y_upper_hi, xhi, yhi);
   auto s_bottom       = boxS(xlo, ylo,       xhi, y_lower_lo);
   auto s_left_upper   = boxS(xlo, y_base_hi, xs,  y_upper_hi);
@@ -518,15 +505,17 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   auto s_right_lower  = boxS(xr,  y_lower_lo, xhi, y_base_lo);
   auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
 
-  // 🔽 Third vertical branch walls (Z-branch)
-  //const Real z_x_center = xr;
-  //const Real z_left  = z_x_center - 0.5 * zW - zW;
-  //const Real z_right = z_x_center + 0.5 * zW + zW;
+  // Third (Z) branch at far-right bottom
+  const Real z_x0 = xr;
+  const Real z_x1 = xr + 2*zW;
+  const Real z_y0 = y_lower_lo - Z;
+  const Real z_y1 = y_lower_lo;
 
-  //auto s_zbranch_left  = boxS(z_left,  y_lower_lo - Z, z_left + zW, y_lower_lo);
-  //auto s_zbranch_right = boxS(z_right - zW, y_lower_lo - Z, z_right, y_lower_lo);
+  auto s_z_left   = boxS(z_x0, z_y0, z_x0 + zW, z_y1);
+  auto s_z_right  = boxS(z_x1 - zW, z_y0, z_x1, z_y1);
+  auto s_z_bottom = boxS(z_x0, z_y0, z_x1, z_y0 + zW);
 
-  // Combine all solids
+  // Combine all
   auto u1 = makeUnion(s_top, s_bottom);
   auto u2 = makeUnion(u1, s_left_upper);
   auto u3 = makeUnion(u2, s_left_lower);
@@ -537,15 +526,15 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   auto u8 = makeUnion(u7, s_z_right);
   auto walls = makeUnion(u8, s_z_bottom);
 
-  //Print() << "[EB] ThreeBranch + Z: xs=" << xs << " xr=" << xr
-    //      << " mid=" << mid << " cL=" << cL << " cR=" << cR
-      //    << " Z=" << Z << " zW=" << zW
-        //  << " dx=" << dx << " dy=" << dy << "\n";
-  Print() << "Z-branch (bottom right): x=[" << z_x0 << "," << z_x1 << "], y=[" << z_y0 << "," << z_y1 << "]\n";
+  Print() << "[EB] ThreeBranch + Z (bottom right): xs=" << xs << " xr=" << xr
+          << " mid=" << mid << " cL=" << cL << " cR=" << cR
+          << " Z=" << Z << " zW=" << zW
+          << " dx=" << dx << " dy=" << dy << "\n";
 
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
 }
+
 
 void
 CheckpointFile::build(
