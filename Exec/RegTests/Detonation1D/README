@@ -1,0 +1,7 @@
+This is the 1D case.
+
+Essentially what I did was I took an example test case and modified it. 
+
+I explicitly took the Sod Case and modified the chemistry model to the "Davis" to mimic a detonation wave. 
+
+Although I don't know if what I did is exactly accurate, it was a great stepping stone for me to get PeleC running and practice modifying the input files.
