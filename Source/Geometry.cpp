@@ -440,22 +440,24 @@ void TwoBranch::build (const amrex::Geometry& geom,
 }
 
 void
-ThreeBranch::build (const amrex::Geometry& geom,
-                    const int max_coarsening_level)
+ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
 {
   using namespace amrex;
   using namespace amrex::EB2;
 
   ParmParse pp("geo");
-  Real W=0.04, H=0.04, L=0.04, xs=0.30, xr=0.70;
+  Real W = 0.04, H = 0.04, L = 0.04, xs = 0.30, xr = 0.70;
   Real mid = 0.02;
   Real cL  = 0.00;
   Real cR  = 0.00;
   Real y_offset = 0.0;
+  Real Z = 0.04;     // Height of third branch (new)
+  Real zW = 0.005;   // Wall thickness of third branch (new)
 
   pp.query("W", W);  pp.query("H", H);  pp.query("L", L);
   pp.query("xs", xs); pp.query("xr", xr); pp.query("mid", mid);
   pp.query("cL", cL); pp.query("cR", cR); pp.query("y_offset", y_offset);
+  pp.query("Z", Z);   pp.query("zW", zW);
 
   const RealBox& rb = geom.ProbDomain();
   const Real xlo = rb.lo(0), xhi = rb.hi(0);
@@ -475,12 +477,12 @@ ThreeBranch::build (const amrex::Geometry& geom,
   cR = std::min(std::max(cR, 0.0), max_pad);
 
   auto boxS = [] (Real x0, Real y0, Real x1, Real y1) {
-    Array<Real,AMREX_SPACEDIM> lo{AMREX_D_DECL(std::min(x0,x1), std::min(y0,y1), 0.0)};
-    Array<Real,AMREX_SPACEDIM> hi{AMREX_D_DECL(std::max(x0,x1), std::max(y0,y1), 0.0)};
+    Array<Real, AMREX_SPACEDIM> lo{AMREX_D_DECL(std::min(x0,x1), std::min(y0,y1), 0.0)};
+    Array<Real, AMREX_SPACEDIM> hi{AMREX_D_DECL(std::max(x0,x1), std::max(y0,y1), 0.0)};
     return BoxIF(lo, hi, false);  // solid box
   };
 
-  // Vertical bands
+  // Band heights
   const Real y_base_lo  = ymid - 0.5 * W;
   const Real y_base_hi  = ymid + 0.5 * W;
   const Real y_upper_lo = y_base_hi;
@@ -488,12 +490,13 @@ ThreeBranch::build (const amrex::Geometry& geom,
   const Real y_lower_lo = y_base_lo - L;
   const Real y_lower_hi = y_base_lo;
 
-  // Mid-wall
+  // Mid-wall (center)
   const Real y_mid_lo = ymid - 0.5 * mid;
   const Real y_mid_hi = ymid + 0.5 * mid;
   const Real mw_x0 = xs + cL;
   const Real mw_x1 = xr - cR;
 
+  // Existing solids
   auto s_top          = boxS(xlo, y_upper_hi, xhi, yhi);
   auto s_bottom       = boxS(xlo, ylo,       xhi, y_lower_lo);
   auto s_left_upper   = boxS(xlo, y_base_hi, xs,  y_upper_hi);
@@ -502,20 +505,31 @@ ThreeBranch::build (const amrex::Geometry& geom,
   auto s_right_lower  = boxS(xr,  y_lower_lo, xhi, y_base_lo);
   auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
 
-  // Combine all solids
-  auto u1 = EB2::makeUnion(s_top, s_bottom);
-  auto u2 = EB2::makeUnion(u1, s_left_upper);
-  auto u3 = EB2::makeUnion(u2, s_left_lower);
-  auto u4 = EB2::makeUnion(u3, s_right_upper);
-  auto u5 = EB2::makeUnion(u4, s_right_lower);
-  auto walls = EB2::makeUnion(u5, s_mid_between);
+  // 🔽 Third vertical branch walls (Z-branch)
+  const Real z_x_center = xr;
+  const Real z_left  = z_x_center - 0.5 * zW - zW;
+  const Real z_right = z_x_center + 0.5 * zW + zW;
 
-  Print() << "[EB] ThreeBranch (as TwoBranch): xs=" << xs << " xr=" << xr
+  auto s_zbranch_left  = boxS(z_left,  y_lower_lo - Z, z_left + zW, y_lower_lo);
+  auto s_zbranch_right = boxS(z_right - zW, y_lower_lo - Z, z_right, y_lower_lo);
+
+  // Combine all solids
+  auto u1 = makeUnion(s_top, s_bottom);
+  auto u2 = makeUnion(u1, s_left_upper);
+  auto u3 = makeUnion(u2, s_left_lower);
+  auto u4 = makeUnion(u3, s_right_upper);
+  auto u5 = makeUnion(u4, s_right_lower);
+  auto u6 = makeUnion(u5, s_mid_between);
+  auto u7 = makeUnion(u6, s_zbranch_left);
+  auto walls = makeUnion(u7, s_zbranch_right);
+
+  Print() << "[EB] ThreeBranch + Z: xs=" << xs << " xr=" << xr
           << " mid=" << mid << " cL=" << cL << " cR=" << cR
+          << " Z=" << Z << " zW=" << zW
           << " dx=" << dx << " dy=" << dy << "\n";
 
-  auto gshop = EB2::makeShop(walls);
-  EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
+  auto gshop = makeShop(walls);
+  Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
 }
 
 void
