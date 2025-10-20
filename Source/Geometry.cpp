@@ -482,21 +482,17 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
     return BoxIF(lo, hi, false);  // solid box
   };
 
-  // Band heights
+  // Duct structure
   const Real y_base_lo  = ymid - 0.5 * W;
   const Real y_base_hi  = ymid + 0.5 * W;
-  const Real y_upper_lo = y_base_hi;
   const Real y_upper_hi = y_base_hi + H;
   const Real y_lower_lo = y_base_lo - L;
-  const Real y_lower_hi = y_base_lo;
 
-  // Mid-wall (center)
   const Real y_mid_lo = ymid - 0.5 * mid;
   const Real y_mid_hi = ymid + 0.5 * mid;
   const Real mw_x0 = xs + cL;
   const Real mw_x1 = xr - cR;
 
-  // Base solids
   auto s_top          = boxS(xlo, y_upper_hi, xhi, yhi);
   auto s_bottom       = boxS(xlo, ylo,       xhi, y_lower_lo);
   auto s_left_upper   = boxS(xlo, y_base_hi, xs,  y_upper_hi);
@@ -505,15 +501,15 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   auto s_right_lower  = boxS(xr,  y_lower_lo, xhi, y_base_lo);
   auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
 
-  // Third (Z) branch at far-right bottom
+  // Third branch – vertical extension at far right of lower duct
   const Real z_x0 = xr;
-  const Real z_x1 = xr + 2*zW;
+  const Real z_x1 = xr + 2 * zW;
   const Real z_y0 = y_lower_lo - Z;
   const Real z_y1 = y_lower_lo;
 
-  auto s_z_left   = boxS(z_x0, z_y0, z_x0 + zW, z_y1);
-  auto s_z_right  = boxS(z_x1 - zW, z_y0, z_x1, z_y1);
-  auto s_z_bottom = boxS(z_x0, z_y0, z_x1, z_y0 + zW);
+  auto s_z_left   = boxS(z_x0,       z_y0, z_x0 + zW, z_y1);
+  auto s_z_right  = boxS(z_x1 - zW,  z_y0, z_x1,      z_y1);
+  auto s_z_bottom = boxS(z_x0,       z_y0, z_x1,      z_y0 + zW);
 
   // Combine all
   auto u1 = makeUnion(s_top, s_bottom);
@@ -526,11 +522,13 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   auto u8 = makeUnion(u7, s_z_right);
   auto walls = makeUnion(u8, s_z_bottom);
 
-  Print() << "Z-branch bounds: "
-        << "z_x0=" << z_x0 << " to " << z_x0 + zW
-        << ", z_y0=" << z_y0 << " to " << z_y1 << "\n";
+  Print() << "[EB] ThreeBranch + Z (bottom right): xs=" << xs << " xr=" << xr
+          << " mid=" << mid << " cL=" << cL << " cR=" << cR
+          << " Z=" << Z << " zW=" << zW
+          << " dx=" << dx << " dy=" << dy << "\n";
 
-  Print() << "Domain bounds: y = " << ylo << " to " << yhi << "\n";
+  Print() << "Z-branch bounds: x=" << z_x0 << " to " << z_x1
+          << ", y=" << z_y0 << " to " << z_y1 << "\n";
 
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
