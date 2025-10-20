@@ -526,10 +526,11 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   auto u8 = makeUnion(u7, s_z_right);
   auto walls = makeUnion(u8, s_z_bottom);
 
-  Print() << "[EB] ThreeBranch + Z (bottom right): xs=" << xs << " xr=" << xr
-          << " mid=" << mid << " cL=" << cL << " cR=" << cR
-          << " Z=" << Z << " zW=" << zW
-          << " dx=" << dx << " dy=" << dy << "\n";
+  Print() << "Z-branch bounds: "
+        << "z_x0=" << z_x0 << " to " << z_x0 + zW
+        << ", z_y0=" << z_y0 << " to " << z_y1 << "\n";
+
+  Print() << "Domain bounds: y = " << ylo << " to " << yhi << "\n";
 
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
