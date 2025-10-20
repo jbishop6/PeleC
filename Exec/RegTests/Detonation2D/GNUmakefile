@@ -43,3 +43,5 @@ PELE_HOME := ../../..
 PROB_SRC += prob.cpp
 
 include $(PELE_HOME)/Exec/Make.PeleC
+
+GEOM_SRC := pelec-detonation/Source/Geometry.cpp
