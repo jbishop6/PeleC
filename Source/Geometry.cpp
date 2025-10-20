@@ -1,3 +1,5 @@
+#warning Compiling custom Geometry.cpp from pelec-detonation!
+
 #include "Geometry.H"
 
 #include <AMReX_EB2.H>
