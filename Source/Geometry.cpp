@@ -448,12 +448,13 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   using namespace amrex::EB2;
 
   ParmParse pp("geo");
+
   Real W = 0.04, H = 0.04, L = 0.04, xs = 0.30, xr = 0.70;
   Real mid = 0.02;
   Real cL  = 0.00;
   Real cR  = 0.00;
   Real y_offset = 0.0;
-  Real Z = 0.04;     // Height of third branch
+  Real Z = 0.04;     // Height of third branch (extends upward)
   Real zW = 0.005;   // Wall thickness of third branch
 
   pp.query("W", W);  pp.query("H", H);  pp.query("L", L);
@@ -470,6 +471,7 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   const Real dy = geom.CellSize(1);
   const Real h  = std::max(dx, dy);
 
+  // Sanity checks
   xs  = std::min(std::max(xs, xlo + 2*h), xhi - 2*h);
   xr  = std::min(std::max(xr, xs + 6*h), xhi - 2*h);
   mid = std::min(std::max(mid, 4*h), std::max(W - 4*h, 4*h + 1e-12));
@@ -478,23 +480,27 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   cL = std::min(std::max(cL, 0.0), max_pad);
   cR = std::min(std::max(cR, 0.0), max_pad);
 
+  // Helper function to create solid boxes
   auto boxS = [] (Real x0, Real y0, Real x1, Real y1) {
     Array<Real, AMREX_SPACEDIM> lo{AMREX_D_DECL(std::min(x0,x1), std::min(y0,y1), 0.0)};
     Array<Real, AMREX_SPACEDIM> hi{AMREX_D_DECL(std::max(x0,x1), std::max(y0,y1), 0.0)};
     return BoxIF(lo, hi, false);  // solid box
   };
 
-  // Duct structure
+  // Define duct structure coordinates
   const Real y_base_lo  = ymid - 0.5 * W;
   const Real y_base_hi  = ymid + 0.5 * W;
+  const Real y_upper_lo = y_base_hi;
   const Real y_upper_hi = y_base_hi + H;
   const Real y_lower_lo = y_base_lo - L;
+  const Real y_lower_hi = y_base_lo;
 
   const Real y_mid_lo = ymid - 0.5 * mid;
   const Real y_mid_hi = ymid + 0.5 * mid;
   const Real mw_x0 = xs + cL;
   const Real mw_x1 = xr - cR;
 
+  // Original two-branch solid walls
   auto s_top          = boxS(xlo, y_upper_hi, xhi, yhi);
   auto s_bottom       = boxS(xlo, ylo,       xhi, y_lower_lo);
   auto s_left_upper   = boxS(xlo, y_base_hi, xs,  y_upper_hi);
@@ -503,17 +509,19 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   auto s_right_lower  = boxS(xr,  y_lower_lo, xhi, y_base_lo);
   auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
 
-  // Third branch – vertical extension at far right of lower duct
-  const Real z_x0 = xr;
-  const Real z_x1 = xr + 2 * zW;
-  const Real z_y0 = y_lower_lo - Z;
-  const Real z_y1 = y_lower_lo;
+  // Third branch - extends UPWARD from LEFT side of upper branch
+  // This creates the "Z" path shown in the diagram
+  const Real z_x0 = xlo;
+  const Real z_x1 = xs;
+  const Real z_y0 = y_upper_hi;        // Start at top of upper branch
+  const Real z_y1 = y_upper_hi + Z;    // Extend upward by Z
 
+  // Create three walls for the third branch (left, right, top)
   auto s_z_left   = boxS(z_x0,       z_y0, z_x0 + zW, z_y1);
   auto s_z_right  = boxS(z_x1 - zW,  z_y0, z_x1,      z_y1);
-  auto s_z_bottom = boxS(z_x0,       z_y0, z_x1,      z_y0 + zW);
+  auto s_z_top    = boxS(z_x0,       z_y1 - zW, z_x1, z_y1);
 
-  // Combine all
+  // Combine all solid walls
   auto u1 = makeUnion(s_top, s_bottom);
   auto u2 = makeUnion(u1, s_left_upper);
   auto u3 = makeUnion(u2, s_left_lower);
@@ -522,20 +530,18 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   auto u6 = makeUnion(u5, s_mid_between);
   auto u7 = makeUnion(u6, s_z_left);
   auto u8 = makeUnion(u7, s_z_right);
-  auto walls = makeUnion(u8, s_z_bottom);
+  auto walls = makeUnion(u8, s_z_top);
 
-  Print() << "[EB] ThreeBranch + Z (bottom right): xs=" << xs << " xr=" << xr
+  Print() << "[EB] ThreeBranch + Z (upper left extension): xs=" << xs << " xr=" << xr
           << " mid=" << mid << " cL=" << cL << " cR=" << cR
           << " Z=" << Z << " zW=" << zW
           << " dx=" << dx << " dy=" << dy << "\n";
-
   Print() << "Z-branch bounds: x=" << z_x0 << " to " << z_x1
           << ", y=" << z_y0 << " to " << z_y1 << "\n";
 
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
 }
-
 
 void
 CheckpointFile::build(
