@@ -540,6 +540,29 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
 }
 
 void
+SimpleTest::build(const amrex::Geometry& geom, const int max_coarsening_level)
+{
+  using namespace amrex;
+  using namespace amrex::EB2;
+
+  Print() << "\n=== SIMPLE TEST GEOMETRY ===\n";
+  Print() << "Creating a single solid box obstacle\n";
+  
+  // Create ONE solid box in the middle of the domain
+  Array<Real, AMREX_SPACEDIM> lo{AMREX_D_DECL(0.4, 0.4, 0.0)};
+  Array<Real, AMREX_SPACEDIM> hi{AMREX_D_DECL(0.6, 0.6, 0.0)};
+  
+  BoxIF solid_box(lo, hi, false);  // false = solid
+  
+  Print() << "Box location: x=[0.4, 0.6], y=[0.4, 0.6]\n";
+  Print() << "This should appear as a solid square in the center\n";
+  Print() << "============================\n\n";
+
+  auto gshop = makeShop(solid_box);
+  Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
+}
+
+void
 CheckpointFile::build(
   const amrex::Geometry& geom, const int max_coarsening_level)
 {
