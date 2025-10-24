@@ -112,13 +112,30 @@ public:
   void build(const amrex::Geometry& geom, const int max_coarsening_level) override;
 };
 
-class ThreeBranch : public Geometry::Register<ThreeBranch>
+void
+ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
 {
-public:
-  static std::string identifier() { return "threebranch"; }
-  void build(const amrex::Geometry& geom,
-             const int max_coarsening_level) override;
-};
+  using namespace amrex;
+  using namespace amrex::EB2;
+
+  Print() << "\n=== ULTRA-SIMPLE THREEBRANCH TEST ===\n";
+  Print() << "Creating ONE solid box in center of domain\n";
+  Print() << "If you don't see a solid square in the middle, something is fundamentally wrong\n";
+  
+  // Just create a single solid box - nothing else
+  Array<Real, AMREX_SPACEDIM> lo{AMREX_D_DECL(0.3, 0.3, 0.0)};
+  Array<Real, AMREX_SPACEDIM> hi{AMREX_D_DECL(0.7, 0.7, 0.0)};
+  
+  BoxIF solid_box(lo, hi, false);  // false = solid
+  
+  Print() << "Solid box coordinates: x=[0.3, 0.7], y=[0.3, 0.7]\n";
+  Print() << "This should appear as a large square in the CENTER of your domain\n";
+  Print() << "======================================\n\n";
+
+  auto gshop = makeShop(solid_box);
+  Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
+}
+
 
 
 } // namespace pele::pelec
