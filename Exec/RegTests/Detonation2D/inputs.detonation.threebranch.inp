@@ -78,11 +78,11 @@ geo.Z        = 0.08
 geo.xs       = 0.30
 geo.xr       = 0.70
 geo.mid      = 0.025390625
-geo.y_offset = 0.375
+geo.y_offset = 0.0
 
 geo.cL = 0.02   # left-side mid-wall retraction
 geo.cR = 0.02   # right-side mid-wall retraction
 
 geo.Z = 0.08     # Height of the third branch (vertical)
-geo.zW = 0.05   # Wall thickness of third branch
+geo.zW = 0.005   # Wall thickness of third branch
 
