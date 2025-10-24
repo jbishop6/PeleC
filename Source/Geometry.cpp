@@ -454,8 +454,8 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   Real mid = 0.02;
   Real cL  = 0.00;
   Real cR  = 0.00;
-  Real y_offset = 0.0;
-  Real Z = 0.06;
+  Real y_offset = 0.0;  // Default to 0 instead of 0.375
+  Real Z = 0.08;
   Real zW = 0.005;
 
   pp.query("W", W);  pp.query("H", H);  pp.query("L", L);
@@ -480,6 +480,12 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   cL = std::min(std::max(cL, 0.0), max_pad);
   cR = std::min(std::max(cR, 0.0), max_pad);
 
+  auto boxS = [] (Real x0, Real y0, Real x1, Real y1) {
+    Array<Real, AMREX_SPACEDIM> lo{AMREX_D_DECL(std::min(x0,x1), std::min(y0,y1), 0.0)};
+    Array<Real, AMREX_SPACEDIM> hi{AMREX_D_DECL(std::max(x0,x1), std::max(y0,y1), 0.0)};
+    return BoxIF(lo, hi, false);
+  };
+
   const Real y_base_lo  = ymid - 0.5 * W;
   const Real y_base_hi  = ymid + 0.5 * W;
   const Real y_upper_lo = y_base_hi;
@@ -496,55 +502,45 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   const Real z_x0 = xlo;
   const Real z_x1 = xs;
   const Real z_y0 = y_upper_hi;
-  const Real z_y1 = std::min(y_upper_hi + Z, yhi - h);
+  const Real z_y1 = std::min(y_upper_hi + Z, yhi - 2*h);
 
-  Print() << "\n=== GEOMETRY CONSTRUCTION ===\n";
+  Print() << "\n=== GEOMETRY DEBUG ===\n";
   Print() << "Domain: [" << xlo << ", " << xhi << "] x [" << ylo << ", " << yhi << "]\n";
-  Print() << "Base duct: y = [" << y_base_lo << ", " << y_base_hi << "]\n";
-  Print() << "Upper branch: y = [" << y_upper_lo << ", " << y_upper_hi << "]\n";
-  Print() << "Lower branch: y = [" << y_lower_lo << ", " << y_lower_hi << "]\n";
-  Print() << "Z-branch: x = [" << z_x0 << ", " << z_x1 << "], y = [" << z_y0 << ", " << z_y1 << "]\n";
-  Print() << "Z height = " << (z_y1 - z_y0) << ", Z parameter = " << Z << "\n";
-  Print() << "============================\n\n";
+  Print() << "ymid = " << ymid << " (y_offset = " << y_offset << ")\n";
+  Print() << "Base: y=[" << y_base_lo << ", " << y_base_hi << "]\n";
+  Print() << "Upper: y=[" << y_upper_lo << ", " << y_upper_hi << "]\n";
+  Print() << "Lower: y=[" << y_lower_lo << ", " << y_lower_hi << "]\n";
+  Print() << "Z-branch: x=[" << z_x0 << ", " << z_x1 << "], y=[" << z_y0 << ", " << z_y1 << "]\n";
+  Print() << "======================\n\n";
 
-  // Create the FLUID region (everything that's NOT solid)
-  // This is the INVERSE approach - define what's open rather than what's closed
-  
-  // Define fluid channels using PlaneIF (half-spaces)
-  auto fluid_base = makeIntersection(
-    PlaneIF({AMREX_D_DECL(0.0, 1.0, 0.0)}, {AMREX_D_DECL(0.0, y_base_lo, 0.0)}, false),  // above y_base_lo
-    PlaneIF({AMREX_D_DECL(0.0, -1.0, 0.0)}, {AMREX_D_DECL(0.0, y_base_hi, 0.0)}, false)  // below y_base_hi
-  );
+  // Original two-branch walls
+  auto s_top_left  = boxS(xlo, z_y1, z_x1, yhi);
+  auto s_top_right = boxS(z_x1, y_upper_hi, xhi, yhi);
+  auto s_bottom       = boxS(xlo, ylo, xhi, y_lower_lo);
+  auto s_left_upper   = boxS(xlo, y_base_hi, xs, y_upper_hi);
+  auto s_left_lower   = boxS(xlo, y_lower_lo, xs, y_base_lo);
+  auto s_right_upper  = boxS(xr, y_base_hi, xhi, y_upper_hi);
+  auto s_right_lower  = boxS(xr, y_lower_lo, xhi, y_base_lo);
+  auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
 
-  auto fluid_upper = makeIntersection(
-    PlaneIF({AMREX_D_DECL(0.0, 1.0, 0.0)}, {AMREX_D_DECL(0.0, y_upper_lo, 0.0)}, false),
-    PlaneIF({AMREX_D_DECL(0.0, -1.0, 0.0)}, {AMREX_D_DECL(0.0, y_upper_hi, 0.0)}, false),
-    PlaneIF({AMREX_D_DECL(-1.0, 0.0, 0.0)}, {AMREX_D_DECL(xs, 0.0, 0.0)}, false),  // left of xs
-    PlaneIF({AMREX_D_DECL(1.0, 0.0, 0.0)}, {AMREX_D_DECL(xr, 0.0, 0.0)}, false)    // right of xr
-  );
+  // Third branch walls
+  auto s_z_left   = boxS(z_x0, z_y0, z_x0 + zW, z_y1);
+  auto s_z_right  = boxS(z_x1 - zW, z_y0, z_x1, z_y1);
+  auto s_z_top    = boxS(z_x0, z_y1 - zW, z_x1, z_y1);
 
-  auto fluid_lower = makeIntersection(
-    PlaneIF({AMREX_D_DECL(0.0, 1.0, 0.0)}, {AMREX_D_DECL(0.0, y_lower_lo, 0.0)}, false),
-    PlaneIF({AMREX_D_DECL(0.0, -1.0, 0.0)}, {AMREX_D_DECL(0.0, y_lower_hi, 0.0)}, false),
-    PlaneIF({AMREX_D_DECL(-1.0, 0.0, 0.0)}, {AMREX_D_DECL(xs, 0.0, 0.0)}, false),
-    PlaneIF({AMREX_D_DECL(1.0, 0.0, 0.0)}, {AMREX_D_DECL(xr, 0.0, 0.0)}, false)
-  );
+  // Combine
+  auto u1 = makeUnion(s_top_left, s_top_right);
+  auto u2 = makeUnion(u1, s_bottom);
+  auto u3 = makeUnion(u2, s_left_upper);
+  auto u4 = makeUnion(u3, s_left_lower);
+  auto u5 = makeUnion(u4, s_right_upper);
+  auto u6 = makeUnion(u5, s_right_lower);
+  auto u7 = makeUnion(u6, s_mid_between);
+  auto u8 = makeUnion(u7, s_z_left);
+  auto u9 = makeUnion(u8, s_z_right);
+  auto walls = makeUnion(u9, s_z_top);
 
-  // THIRD BRANCH - the key addition!
-  auto fluid_zbranch = makeIntersection(
-    PlaneIF({AMREX_D_DECL(0.0, 1.0, 0.0)}, {AMREX_D_DECL(0.0, z_y0 + zW, 0.0)}, false),  // above bottom wall
-    PlaneIF({AMREX_D_DECL(0.0, -1.0, 0.0)}, {AMREX_D_DECL(0.0, z_y1 - zW, 0.0)}, false),  // below top wall
-    PlaneIF({AMREX_D_DECL(1.0, 0.0, 0.0)}, {AMREX_D_DECL(z_x0 + zW, 0.0, 0.0)}, false),   // right of left wall
-    PlaneIF({AMREX_D_DECL(-1.0, 0.0, 0.0)}, {AMREX_D_DECL(z_x1 - zW, 0.0, 0.0)}, false)   // left of right wall
-  );
-
-  // Union of all fluid regions
-  auto all_fluid = makeUnion(fluid_base, fluid_upper, fluid_lower, fluid_zbranch);
-
-  // Complement to get solid regions
-  auto walls = makeComplement(all_fluid);
-
-  Print() << "[EB] ThreeBranch geometry created with Z-branch extension\n";
+  Print() << "[EB] ThreeBranch with Z-extension created\n";
 
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
