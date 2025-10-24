@@ -454,7 +454,7 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   Real cL  = 0.00;
   Real cR  = 0.00;
   Real y_offset = 0.0;
-  Real Z = 0.04;
+  Real Z = 0.06;      // Adjusted to fit in 1.0 domain
   Real zW = 0.005;
 
   pp.query("W", W);  pp.query("H", H);  pp.query("L", L);
@@ -497,62 +497,47 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   const Real mw_x0 = xs + cL;
   const Real mw_x1 = xr - cR;
 
-  // ADD THESE DEBUG PRINTS
-  Print() << "\n=== GEOMETRY DEBUG INFO ===\n";
-  Print() << "Domain: x=[" << xlo << ", " << xhi << "], y=[" << ylo << ", " << yhi << "]\n";
-  Print() << "ymid = " << ymid << "\n";
-  Print() << "Base duct: y=[" << y_base_lo << ", " << y_base_hi << "]\n";
-  Print() << "Upper branch: y=[" << y_upper_lo << ", " << y_upper_hi << "]\n";
-  Print() << "Lower branch: y=[" << y_lower_lo << ", " << y_lower_hi << "]\n";
-
-  auto s_top          = boxS(xlo, y_upper_hi, xhi, yhi);
-  auto s_bottom       = boxS(xlo, ylo,       xhi, y_lower_lo);
-  auto s_left_upper   = boxS(xlo, y_base_hi, xs,  y_upper_hi);
-  auto s_left_lower   = boxS(xlo, y_lower_lo, xs, y_base_lo);
-  auto s_right_upper  = boxS(xr,  y_base_hi, xhi, y_upper_hi);
-  auto s_right_lower  = boxS(xr,  y_lower_lo, xhi, y_base_lo);
-  auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
-
   // Third branch coordinates
   const Real z_x0 = xlo;
   const Real z_x1 = xs;
   const Real z_y0 = y_upper_hi;
-  const Real z_y1 = y_upper_hi + Z;
+  const Real z_y1 = std::min(y_upper_hi + Z, yhi);  // Cap at domain top
 
-  // ADD MORE DEBUG PRINTS
-  Print() << "\n=== THIRD BRANCH (Z) ===\n";
-  Print() << "Z-branch x: [" << z_x0 << ", " << z_x1 << "] (width = " << (z_x1-z_x0) << ")\n";
-  Print() << "Z-branch y: [" << z_y0 << ", " << z_y1 << "] (height = " << (z_y1-z_y0) << ")\n";
-  Print() << "Z parameter = " << Z << ", zW = " << zW << "\n";
+  // KEY CHANGE: Split s_top into two parts to leave space for third branch
+  auto s_top_left  = boxS(xlo, z_y1, z_x1, yhi);     // Left side above Z-branch
+  auto s_top_right = boxS(z_x1, y_upper_hi, xhi, yhi); // Right side above upper branch
   
-  // CHECK IF Z-BRANCH IS OUTSIDE DOMAIN
-  if (z_y1 > yhi) {
-    Print() << "WARNING: Z-branch extends beyond domain! z_y1=" << z_y1 << " > yhi=" << yhi << "\n";
-    Print() << "The third branch will be CUT OFF by the domain boundary!\n";
-  }
-  if (z_y0 >= yhi) {
-    Print() << "ERROR: Z-branch starts outside domain! z_y0=" << z_y0 << " >= yhi=" << yhi << "\n";
-  }
-  Print() << "===========================\n\n";
+  auto s_bottom       = boxS(xlo, ylo, xhi, y_lower_lo);
+  auto s_left_upper   = boxS(xlo, y_base_hi, xs, y_upper_hi);
+  auto s_left_lower   = boxS(xlo, y_lower_lo, xs, y_base_lo);
+  auto s_right_upper  = boxS(xr, y_base_hi, xhi, y_upper_hi);
+  auto s_right_lower  = boxS(xr, y_lower_lo, xhi, y_base_lo);
+  auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
 
-  auto s_z_left   = boxS(z_x0,       z_y0, z_x0 + zW, z_y1);
-  auto s_z_right  = boxS(z_x1 - zW,  z_y0, z_x1,      z_y1);
-  auto s_z_top    = boxS(z_x0,       z_y1 - zW, z_x1, z_y1);
+  // Third branch walls
+  auto s_z_left   = boxS(z_x0, z_y0, z_x0 + zW, z_y1);
+  auto s_z_right  = boxS(z_x1 - zW, z_y0, z_x1, z_y1);
+  auto s_z_top    = boxS(z_x0, z_y1 - zW, z_x1, z_y1);
 
-  auto u1 = makeUnion(s_top, s_bottom);
-  auto u2 = makeUnion(u1, s_left_upper);
-  auto u3 = makeUnion(u2, s_left_lower);
-  auto u4 = makeUnion(u3, s_right_upper);
-  auto u5 = makeUnion(u4, s_right_lower);
-  auto u6 = makeUnion(u5, s_mid_between);
-  auto u7 = makeUnion(u6, s_z_left);
-  auto u8 = makeUnion(u7, s_z_right);
-  auto walls = makeUnion(u8, s_z_top);
+  // Combine all walls - note we now use s_top_left and s_top_right instead of s_top
+  auto u1 = makeUnion(s_top_left, s_top_right);
+  auto u2 = makeUnion(u1, s_bottom);
+  auto u3 = makeUnion(u2, s_left_upper);
+  auto u4 = makeUnion(u3, s_left_lower);
+  auto u5 = makeUnion(u4, s_right_upper);
+  auto u6 = makeUnion(u5, s_right_lower);
+  auto u7 = makeUnion(u6, s_mid_between);
+  auto u8 = makeUnion(u7, s_z_left);
+  auto u9 = makeUnion(u8, s_z_right);
+  auto walls = makeUnion(u9, s_z_top);
+
+  Print() << "[EB] ThreeBranch with Z-extension: xs=" << xs << " xr=" << xr
+          << " Z=" << Z << " zW=" << zW << "\n";
+  Print() << "Z-branch: x=[" << z_x0 << ", " << z_x1 << "], y=[" << z_y0 << ", " << z_y1 << "]\n";
 
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
 }
-
 void
 CheckpointFile::build(
   const amrex::Geometry& geom, const int max_coarsening_level)
