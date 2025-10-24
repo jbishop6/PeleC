@@ -445,98 +445,97 @@ void TwoBranch::build (const amrex::Geometry& geom,
 void
 ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
 {
-  using namespace amrex;
-  using namespace amrex::EB2;
+using namespace amrex;
+using namespace amrex::EB2;
 
-  ParmParse pp("geo");
+ParmParse pp("geo");
 
-  Real W = 0.04, H = 0.04, L = 0.04, xs = 0.30, xr = 0.70;
-  Real mid = 0.02;
-  Real cL  = 0.00;
-  Real cR  = 0.00;
-  Real y_offset = 0.0;
+Real W = 0.04, H = 0.04, L = 0.04, xs = 0.30, xr = 0.70;
+Real mid = 0.02;
+Real cL = 0.00;
+Real cR = 0.00;
+Real y_offset = 0.0;
 
-  pp.query("W", W);  pp.query("H", H);  pp.query("L", L);
-  pp.query("xs", xs); pp.query("xr", xr); pp.query("mid", mid);
-  pp.query("cL", cL); pp.query("cR", cR); pp.query("y_offset", y_offset);
+pp.query("W", W); pp.query("H", H); pp.query("L", L);
+pp.query("xs", xs); pp.query("xr", xr); pp.query("mid", mid);
+pp.query("cL", cL); pp.query("cR", cR); pp.query("y_offset", y_offset);
 
-  const RealBox& rb = geom.ProbDomain();
-  const Real xlo = rb.lo(0), xhi = rb.hi(0);
-  const Real ylo = rb.lo(1), yhi = rb.hi(1);
-  const Real ymid = 0.5 * (ylo + yhi) + y_offset;
+const RealBox& rb = geom.ProbDomain();
+const Real xlo = rb.lo(0), xhi = rb.hi(0);
+const Real ylo = rb.lo(1), yhi = rb.hi(1);
+const Real ymid = 0.5 * (ylo + yhi) + y_offset;
+const Real dx = geom.CellSize(0);
+const Real dy = geom.CellSize(1);
+const Real h = std::max(dx, dy);
 
-  const Real dx = geom.CellSize(0);
-  const Real dy = geom.CellSize(1);
-  const Real h  = std::max(dx, dy);
+xs = std::min(std::max(xs, xlo + 2*h), xhi - 2*h);
+xr = std::min(std::max(xr, xs + 6*h), xhi - 2*h);
+mid = std::min(std::max(mid, 4*h), std::max(W - 4*h, 4*h + 1e-12));
 
-  xs  = std::min(std::max(xs, xlo + 2*h), xhi - 2*h);
-  xr  = std::min(std::max(xr, xs + 6*h), xhi - 2*h);
-  mid = std::min(std::max(mid, 4*h), std::max(W - 4*h, 4*h + 1e-12));
+const Real max_pad = std::max(0.0, 0.5*(xr - xs) - 3*h);
 
-  const Real max_pad = std::max(0.0, 0.5*(xr - xs) - 3*h);
-  cL = std::min(std::max(cL, 0.0), max_pad);
-  cR = std::min(std::max(cR, 0.0), max_pad);
+cL = std::min(std::max(cL, 0.0), max_pad);
+cR = std::min(std::max(cR, 0.0), max_pad);
 
-  auto boxS = [] (Real x0, Real y0, Real x1, Real y1) {
-    Array<Real, AMREX_SPACEDIM> lo{AMREX_D_DECL(std::min(x0,x1), std::min(y0,y1), 0.0)};
-    Array<Real, AMREX_SPACEDIM> hi{AMREX_D_DECL(std::max(x0,x1), std::max(y0,y1), 0.0)};
-    return BoxIF(lo, hi, false);
-  };
+auto boxS = [] (Real x0, Real y0, Real x1, Real y1) {
+Array<Real, AMREX\_SPACEDIM> lo{AMREX\_D\_DECL(std::min(x0,x1), std::min(y0,y1), 0.0)};
+Array<Real, AMREX\_SPACEDIM> hi{AMREX\_D\_DECL(std::max(x0,x1), std::max(y0,y1), 0.0)};
+return BoxIF(lo, hi, false);
+};
 
-  const Real y_base_lo  = ymid - 0.5 * W;
-  const Real y_base_hi  = ymid + 0.5 * W;
-  const Real y_upper_lo = y_base_hi;
-  const Real y_upper_hi = y_base_hi + H;
-  const Real y_lower_lo = y_base_lo - L;
-  const Real y_lower_hi = y_base_lo;
+const Real y_base_lo = ymid - 0.5 * W;
+const Real y_base_hi = ymid + 0.5 * W;
+const Real y_upper_lo = y_base_hi;
+const Real y_upper_hi = y_base_hi + H;
+const Real y_lower_lo = y_base_lo - L;
+const Real y_lower_hi = y_base_lo;
+const Real y_mid_lo = ymid - 0.5 * mid;
+const Real y_mid_hi = ymid + 0.5 * mid;
+const Real mw_x0 = xs + cL;
+const Real mw_x1 = xr - cR;
 
-  const Real y_mid_lo = ymid - 0.5 * mid;
-  const Real y_mid_hi = ymid + 0.5 * mid;
-  const Real mw_x0 = xs + cL;
-  const Real mw_x1 = xr - cR;
+Print() << "\n=== GEOMETRY DEBUG ===\n";
+Print() << "Domain: [" << xlo << ", " << xhi << "] x [" << ylo << ", " << yhi << "]\n";
+Print() << "ymid = " << ymid << "\n";
+Print() << "Base: y=[" << y_base_lo << ", " << y_base_hi << "]\n";
+Print() << "Upper: y=[" << y_upper_lo << ", " << y_upper_hi << "]\n";
+Print() << "Lower: y=[" << y_lower_lo << ", " << y_lower_hi << "]\n";
 
-  Print() << "\n=== GEOMETRY DEBUG ===\n";
-  Print() << "Domain: [" << xlo << ", " << xhi << "] x [" << ylo << ", " << yhi << "]\n";
-  Print() << "ymid = " << ymid << "\n";
-  Print() << "Base: y=[" << y_base_lo << ", " << y_base_hi << "]\n";
-  Print() << "Upper: y=[" << y_upper_lo << ", " << y_upper_hi << "]\n";
-  Print() << "Lower: y=[" << y_lower_lo << ", " << y_lower_hi << "]\n";
+// Original TwoBranch geometry (unchanged)
 
-  // Original TwoBranch geometry (unchanged)
-  auto s_top          = boxS(xlo, y_upper_hi, xhi, yhi);
-  auto s_bottom       = boxS(xlo, ylo, xhi, y_lower_lo);
-  auto s_left_upper   = boxS(xlo, y_base_hi, xs, y_upper_hi);
-  auto s_left_lower   = boxS(xlo, y_lower_lo, xs, y_base_lo);
-  auto s_right_upper  = boxS(xr, y_base_hi, xhi, y_upper_hi);
-  auto s_right_lower  = boxS(xr, y_lower_lo, xhi, y_base_lo);
-  auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
+auto s_top = boxS(xlo, y_upper_hi, xhi, yhi);
+auto s_bottom = boxS(xlo, ylo, xhi, y_lower_lo);
+auto s_left_upper = boxS(xlo, y_base_hi, xs, y_upper_hi);
+auto s_left_lower = boxS(xlo, y_lower_lo, xs, y_base_lo);
+auto s_right_upper = boxS(xr, y_base_hi, xhi, y_upper_hi);
+auto s_right_lower = boxS(xr, y_lower_lo, xhi, y_base_lo);
+auto s_mid_between = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
 
-  // SIMPLE TEST: Add a visible obstacle in upper-left corner
-  // This should be VERY obvious if it appears
-  const Real test_x0 = 0.05;
-  const Real test_x1 = 0.15;
-  const Real test_y0 = 0.60;
-  const Real test_y1 = 0.70;
-  
-  auto s_test_box = boxS(test_x0, test_y0, test_x1, test_y1);
-  
-  Print() << "TEST BOX: x=[" << test_x0 << ", " << test_x1 << "], y=[" << test_y0 << ", " << test_y1 << "]\n";
-  Print() << "This should appear as a solid rectangle in the upper-left area\n";
-  Print() << "======================\n\n";
+// SIMPLE TEST: Add a visible obstacle in upper-left corner
 
-  // Combine all walls INCLUDING the test box
-  auto u1 = makeUnion(s_top, s_bottom);
-  auto u2 = makeUnion(u1, s_left_upper);
-  auto u3 = makeUnion(u2, s_left_lower);
-  auto u4 = makeUnion(u3, s_right_upper);
-  auto u5 = makeUnion(u4, s_right_lower);
-  auto u6 = makeUnion(u5, s_mid_between);
-  auto walls = makeUnion(u6, s_test_box);  // Add test box
+// This should be VERY obvious if it appears
 
-  Print() << "[EB] ThreeBranch with TEST BOX\n";
+const Real test_x0 = 0.05;
+const Real test_x1 = 0.15;
+const Real test_y0 = 0.60;
+const Real test_y1 = 0.70;
+auto s_test_box = boxS(test_x0, test_y0, test_x1, test_y1);
+Print() << "TEST BOX: x=[" << test_x0 << ", " << test_x1 << "], y=[" << test_y0 << ", " << test_y1 << "]\n";
+Print() << "This should appear as a solid rectangle in the upper-left area\n";
+Print() << "======================\n\n";
 
-  auto gshop = makeShop(walls);
-  Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
+// Combine all walls INCLUDING the test box
+
+auto u1 = makeUnion(s_top, s_bottom);
+auto u2 = makeUnion(u1, s_left_upper);
+auto u3 = makeUnion(u2, s_left_lower);
+auto u4 = makeUnion(u3, s_right_upper);
+auto u5 = makeUnion(u4, s_right_lower);
+auto u6 = makeUnion(u5, s_mid_between);
+auto walls = makeUnion(u6, s_test_box); // Add test box
+Print() << "[EB] ThreeBranch with TEST BOX\n";
+auto gshop = makeShop(walls);
+Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
 }
 
 void
