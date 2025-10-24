@@ -503,7 +503,8 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   Print() << "Lower: y=[" << y_lower_lo << ", " << y_lower_hi << "]\n";
 
   // Original TwoBranch geometry (unchanged)
-  auto s_top          = boxS(xlo, y_upper_hi, xhi, yhi);
+ // auto s_top          = boxS(xlo, y_upper_hi, xhi, yhi);
+  auto s_top = boxS(xs, y_upper_hi, xhi, yhi);  // Changed xlo to xs
   auto s_bottom       = boxS(xlo, ylo, xhi, y_lower_lo);
   auto s_left_upper   = boxS(xlo, y_base_hi, xs, y_upper_hi);
   auto s_left_lower   = boxS(xlo, y_lower_lo, xs, y_base_lo);
