@@ -454,8 +454,8 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   Real cL  = 0.00;
   Real cR  = 0.00;
   Real y_offset = 0.0;
-  Real Z = 0.04;     // Height of third branch (extends upward)
-  Real zW = 0.005;   // Wall thickness of third branch
+  Real Z = 0.04;
+  Real zW = 0.005;
 
   pp.query("W", W);  pp.query("H", H);  pp.query("L", L);
   pp.query("xs", xs); pp.query("xr", xr); pp.query("mid", mid);
@@ -471,7 +471,6 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   const Real dy = geom.CellSize(1);
   const Real h  = std::max(dx, dy);
 
-  // Sanity checks
   xs  = std::min(std::max(xs, xlo + 2*h), xhi - 2*h);
   xr  = std::min(std::max(xr, xs + 6*h), xhi - 2*h);
   mid = std::min(std::max(mid, 4*h), std::max(W - 4*h, 4*h + 1e-12));
@@ -480,14 +479,12 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   cL = std::min(std::max(cL, 0.0), max_pad);
   cR = std::min(std::max(cR, 0.0), max_pad);
 
-  // Helper function to create solid boxes
   auto boxS = [] (Real x0, Real y0, Real x1, Real y1) {
     Array<Real, AMREX_SPACEDIM> lo{AMREX_D_DECL(std::min(x0,x1), std::min(y0,y1), 0.0)};
     Array<Real, AMREX_SPACEDIM> hi{AMREX_D_DECL(std::max(x0,x1), std::max(y0,y1), 0.0)};
-    return BoxIF(lo, hi, false);  // solid box
+    return BoxIF(lo, hi, false);
   };
 
-  // Define duct structure coordinates
   const Real y_base_lo  = ymid - 0.5 * W;
   const Real y_base_hi  = ymid + 0.5 * W;
   const Real y_upper_lo = y_base_hi;
@@ -500,7 +497,14 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   const Real mw_x0 = xs + cL;
   const Real mw_x1 = xr - cR;
 
-  // Original two-branch solid walls
+  // ADD THESE DEBUG PRINTS
+  Print() << "\n=== GEOMETRY DEBUG INFO ===\n";
+  Print() << "Domain: x=[" << xlo << ", " << xhi << "], y=[" << ylo << ", " << yhi << "]\n";
+  Print() << "ymid = " << ymid << "\n";
+  Print() << "Base duct: y=[" << y_base_lo << ", " << y_base_hi << "]\n";
+  Print() << "Upper branch: y=[" << y_upper_lo << ", " << y_upper_hi << "]\n";
+  Print() << "Lower branch: y=[" << y_lower_lo << ", " << y_lower_hi << "]\n";
+
   auto s_top          = boxS(xlo, y_upper_hi, xhi, yhi);
   auto s_bottom       = boxS(xlo, ylo,       xhi, y_lower_lo);
   auto s_left_upper   = boxS(xlo, y_base_hi, xs,  y_upper_hi);
@@ -509,19 +513,32 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   auto s_right_lower  = boxS(xr,  y_lower_lo, xhi, y_base_lo);
   auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
 
-  // Third branch - extends UPWARD from LEFT side of upper branch
-  // This creates the "Z" path shown in the diagram
+  // Third branch coordinates
   const Real z_x0 = xlo;
   const Real z_x1 = xs;
-  const Real z_y0 = y_upper_hi;        // Start at top of upper branch
-  const Real z_y1 = y_upper_hi + Z;    // Extend upward by Z
+  const Real z_y0 = y_upper_hi;
+  const Real z_y1 = y_upper_hi + Z;
 
-  // Create three walls for the third branch (left, right, top)
+  // ADD MORE DEBUG PRINTS
+  Print() << "\n=== THIRD BRANCH (Z) ===\n";
+  Print() << "Z-branch x: [" << z_x0 << ", " << z_x1 << "] (width = " << (z_x1-z_x0) << ")\n";
+  Print() << "Z-branch y: [" << z_y0 << ", " << z_y1 << "] (height = " << (z_y1-z_y0) << ")\n";
+  Print() << "Z parameter = " << Z << ", zW = " << zW << "\n";
+  
+  // CHECK IF Z-BRANCH IS OUTSIDE DOMAIN
+  if (z_y1 > yhi) {
+    Print() << "WARNING: Z-branch extends beyond domain! z_y1=" << z_y1 << " > yhi=" << yhi << "\n";
+    Print() << "The third branch will be CUT OFF by the domain boundary!\n";
+  }
+  if (z_y0 >= yhi) {
+    Print() << "ERROR: Z-branch starts outside domain! z_y0=" << z_y0 << " >= yhi=" << yhi << "\n";
+  }
+  Print() << "===========================\n\n";
+
   auto s_z_left   = boxS(z_x0,       z_y0, z_x0 + zW, z_y1);
   auto s_z_right  = boxS(z_x1 - zW,  z_y0, z_x1,      z_y1);
   auto s_z_top    = boxS(z_x0,       z_y1 - zW, z_x1, z_y1);
 
-  // Combine all solid walls
   auto u1 = makeUnion(s_top, s_bottom);
   auto u2 = makeUnion(u1, s_left_upper);
   auto u3 = makeUnion(u2, s_left_lower);
@@ -531,13 +548,6 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   auto u7 = makeUnion(u6, s_z_left);
   auto u8 = makeUnion(u7, s_z_right);
   auto walls = makeUnion(u8, s_z_top);
-
-  Print() << "[EB] ThreeBranch + Z (upper left extension): xs=" << xs << " xr=" << xr
-          << " mid=" << mid << " cL=" << cL << " cR=" << cR
-          << " Z=" << Z << " zW=" << zW
-          << " dx=" << dx << " dy=" << dy << "\n";
-  Print() << "Z-branch bounds: x=" << z_x0 << " to " << z_x1
-          << ", y=" << z_y0 << " to " << z_y1 << "\n";
 
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
