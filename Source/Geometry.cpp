@@ -455,13 +455,12 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   Real cL  = 0.00;
   Real cR  = 0.00;
   Real y_offset = 0.0;
-  Real Z = 0.08;      // Height of third branch extending downward
-  Real zW = 0.005;    // Wall thickness of third branch
+  Real Z = 0.04;      // Length of third branch extending downward
 
   pp.query("W", W);  pp.query("H", H);  pp.query("L", L);
   pp.query("xs", xs); pp.query("xr", xr); pp.query("mid", mid);
   pp.query("cL", cL); pp.query("cR", cR); pp.query("y_offset", y_offset);
-  pp.query("Z", Z);   pp.query("zW", zW);
+  pp.query("Z", Z);
 
   const RealBox& rb = geom.ProbDomain();
   const Real xlo = rb.lo(0), xhi = rb.hi(0);
@@ -480,6 +479,12 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   cL = std::min(std::max(cL, 0.0), max_pad);
   cR = std::min(std::max(cR, 0.0), max_pad);
 
+  auto boxS = [] (Real x0, Real y0, Real x1, Real y1) {
+    Array<Real, AMREX_SPACEDIM> lo{AMREX_D_DECL(std::min(x0,x1), std::min(y0,y1), 0.0)};
+    Array<Real, AMREX_SPACEDIM> hi{AMREX_D_DECL(std::max(x0,x1), std::max(y0,y1), 0.0)};
+    return BoxIF(lo, hi, false);  // false = solid
+  };
+
   const Real y_base_lo  = ymid - 0.5 * W;
   const Real y_base_hi  = ymid + 0.5 * W;
   const Real y_upper_lo = y_base_hi;
@@ -489,63 +494,41 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
 
   const Real y_mid_lo = ymid - 0.5 * mid;
   const Real y_mid_hi = ymid + 0.5 * mid;
-
-  Print() << "\n=== THREE-BRANCH GEOMETRY (Lower-Right Extension) ===\n";
-  Print() << "Domain: [" << xlo << ", " << xhi << "] x [" << ylo << ", " << yhi << "]\n";
-  Print() << "Base duct: y=[" << y_base_lo << ", " << y_base_hi << "]\n";
-  Print() << "Upper branch: y=[" << y_upper_lo << ", " << y_upper_hi << "]\n";
-  Print() << "Lower branch: y=[" << y_lower_lo << ", " << y_lower_hi << "]\n";
-  Print() << "Third branch (lower-right): x=[" << xr << ", " << xhi << "], extending down from y=" << y_lower_lo << "\n";
-  Print() << "====================================================\n\n";
-
-  // Define FLUID regions using PlaneIF
-  
-  // Base duct (horizontal channel)
-  auto base_bottom = PlaneIF({AMREX_D_DECL(0.0, y_base_lo, 0.0)}, {AMREX_D_DECL(0.0, 1.0, 0.0)});
-  auto base_top = PlaneIF({AMREX_D_DECL(0.0, y_base_hi, 0.0)}, {AMREX_D_DECL(0.0, -1.0, 0.0)});
-  auto base_channel = makeIntersection(base_bottom, base_top);
-
-  // Upper branch (extends upward between xs and xr)
-  auto upper_bottom = PlaneIF({AMREX_D_DECL(0.0, y_upper_lo, 0.0)}, {AMREX_D_DECL(0.0, 1.0, 0.0)});
-  auto upper_top = PlaneIF({AMREX_D_DECL(0.0, y_upper_hi, 0.0)}, {AMREX_D_DECL(0.0, -1.0, 0.0)});
-  auto upper_left = PlaneIF({AMREX_D_DECL(xs, 0.0, 0.0)}, {AMREX_D_DECL(-1.0, 0.0, 0.0)});
-  auto upper_right = PlaneIF({AMREX_D_DECL(xr, 0.0, 0.0)}, {AMREX_D_DECL(1.0, 0.0, 0.0)});
-  auto upper_channel = makeIntersection(upper_bottom, upper_top, upper_left, upper_right);
-
-  // Lower branch (extends downward between xs and xr)
-  auto lower_bottom = PlaneIF({AMREX_D_DECL(0.0, y_lower_lo, 0.0)}, {AMREX_D_DECL(0.0, 1.0, 0.0)});
-  auto lower_top = PlaneIF({AMREX_D_DECL(0.0, y_lower_hi, 0.0)}, {AMREX_D_DECL(0.0, -1.0, 0.0)});
-  auto lower_left = PlaneIF({AMREX_D_DECL(xs, 0.0, 0.0)}, {AMREX_D_DECL(-1.0, 0.0, 0.0)});
-  auto lower_right = PlaneIF({AMREX_D_DECL(xr, 0.0, 0.0)}, {AMREX_D_DECL(1.0, 0.0, 0.0)});
-  auto lower_channel = makeIntersection(lower_bottom, lower_top, lower_left, lower_right);
-
-  // THIRD BRANCH - vertical extension on LOWER-RIGHT side, extending DOWNWARD
-  const Real z_y_bottom = std::max(y_lower_lo - Z, ylo + h);
-  const Real zbranch_width = W;  // Same width as base duct
-  
-  auto zbranch_top = PlaneIF({AMREX_D_DECL(0.0, y_lower_hi, 0.0)}, {AMREX_D_DECL(0.0, -1.0, 0.0)});  // Top at lower branch
-  auto zbranch_bottom = PlaneIF({AMREX_D_DECL(0.0, z_y_bottom, 0.0)}, {AMREX_D_DECL(0.0, 1.0, 0.0)});  // Extends downward
-  auto zbranch_left = PlaneIF({AMREX_D_DECL(xhi - zbranch_width, 0.0, 0.0)}, {AMREX_D_DECL(1.0, 0.0, 0.0)});  // Right side of domain
-  auto zbranch_right = PlaneIF({AMREX_D_DECL(xhi, 0.0, 0.0)}, {AMREX_D_DECL(-1.0, 0.0, 0.0)});
-  auto zbranch_channel = makeIntersection(zbranch_top, zbranch_bottom, zbranch_left, zbranch_right);
-
-  // Center wall (with retraction)
   const Real mw_x0 = xs + cL;
   const Real mw_x1 = xr - cR;
-  auto mid_bottom = PlaneIF({AMREX_D_DECL(0.0, y_mid_hi, 0.0)}, {AMREX_D_DECL(0.0, -1.0, 0.0)});
-  auto mid_top = PlaneIF({AMREX_D_DECL(0.0, y_mid_lo, 0.0)}, {AMREX_D_DECL(0.0, 1.0, 0.0)});
-  auto mid_left = PlaneIF({AMREX_D_DECL(mw_x0, 0.0, 0.0)}, {AMREX_D_DECL(1.0, 0.0, 0.0)});
-  auto mid_right = PlaneIF({AMREX_D_DECL(mw_x1, 0.0, 0.0)}, {AMREX_D_DECL(-1.0, 0.0, 0.0)});
-  auto mid_wall = makeIntersection(mid_bottom, mid_top, mid_left, mid_right);
 
-  // Union all FLUID channels
-  auto all_channels = makeUnion(base_channel, upper_channel, lower_channel, zbranch_channel);
-  
-  // Subtract the center wall from fluid channels
-  auto fluid_with_wall = makeDifference(all_channels, mid_wall);
+  // Third branch coordinates - extends DOWN from lower-right
+  const Real z_bottom = std::max(y_lower_lo - Z, ylo + h);
+  const Real z_x_left = xr;  // Starts at right junction
 
-  // Complement to get SOLID regions
-  auto walls = makeComplement(fluid_with_wall);
+  Print() << "\n=== THREE-BRANCH GEOMETRY ===\n";
+  Print() << "Domain: [" << xlo << ", " << xhi << "] x [" << ylo << ", " << yhi << "]\n";
+  Print() << "Base: y=[" << y_base_lo << ", " << y_base_hi << "]\n";
+  Print() << "Upper: y=[" << y_upper_lo << ", " << y_upper_hi << "]\n";
+  Print() << "Lower: y=[" << y_lower_lo << ", " << y_lower_hi << "]\n";
+  Print() << "Third branch: x=[" << z_x_left << ", " << xhi << "], y=[" << z_bottom << ", " << y_lower_lo << "]\n";
+  Print() << "Z extension = " << Z << "\n";
+  Print() << "=============================\n\n";
+
+  // Original TwoBranch solid walls
+  auto s_top          = boxS(xlo, y_upper_hi, xhi, yhi);
+  auto s_bottom       = boxS(xlo, ylo, xhi, z_bottom);  // Modified: only fill below third branch
+  auto s_left_upper   = boxS(xlo, y_base_hi, xs, y_upper_hi);
+  auto s_left_lower   = boxS(xlo, y_lower_lo, xs, y_base_lo);
+  auto s_right_upper  = boxS(xr, y_base_hi, xhi, y_upper_hi);
+  // s_right_lower is REMOVED - this is where third branch goes
+  auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
+
+  // Third branch walls - only the LEFT wall (right side is domain boundary)
+  auto s_zbranch_left = boxS(z_x_left, z_bottom, xr, y_lower_lo);
+
+  // Union all solid walls
+  auto u1 = makeUnion(s_top, s_bottom);
+  auto u2 = makeUnion(u1, s_left_upper);
+  auto u3 = makeUnion(u2, s_left_lower);
+  auto u4 = makeUnion(u3, s_right_upper);
+  auto u5 = makeUnion(u4, s_mid_between);
+  auto walls = makeUnion(u5, s_zbranch_left);
 
   Print() << "[EB] ThreeBranch geometry with lower-right extension\n";
 
