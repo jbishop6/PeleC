@@ -532,7 +532,6 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
 }
 
-
 void
 CheckpointFile::build(
   const amrex::Geometry& geom, const int max_coarsening_level)
