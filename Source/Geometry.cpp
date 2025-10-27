@@ -518,6 +518,13 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   // Add thin wall on left side of third branch
   auto s_zbranch_left = boxS(z_x_left - h, z_y_bottom, z_x_left + h, y_lower_lo);
 
+  Print() << "\n=== WALL COORDINATES DEBUG ===\n";
+  Print() << "s_bottom_left: x=[" << xlo << ", " << z_x_left << "], y=[" << ylo << ", " << z_y_bottom << "]\n";
+  Print() << "s_right_lower: x=[" << xr << ", " << z_x_left << "], y=[" << y_lower_lo << ", " << y_base_lo << "]\n";
+  Print() << "s_zbranch_separator: x=[" << z_x_left << ", " << (z_x_left + h) << "], y=[" << z_y_bottom << ", " << y_lower_lo << "]\n";
+  Print() << "Expected vertical channel: x=[" << z_x_left << ", " << xhi << "], y=[" << z_y_bottom << ", " << y_lower_lo << "]\n";
+  Print() << "==============================\n\n";
+
   auto u1 = makeUnion(s_top, s_bottom);
   auto u2 = makeUnion(u1, s_left_upper);
   auto u3 = makeUnion(u2, s_left_lower);
