@@ -455,7 +455,7 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   Real cL  = 0.00;
   Real cR  = 0.00;
   Real y_offset = 0.0;
-  Real Z = 0.08;  // Height of third branch
+  Real Z = 0.08;
 
   pp.query("W", W);  pp.query("H", H);  pp.query("L", L);
   pp.query("xs", xs); pp.query("xr", xr); pp.query("mid", mid);
@@ -482,7 +482,7 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   auto boxS = [] (Real x0, Real y0, Real x1, Real y1) {
     Array<Real, AMREX_SPACEDIM> lo{AMREX_D_DECL(std::min(x0,x1), std::min(y0,y1), 0.0)};
     Array<Real, AMREX_SPACEDIM> hi{AMREX_D_DECL(std::max(x0,x1), std::max(y0,y1), 0.0)};
-    return BoxIF(lo, hi, false);
+    return BoxIF(lo, hi, false);  // false = solid
   };
 
   const Real y_base_lo  = ymid - 0.5 * W;
@@ -497,43 +497,40 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   const Real mw_x0 = xs + cL;
   const Real mw_x1 = xr - cR;
 
-  // Third branch coordinates - VERTICAL channel on far right
+  // Third branch coordinates
   const Real z_y_bottom = std::max(y_lower_lo - Z, ylo + h);
-  const Real z_x_left = xhi - W;  // Left edge of vertical channel
+  const Real z_x_left = xhi - W;
 
-  Print() << "\n=== THREE-BRANCH GEOMETRY ===\n";
-  Print() << "Two-branch system: UNCHANGED\n";
-  Print() << "Third branch (vertical): x=[" << z_x_left << ", " << xhi << "], y=[" << z_y_bottom << ", " << y_lower_lo << "]\n";
-  Print() << "=============================\n\n";
+  Print() << "\n=== THREE-BRANCH GEOMETRY (SUBTRACTION APPROACH) ===\n";
+  Print() << "Vertical third branch channel: x=[" << z_x_left << ", " << xhi << "], y=[" << z_y_bottom << ", " << y_lower_lo << "]\n";
+  Print() << "====================================================\n\n";
 
-  // Original TwoBranch walls - ONLY modify s_bottom and s_right_lower
+  // Build TwoBranch walls as before
   auto s_top          = boxS(xlo, y_upper_hi, xhi, yhi);
-  auto s_bottom       = boxS(xlo, ylo, z_x_left, z_y_bottom);  // CHANGED: only fill left of third branch
+  auto s_bottom       = boxS(xlo, ylo, xhi, y_lower_lo);
   auto s_left_upper   = boxS(xlo, y_base_hi, xs, y_upper_hi);
   auto s_left_lower   = boxS(xlo, y_lower_lo, xs, y_base_lo);
   auto s_right_upper  = boxS(xr, y_base_hi, xhi, y_upper_hi);
-  auto s_right_lower  = boxS(xr, y_lower_lo, z_x_left, y_base_lo);  // CHANGED: only fill left of third branch
+  auto s_right_lower  = boxS(xr, y_lower_lo, xhi, y_base_lo);
   auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
 
-  // Add thin wall on left side of third branch
-  auto s_zbranch_left = boxS(z_x_left - h, z_y_bottom, z_x_left + h, y_lower_lo);
-
-  Print() << "\n=== WALL COORDINATES DEBUG ===\n";
-  Print() << "s_bottom_left: x=[" << xlo << ", " << z_x_left << "], y=[" << ylo << ", " << z_y_bottom << "]\n";
-  Print() << "s_right_lower: x=[" << xr << ", " << z_x_left << "], y=[" << y_lower_lo << ", " << y_base_lo << "]\n";
-  Print() << "s_zbranch_separator: x=[" << z_x_left << ", " << (z_x_left + h) << "], y=[" << z_y_bottom << ", " << y_lower_lo << "]\n";
-  Print() << "Expected vertical channel: x=[" << z_x_left << ", " << xhi << "], y=[" << z_y_bottom << ", " << y_lower_lo << "]\n";
-  Print() << "==============================\n\n";
-
+  // Union TwoBranch walls
   auto u1 = makeUnion(s_top, s_bottom);
   auto u2 = makeUnion(u1, s_left_upper);
   auto u3 = makeUnion(u2, s_left_lower);
   auto u4 = makeUnion(u3, s_right_upper);
   auto u5 = makeUnion(u4, s_right_lower);
-  auto u6 = makeUnion(u5, s_mid_between);
-  auto walls = makeUnion(u6, s_zbranch_left);
+  auto twobranch_walls = makeUnion(u5, s_mid_between);
 
-  Print() << "[EB] ThreeBranch with vertical channel on right\n";
+  // Define the vertical channel as a FLUID region (true = fluid/open)
+  Array<Real, AMREX_SPACEDIM> channel_lo{AMREX_D_DECL(z_x_left, z_y_bottom, 0.0)};
+  Array<Real, AMREX_SPACEDIM> channel_hi{AMREX_D_DECL(xhi, y_lower_lo, 0.0)};
+  auto vertical_channel = BoxIF(channel_lo, channel_hi, true);  // true = FLUID (not solid)
+
+  // Subtract the vertical channel from the walls (remove solid where channel should be)
+  auto walls = makeDifference(twobranch_walls, vertical_channel);
+
+  Print() << "[EB] ThreeBranch: subtracted vertical channel from walls\n";
 
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
