@@ -495,16 +495,13 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   const Real mw_x0 = xs + cL;
   const Real mw_x1 = xr - cR;
 
-  // DIAGNOSTIC TEST: Create a simple vertical wall on the right side
-  // This should appear as a THIN VERTICAL LINE at x ≈ 0.85
-  auto test_vertical_wall = boxS(0.85, 0.2, 0.86, 0.8);
+  Print() << "\n=== TWO-BRANCH BASELINE ===\n";
+  Print() << "Domain: [" << xlo << ", " << xhi << "] x [" << ylo << ", " << yhi << "]\n";
+  Print() << "Base duct: y=[" << y_base_lo << ", " << y_base_hi << "]\n";
+  Print() << "Upper branch: y=[" << y_upper_lo << ", " << y_upper_hi << "]\n";
+  Print() << "Lower branch: y=[" << y_lower_lo << ", " << y_lower_hi << "]\n";
+  Print() << "===========================\n\n";
 
-  Print() << "\n=== DIAGNOSTIC TEST ===\n";
-  Print() << "Creating test vertical wall at x=[0.85, 0.86], y=[0.2, 0.8]\n";
-  Print() << "This should appear as a THIN VERTICAL red line\n";
-  Print() << "======================\n\n";
-
-  // Build TwoBranch walls
   auto s_top          = boxS(xlo, y_upper_hi, xhi, yhi);
   auto s_bottom       = boxS(xlo, ylo, xhi, y_lower_lo);
   auto s_left_upper   = boxS(xlo, y_base_hi, xs, y_upper_hi);
@@ -518,10 +515,9 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   auto u3 = makeUnion(u2, s_left_lower);
   auto u4 = makeUnion(u3, s_right_upper);
   auto u5 = makeUnion(u4, s_right_lower);
-  auto u6 = makeUnion(u5, s_mid_between);
-  auto walls = makeUnion(u6, test_vertical_wall);
+  auto walls = makeUnion(u5, s_mid_between);
 
-  Print() << "[EB] ThreeBranch: DIAGNOSTIC TEST with vertical wall\n";
+  Print() << "[EB] ThreeBranch (currently TwoBranch baseline)\n";
 
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
