@@ -465,8 +465,8 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   const Real ylo = rb.lo(1), yhi = rb.hi(1);
   const Real ymid = 0.5 * (ylo + yhi) + y_offset;
 
-  const Real dx = geom.CellSize(0);.CellSize(1);
-  const Real dy = geom
+  const Real dx = geom.CellSize(0);
+  const Real dy = geom.CellSize(1);
   const Real h  = std::max(dx, dy);
 
   xs  = std::min(std::max(xs, xlo + 2*h), xhi - 2*h);
