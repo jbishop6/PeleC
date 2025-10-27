@@ -455,10 +455,12 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   Real cL  = 0.00;
   Real cR  = 0.00;
   Real y_offset = 0.0;
+  Real Z = 0.08;  // Height of third branch
 
   pp.query("W", W);  pp.query("H", H);  pp.query("L", L);
   pp.query("xs", xs); pp.query("xr", xr); pp.query("mid", mid);
   pp.query("cL", cL); pp.query("cR", cR); pp.query("y_offset", y_offset);
+  pp.query("Z", Z);
 
   const RealBox& rb = geom.ProbDomain();
   const Real xlo = rb.lo(0), xhi = rb.hi(0);
@@ -495,26 +497,41 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   const Real mw_x0 = xs + cL;
   const Real mw_x1 = xr - cR;
 
+  // Third branch coordinates - VERTICAL channel on far right
+  const Real z_y_bottom = std::max(y_lower_lo - Z, ylo + h);
+  const Real z_x_left = xhi - W;  // Left edge of vertical channel
+
+  Print() << "\n=== THREE-BRANCH GEOMETRY ===\n";
+  Print() << "Two-branch system: UNCHANGED\n";
+  Print() << "Third branch (vertical): x=[" << z_x_left << ", " << xhi << "], y=[" << z_y_bottom << ", " << y_lower_lo << "]\n";
+  Print() << "=============================\n\n";
+
+  // Original TwoBranch walls - ONLY modify s_bottom and s_right_lower
   auto s_top          = boxS(xlo, y_upper_hi, xhi, yhi);
-  auto s_bottom       = boxS(xlo, ylo, xhi, y_lower_lo);
+  auto s_bottom       = boxS(xlo, ylo, z_x_left, z_y_bottom);  // CHANGED: only fill left of third branch
   auto s_left_upper   = boxS(xlo, y_base_hi, xs, y_upper_hi);
   auto s_left_lower   = boxS(xlo, y_lower_lo, xs, y_base_lo);
   auto s_right_upper  = boxS(xr, y_base_hi, xhi, y_upper_hi);
-  auto s_right_lower  = boxS(xr, y_lower_lo, xhi, y_base_lo);
+  auto s_right_lower  = boxS(xr, y_lower_lo, z_x_left, y_base_lo);  // CHANGED: only fill left of third branch
   auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
+
+  // Add thin wall on left side of third branch
+  auto s_zbranch_left = boxS(z_x_left - h, z_y_bottom, z_x_left + h, y_lower_lo);
 
   auto u1 = makeUnion(s_top, s_bottom);
   auto u2 = makeUnion(u1, s_left_upper);
   auto u3 = makeUnion(u2, s_left_lower);
   auto u4 = makeUnion(u3, s_right_upper);
   auto u5 = makeUnion(u4, s_right_lower);
-  auto walls = makeUnion(u5, s_mid_between);
+  auto u6 = makeUnion(u5, s_mid_between);
+  auto walls = makeUnion(u6, s_zbranch_left);
 
-  Print() << "[EB] ThreeBranch (currently just TwoBranch - will add third branch next)\n";
+  Print() << "[EB] ThreeBranch with vertical channel on right\n";
 
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
 }
+
 
 void
 CheckpointFile::build(
