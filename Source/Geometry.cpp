@@ -455,12 +455,10 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   Real cL  = 0.00;
   Real cR  = 0.00;
   Real y_offset = 0.0;
-  Real Z = 0.08;      // Height of vertical third branch
 
   pp.query("W", W);  pp.query("H", H);  pp.query("L", L);
   pp.query("xs", xs); pp.query("xr", xr); pp.query("mid", mid);
   pp.query("cL", cL); pp.query("cR", cR); pp.query("y_offset", y_offset);
-  pp.query("Z", Z);
 
   const RealBox& rb = geom.ProbDomain();
   const Real xlo = rb.lo(0), xhi = rb.hi(0);
@@ -497,46 +495,34 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   const Real mw_x0 = xs + cL;
   const Real mw_x1 = xr - cR;
 
-  // Third branch - VERTICAL channel on far right
-  // Width = W, positioned at right edge
-  const Real z_x_left = xhi - W;     // Left edge of vertical channel
-  const Real z_x_right = xhi;        // Right edge (domain boundary)
-  const Real z_y_bottom = y_lower_lo - Z;  // Bottom of vertical channel
-  const Real z_y_top = y_lower_lo;   // Top connects to lower branch
-
-  Print() << "\n=== THREE-BRANCH GEOMETRY (VERTICAL) ===\n";
+  Print() << "\n=== SIMPLE TEST - JUST TWOBRANCH + BIG BOX ===\n";
   Print() << "Domain: [" << xlo << ", " << xhi << "] x [" << ylo << ", " << yhi << "]\n";
-  Print() << "Base: y=[" << y_base_lo << ", " << y_base_hi << "]\n";
-  Print() << "Upper: y=[" << y_upper_lo << ", " << y_upper_hi << "]\n";
-  Print() << "Lower: y=[" << y_lower_lo << ", " << y_lower_hi << "]\n";
-  Print() << "VERTICAL Third branch:\n";
-  Print() << "  x=[" << z_x_left << ", " << z_x_right << "] (width=" << W << ")\n";
-  Print() << "  y=[" << z_y_bottom << ", " << z_y_top << "] (height=" << Z << ")\n";
-  Print() << "========================================\n\n";
+  Print() << "Adding BIG TEST BOX at x=[0.75, 0.95], y=[0.10, 0.30]\n";
+  Print() << "If you don't see this box, something is fundamentally wrong\n";
+  Print() << "==============================================\n\n";
 
-  // Original TwoBranch solid walls (UNCHANGED)
+  // Original TwoBranch walls (EXACT COPY)
   auto s_top          = boxS(xlo, y_upper_hi, xhi, yhi);
-  auto s_bottom       = boxS(xlo, ylo, xhi, z_y_bottom);  // Fill below third branch
+  auto s_bottom       = boxS(xlo, ylo, xhi, y_lower_lo);
   auto s_left_upper   = boxS(xlo, y_base_hi, xs, y_upper_hi);
   auto s_left_lower   = boxS(xlo, y_lower_lo, xs, y_base_lo);
   auto s_right_upper  = boxS(xr, y_base_hi, xhi, y_upper_hi);
-  auto s_right_lower  = boxS(xr, y_lower_lo, z_x_left, y_base_lo);  // Only fill LEFT of third branch
+  auto s_right_lower  = boxS(xr, y_lower_lo, xhi, y_base_lo);
   auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
 
-  // Third branch - LEFT WALL ONLY (creates vertical channel)
-  // This wall separates the third branch from the lower branch area
-  auto s_zbranch_left = boxS(z_x_left - h, z_y_bottom, z_x_left, z_y_top);
+  // BIG OBVIOUS TEST BOX in lower-right area
+  auto s_test_box = boxS(0.75, 0.10, 0.95, 0.30);
 
-  // Union all solid walls
+  // Union everything
   auto u1 = makeUnion(s_top, s_bottom);
   auto u2 = makeUnion(u1, s_left_upper);
   auto u3 = makeUnion(u2, s_left_lower);
   auto u4 = makeUnion(u3, s_right_upper);
   auto u5 = makeUnion(u4, s_right_lower);
   auto u6 = makeUnion(u5, s_mid_between);
-  auto walls = makeUnion(u6, s_zbranch_left);
+  auto walls = makeUnion(u6, s_test_box);
 
-  Print() << "[EB] ThreeBranch with VERTICAL channel\n";
+  Print() << "[EB] ThreeBranch = TwoBranch + TEST BOX\n";
 
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
