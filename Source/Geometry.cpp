@@ -455,20 +455,18 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   Real cL  = 0.00;
   Real cR  = 0.00;
   Real y_offset = 0.0;
-  Real Z = 0.08;
 
   pp.query("W", W);  pp.query("H", H);  pp.query("L", L);
   pp.query("xs", xs); pp.query("xr", xr); pp.query("mid", mid);
   pp.query("cL", cL); pp.query("cR", cR); pp.query("y_offset", y_offset);
-  pp.query("Z", Z);
 
   const RealBox& rb = geom.ProbDomain();
   const Real xlo = rb.lo(0), xhi = rb.hi(0);
   const Real ylo = rb.lo(1), yhi = rb.hi(1);
   const Real ymid = 0.5 * (ylo + yhi) + y_offset;
 
-  const Real dx = geom.CellSize(0);
-  const Real dy = geom.CellSize(1);
+  const Real dx = geom.CellSize(0);.CellSize(1);
+  const Real dy = geom
   const Real h  = std::max(dx, dy);
 
   xs  = std::min(std::max(xs, xlo + 2*h), xhi - 2*h);
@@ -482,7 +480,7 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   auto boxS = [] (Real x0, Real y0, Real x1, Real y1) {
     Array<Real, AMREX_SPACEDIM> lo{AMREX_D_DECL(std::min(x0,x1), std::min(y0,y1), 0.0)};
     Array<Real, AMREX_SPACEDIM> hi{AMREX_D_DECL(std::max(x0,x1), std::max(y0,y1), 0.0)};
-    return BoxIF(lo, hi, false);  // false = solid
+    return BoxIF(lo, hi, false);
   };
 
   const Real y_base_lo  = ymid - 0.5 * W;
@@ -497,15 +495,16 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   const Real mw_x0 = xs + cL;
   const Real mw_x1 = xr - cR;
 
-  // Third branch coordinates
-  const Real z_y_bottom = std::max(y_lower_lo - Z, ylo + h);
-  const Real z_x_left = xhi - W;
+  // DIAGNOSTIC TEST: Create a simple vertical wall on the right side
+  // This should appear as a THIN VERTICAL LINE at x ≈ 0.85
+  auto test_vertical_wall = boxS(0.85, 0.2, 0.86, 0.8);
 
-  Print() << "\n=== THREE-BRANCH GEOMETRY (SUBTRACTION APPROACH) ===\n";
-  Print() << "Vertical third branch channel: x=[" << z_x_left << ", " << xhi << "], y=[" << z_y_bottom << ", " << y_lower_lo << "]\n";
-  Print() << "====================================================\n\n";
+  Print() << "\n=== DIAGNOSTIC TEST ===\n";
+  Print() << "Creating test vertical wall at x=[0.85, 0.86], y=[0.2, 0.8]\n";
+  Print() << "This should appear as a THIN VERTICAL red line\n";
+  Print() << "======================\n\n";
 
-  // Build TwoBranch walls as before
+  // Build TwoBranch walls
   auto s_top          = boxS(xlo, y_upper_hi, xhi, yhi);
   auto s_bottom       = boxS(xlo, ylo, xhi, y_lower_lo);
   auto s_left_upper   = boxS(xlo, y_base_hi, xs, y_upper_hi);
@@ -514,23 +513,15 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   auto s_right_lower  = boxS(xr, y_lower_lo, xhi, y_base_lo);
   auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
 
-  // Union TwoBranch walls
   auto u1 = makeUnion(s_top, s_bottom);
   auto u2 = makeUnion(u1, s_left_upper);
   auto u3 = makeUnion(u2, s_left_lower);
   auto u4 = makeUnion(u3, s_right_upper);
   auto u5 = makeUnion(u4, s_right_lower);
-  auto twobranch_walls = makeUnion(u5, s_mid_between);
+  auto u6 = makeUnion(u5, s_mid_between);
+  auto walls = makeUnion(u6, test_vertical_wall);
 
-  // Define the vertical channel as a FLUID region (true = fluid/open)
-  Array<Real, AMREX_SPACEDIM> channel_lo{AMREX_D_DECL(z_x_left, z_y_bottom, 0.0)};
-  Array<Real, AMREX_SPACEDIM> channel_hi{AMREX_D_DECL(xhi, y_lower_lo, 0.0)};
-  auto vertical_channel = BoxIF(channel_lo, channel_hi, true);  // true = FLUID (not solid)
-
-  // Subtract the vertical channel from the walls (remove solid where channel should be)
-  auto walls = makeDifference(twobranch_walls, vertical_channel);
-
-  Print() << "[EB] ThreeBranch: subtracted vertical channel from walls\n";
+  Print() << "[EB] ThreeBranch: DIAGNOSTIC TEST with vertical wall\n";
 
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
