@@ -455,7 +455,7 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   Real cL  = 0.00;
   Real cR  = 0.00;
   Real y_offset = 0.0;
-  Real Z = 0.08;  // Length of vertical third branch extending downward
+  Real Z = 0.08;
 
   pp.query("W", W);  pp.query("H", H);  pp.query("L", L);
   pp.query("xs", xs); pp.query("xr", xr); pp.query("mid", mid);
@@ -497,45 +497,34 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   const Real mw_x0 = xs + cL;
   const Real mw_x1 = xr - cR;
 
-  // Third branch - VERTICAL channel on RIGHT side, extending DOWNWARD
-  const Real z_y_bottom = std::max(y_lower_lo - Z, ylo + h);  // Bottom of vertical channel
-  const Real z_x_left = xr;  // Left edge at right junction (x = 0.7)
-  const Real z_x_right = xhi;  // Right edge at domain boundary
+  // Third branch coordinates
+  const Real z_y_bottom = std::max(y_lower_lo - Z, ylo + h);
 
-  Print() << "\n=== THREE-BRANCH GEOMETRY (CORRECT) ===\n";
-  Print() << "Domain: [" << xlo << ", " << xhi << "] x [" << ylo << ", " << yhi << "]\n";
-  Print() << "Base duct: y=[" << y_base_lo << ", " << y_base_hi << "]\n";
-  Print() << "Upper branch: y=[" << y_upper_lo << ", " << y_upper_hi << "]\n";
-  Print() << "Lower branch: y=[" << y_lower_lo << ", " << y_lower_hi << "]\n";
-  Print() << "VERTICAL third branch (right side, downward):\n";
-  Print() << "  x=[" << z_x_left << ", " << z_x_right << "] (width=" << (z_x_right - z_x_left) << ")\n";
-  Print() << "  y=[" << z_y_bottom << ", " << y_lower_lo << "] (height=" << Z << ")\n";
-  Print() << "========================================\n\n";
+  Print() << "\n=== THREE-BRANCH GEOMETRY (SIMPLIFIED) ===\n";
+  Print() << "Vertical third branch: x=[" << xr << ", " << xhi << "], y=[" << z_y_bottom << ", " << y_lower_lo << "]\n";
+  Print() << "==========================================\n\n";
 
-  // Build walls - KEY CHANGES for vertical third branch on right
+  // Build walls - SIMPLE approach
   auto s_top          = boxS(xlo, y_upper_hi, xhi, yhi);
-  auto s_bottom_left  = boxS(xlo, ylo, z_x_left, z_y_bottom);  // Bottom wall LEFT of third branch
-  auto s_bottom_right = boxS(z_x_left, ylo, xhi, z_y_bottom);  // Bottom wall UNDER third branch
+  auto s_bottom       = boxS(xlo, ylo, xhi, z_y_bottom);  // Stops at bottom of third branch
   auto s_left_upper   = boxS(xlo, y_base_hi, xs, y_upper_hi);
   auto s_left_lower   = boxS(xlo, y_lower_lo, xs, y_base_lo);
   auto s_right_upper  = boxS(xr, y_base_hi, xhi, y_upper_hi);
-  auto s_right_lower  = boxS(xr, z_y_bottom, xhi, y_base_lo);  // Right wall ABOVE third branch only
+  // s_right_lower is REMOVED - this opens up the third branch area
   auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
 
-  // Union all walls
-  auto u1 = makeUnion(s_top, s_bottom_left);
-  auto u2 = makeUnion(u1, s_bottom_right);
-  auto u3 = makeUnion(u2, s_left_upper);
-  auto u4 = makeUnion(u3, s_left_lower);
-  auto u5 = makeUnion(u4, s_right_upper);
-  auto u6 = makeUnion(u5, s_right_lower);
-  auto walls = makeUnion(u6, s_mid_between);
+  auto u1 = makeUnion(s_top, s_bottom);
+  auto u2 = makeUnion(u1, s_left_upper);
+  auto u3 = makeUnion(u2, s_left_lower);
+  auto u4 = makeUnion(u3, s_right_upper);
+  auto walls = makeUnion(u4, s_mid_between);
 
-  Print() << "[EB] ThreeBranch with VERTICAL channel on RIGHT side\n";
+  Print() << "[EB] ThreeBranch - simplified vertical channel\n";
 
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
 }
+
 void
 CheckpointFile::build(
   const amrex::Geometry& geom, const int max_coarsening_level)
