@@ -455,12 +455,11 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   Real cR  = 0.00;
   Real y_offset = 0.0;
   Real Z = 0.08;
-  Real zW = 0.005;
 
   pp.query("W", W);  pp.query("H", H);  pp.query("L", L);
   pp.query("xs", xs); pp.query("xr", xr); pp.query("mid", mid);
   pp.query("cL", cL); pp.query("cR", cR); pp.query("y_offset", y_offset);
-  pp.query("Z", Z);  pp.query("zW", zW);
+  pp.query("Z", Z);
 
   const RealBox& rb = geom.ProbDomain();
 
@@ -503,18 +502,18 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   const Real z_x_left = xr;
   const Real z_x_right = xr + W;
 
-  Print() << "\n=== THREE-BRANCH GEOMETRY (Truly Fixed Width) ===\n";
+  Print() << "\n=== THREE-BRANCH GEOMETRY (Uniform Width) ===\n";
   Print() << "Vertical branch: x=[" << z_x_left << ", " << z_x_right 
           << "], y=[" << ylo << ", " << y_lower_lo << "]\n";
   Print() << "Vertical branch width: " << W << "\n";
-  Print() << "================================================\n\n";
+  Print() << "=============================================\n\n";
 
   // Top boundary wall
   auto s_top = boxS(xlo, y_upper_hi, xhi, yhi);
 
-  // Bottom walls - COMPLETELY FILL everything below y_lower_lo EXCEPT the vertical channel
-  auto s_bottom_left  = boxS(xlo, ylo, z_x_left + zW, y_lower_lo);  // Everything left of channel
-  auto s_bottom_right = boxS(z_x_right - zW, ylo, xhi, y_lower_lo); // Everything right of channel
+  // Bottom walls — leave a vertical gap of exactly width W
+  auto s_bottom_left  = boxS(xlo, ylo, z_x_left, y_lower_lo);  // Everything left of vertical channel
+  auto s_bottom_right = boxS(z_x_right, ylo, xhi, y_lower_lo); // Everything right of vertical channel
 
   // Two-branch system walls
   auto s_left_upper   = boxS(xlo, y_base_hi, xs, y_upper_hi);
@@ -533,7 +532,7 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   auto u6 = makeUnion(u5, s_right_lower);
   auto walls = makeUnion(u6, s_mid_between);
 
-  Print() << "[EB] ThreeBranch with truly uniform vertical channel\n";
+  Print() << "[EB] ThreeBranch with uniform vertical and horizontal width\n";
 
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
