@@ -472,7 +472,7 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   const Real h  = std::max(dx, dy);
 
   xs  = std::min(std::max(xs, xlo + 2*h), xhi - 2*h);
-  xr  = std::min(std::max(xr, xs + 6*h), xhi - 2*h);
+  xr  = std::min(std::max(xr, xs + 6*h), xhi - 3*W - 2*h);  // reserve space for right wall + vertical branch
   mid = std::min(std::max(mid, 4*h), std::max(W - 4*h, 4*h + 1e-12));
 
   const Real max_pad = std::max(0.0, 0.5*(xr - xs) - 3*h);
@@ -498,29 +498,30 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   const Real mw_x0 = xs + cL;
   const Real mw_x1 = xr - cR;
 
-  // Third branch - vertical channel parameters
-  const Real z_x_left = xr;
-  const Real z_x_right = xhi;  // Make the vertical branch flush with the right wall
+  // --- Third branch (vertical channel) ---
+  const Real z_x_left  = xr + W;
+  const Real z_x_right = z_x_left + W;
 
-  Print() << "\n=== THREE-BRANCH GEOMETRY (Flush Vertical Branch) ===\n";
+  Print() << "\n=== THREE-BRANCH GEOMETRY (Aligned with Upper/Lower Ends) ===\n";
+  Print() << "Upper/lower walls end at: xr + W = " << xr + W << "\n";
   Print() << "Vertical branch: x=[" << z_x_left << ", " << z_x_right 
           << "], y=[" << ylo << ", " << y_lower_lo << "]\n";
-  Print() << "Vertical branch width (flush to wall): " << (z_x_right - z_x_left) << "\n";
-  Print() << "=====================================================\n\n";
+  Print() << "=============================================================\n\n";
 
   // Top boundary wall
   auto s_top = boxS(xlo, y_upper_hi, xhi, yhi);
 
-  // Bottom walls - leave full gap for vertical branch
+  // Bottom walls
   auto s_bottom_left  = boxS(xlo, ylo, z_x_left, y_lower_lo);  // Left of vertical branch
-  auto s_bottom_right = boxS(z_x_right, ylo, xhi, y_lower_lo); // Right of vertical branch (should be zero-width now)
+  auto s_bottom_right = boxS(z_x_right, ylo, xhi, y_lower_lo); // Right of vertical branch
 
-  // Two-branch system walls
+  // Horizontal branches
   auto s_left_upper   = boxS(xlo, y_base_hi, xs, y_upper_hi);
   auto s_left_lower   = boxS(xlo, y_lower_lo, xs, y_base_lo);
-  auto s_right_upper  = boxS(xr, y_base_hi, xhi, y_upper_hi);
-  auto s_right_lower  = boxS(z_x_right, y_lower_lo, xhi, y_base_lo); // Adjusted to align with new z_x_right
+  auto s_right_upper  = boxS(xr, y_base_hi, xr + W, y_upper_hi);
+  auto s_right_lower  = boxS(z_x_right, y_lower_lo, xhi, y_base_lo);
 
+  // Middle connector
   auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
 
   // Union everything
@@ -532,11 +533,12 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   auto u6 = makeUnion(u5, s_right_lower);
   auto walls = makeUnion(u6, s_mid_between);
 
-  Print() << "[EB] ThreeBranch geometry complete with flush vertical branch\n";
+  Print() << "[EB] ThreeBranch geometry complete (third branch aligned to horizontal ends)\n";
 
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
 }
+
 
 
 
