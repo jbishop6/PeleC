@@ -502,34 +502,32 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   const Real z_x_left = xr;
   const Real z_x_right = xr + W;
 
-  Print() << "\n=== THREE-BRANCH GEOMETRY (Explicit Approach) ===\n";
+  Print() << "\n=== THREE-BRANCH GEOMETRY (Fixed Compilation) ===\n";
   Print() << "Vertical branch: x=[" << z_x_left << ", " << z_x_right 
           << "], y=[" << ylo << ", " << y_lower_lo << "]\n";
   Print() << "Vertical branch width: " << W << "\n";
-  Print() << "=================================================\n\n";
+  Print() << "==================================================\n\n";
 
-  // Start with EVERYTHING as solid
-  auto all_solid = boxS(xlo, ylo, xhi, yhi);
-
-  // Define the THREE fluid channels explicitly
-  auto fluid_upper = boxS(xs, y_base_hi, xr, y_upper_hi);           // Upper branch
-  auto fluid_lower = boxS(xs, y_lower_lo, xr, y_base_lo);           // Lower branch  
-  auto fluid_base  = boxS(xs, y_base_lo, xr, y_base_hi);            // Base horizontal
-  auto fluid_vertical = boxS(z_x_left, ylo, z_x_right, y_lower_lo); // Vertical branch
+  // Define fluid regions (excluding the middle divider from the start)
+  auto fluid_upper = boxS(xs, y_base_hi, xr, y_upper_hi);           
+  auto fluid_lower = boxS(xs, y_lower_lo, xr, y_base_lo);           
+  
+  // Base horizontal split into two parts (above and below middle divider)
+  auto fluid_base_upper = boxS(xs, y_mid_hi, xr, y_base_hi);
+  auto fluid_base_lower = boxS(xs, y_base_lo, xr, y_mid_lo);
+  
+  auto fluid_vertical = boxS(z_x_left, ylo, z_x_right, y_lower_lo);
 
   // Union all fluid regions
   auto f1 = makeUnion(fluid_upper, fluid_lower);
-  auto f2 = makeUnion(f1, fluid_base);
-  auto all_fluid = makeUnion(f2, fluid_vertical);
+  auto f2 = makeUnion(f1, fluid_base_upper);
+  auto f3 = makeUnion(f2, fluid_base_lower);
+  auto all_fluid = makeUnion(f3, fluid_vertical);
 
-  // Walls = Everything EXCEPT fluid
+  // Walls = complement of fluid
   auto walls = makeComplement(all_fluid);
 
-  // Add the middle divider wall back
-  auto s_mid_between = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
-  walls = makeUnion(walls, s_mid_between);
-
-  Print() << "[EB] ThreeBranch with explicit fluid definition\n";
+  Print() << "[EB] ThreeBranch with uniform vertical channel\n";
 
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
