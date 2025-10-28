@@ -498,28 +498,29 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   const Real mw_x0 = xs + cL;
   const Real mw_x1 = xr - cR;
 
-  // Third branch - vertical channel parameters
-  const Real z_x_left = xr;
-  const Real z_x_right = xr + W;
+  // CHANGED: Third branch now aligned with LEFT wall (xs instead of xr)
+  const Real z_x_left = xs;        // Changed from xr to xs
+  const Real z_x_right = xs + W;   // Changed from xr + W to xs + W
 
-  Print() << "\n=== THREE-BRANCH GEOMETRY (Uniform Width) ===\n";
+  Print() << "\n=== THREE-BRANCH GEOMETRY (Left-Aligned) ===\n";
   Print() << "Vertical branch: x=[" << z_x_left << ", " << z_x_right 
           << "], y=[" << ylo << ", " << y_lower_lo << "]\n";
   Print() << "Vertical branch width: " << W << "\n";
-  Print() << "=============================================\n\n";
+  Print() << "Aligned with left wall at x=" << xs << "\n";
+  Print() << "============================================\n\n";
 
   // Top boundary wall
   auto s_top = boxS(xlo, y_upper_hi, xhi, yhi);
 
-  // Bottom walls — leave a vertical gap of exactly width W
-  auto s_bottom_left  = boxS(xlo, ylo, z_x_left, y_lower_lo);  // Everything left of vertical channel
-  auto s_bottom_right = boxS(z_x_right, ylo, xhi, y_lower_lo); // Everything right of vertical channel
+  // Bottom walls — leave a vertical gap of exactly width W at LEFT side now
+  auto s_bottom_left  = boxS(xlo, ylo, z_x_left, y_lower_lo);      // Left of vertical channel
+  auto s_bottom_right = boxS(z_x_right, ylo, xhi, y_lower_lo);     // Right of vertical channel
 
   // Two-branch system walls
   auto s_left_upper   = boxS(xlo, y_base_hi, xs, y_upper_hi);
   auto s_left_lower   = boxS(xlo, y_lower_lo, xs, y_base_lo);
   auto s_right_upper  = boxS(xr, y_base_hi, xhi, y_upper_hi);
-  auto s_right_lower  = boxS(z_x_right, y_lower_lo, xhi, y_base_lo);
+  auto s_right_lower  = boxS(xr, y_lower_lo, xhi, y_base_lo);      // Changed from z_x_right to xr
 
   auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
 
@@ -532,7 +533,7 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   auto u6 = makeUnion(u5, s_right_lower);
   auto walls = makeUnion(u6, s_mid_between);
 
-  Print() << "[EB] ThreeBranch with uniform vertical and horizontal width\n";
+  Print() << "[EB] ThreeBranch with left-aligned vertical channel\n";
 
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
