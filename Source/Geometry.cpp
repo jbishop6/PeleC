@@ -455,11 +455,12 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   Real cR  = 0.00;
   Real y_offset = 0.0;
   Real Z = 0.08;
+  Real zW = 0.005;
 
   pp.query("W", W);  pp.query("H", H);  pp.query("L", L);
   pp.query("xs", xs); pp.query("xr", xr); pp.query("mid", mid);
   pp.query("cL", cL); pp.query("cR", cR); pp.query("y_offset", y_offset);
-  pp.query("Z", Z);
+  pp.query("Z", Z);  pp.query("zW", zW);
 
   const RealBox& rb = geom.ProbDomain();
 
@@ -498,36 +499,38 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   const Real mw_x0 = xs + cL;
   const Real mw_x1 = xr - cR;
 
-  // Third branch - vertical channel parameters
+  const Real z_y_bottom = std::max(y_lower_lo - Z, ylo + h);
   const Real z_x_left = xr;
   const Real z_x_right = xr + W;
 
-  Print() << "\n=== THREE-BRANCH GEOMETRY (Fixed Compilation) ===\n";
-  Print() << "Vertical branch: x=[" << z_x_left << ", " << z_x_right 
-          << "], y=[" << ylo << ", " << y_lower_lo << "]\n";
-  Print() << "Vertical branch width: " << W << "\n";
-  Print() << "==================================================\n\n";
-
-  // Define fluid regions (excluding the middle divider from the start)
-  auto fluid_upper = boxS(xs, y_base_hi, xr, y_upper_hi);           
-  auto fluid_lower = boxS(xs, y_lower_lo, xr, y_base_lo);           
+  // Original two-branch walls
+  auto s_top          = boxS(xlo, y_upper_hi, xhi, yhi);
+  auto s_bottom_main  = boxS(xlo, ylo, z_x_left, z_y_bottom);
+  auto s_bottom_under = boxS(z_x_left, ylo, z_x_right, z_y_bottom);
+  auto s_bottom_right = boxS(z_x_right, ylo, xhi, y_lower_lo);
   
-  // Base horizontal split into two parts (above and below middle divider)
-  auto fluid_base_upper = boxS(xs, y_mid_hi, xr, y_base_hi);
-  auto fluid_base_lower = boxS(xs, y_base_lo, xr, y_mid_lo);
+  auto s_left_upper   = boxS(xlo, y_base_hi, xs, y_upper_hi);
+  auto s_left_lower   = boxS(xlo, y_lower_lo, xs, y_base_lo);
+  auto s_right_upper  = boxS(xr, y_base_hi, xhi, y_upper_hi);
+  auto s_right_lower  = boxS(z_x_right, y_lower_lo, xhi, y_base_lo);
   
-  auto fluid_vertical = boxS(z_x_left, ylo, z_x_right, y_lower_lo);
+  auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
 
-  // Union all fluid regions
-  auto f1 = makeUnion(fluid_upper, fluid_lower);
-  auto f2 = makeUnion(f1, fluid_base_upper);
-  auto f3 = makeUnion(f2, fluid_base_lower);
-  auto all_fluid = makeUnion(f3, fluid_vertical);
+  auto s_zbranch_left  = boxS(z_x_left, z_y_bottom, z_x_left + zW, y_lower_lo);
+  auto s_zbranch_right = boxS(z_x_right - zW, z_y_bottom, z_x_right, y_lower_lo);
 
-  // Walls = complement of fluid
-  auto walls = makeComplement(all_fluid);
+  auto u1 = makeUnion(s_top, s_bottom_main);
+  auto u2 = makeUnion(u1, s_bottom_under);
+  auto u3 = makeUnion(u2, s_bottom_right);
+  auto u4 = makeUnion(u3, s_left_upper);
+  auto u5 = makeUnion(u4, s_left_lower);
+  auto u6 = makeUnion(u5, s_right_upper);
+  auto u7 = makeUnion(u6, s_right_lower);
+  auto u8 = makeUnion(u7, s_mid_between);
+  auto u9 = makeUnion(u8, s_zbranch_left);
+  auto walls = makeUnion(u9, s_zbranch_right);
 
-  Print() << "[EB] ThreeBranch with uniform vertical channel\n";
+  Print() << "[EB] ThreeBranch\n";
 
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
