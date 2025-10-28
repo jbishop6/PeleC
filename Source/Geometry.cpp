@@ -455,10 +455,12 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   Real cL  = 0.00;
   Real cR  = 0.00;
   Real y_offset = 0.0;
+  Real Z = 0.04;  // Height of third branch extending upward
 
   pp.query("W", W);  pp.query("H", H);  pp.query("L", L);
   pp.query("xs", xs); pp.query("xr", xr); pp.query("mid", mid);
   pp.query("cL", cL); pp.query("cR", cR); pp.query("y_offset", y_offset);
+  pp.query("Z", Z);
 
   const RealBox& rb = geom.ProbDomain();
   const Real xlo = rb.lo(0), xhi = rb.hi(0);
@@ -495,29 +497,40 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   const Real mw_x0 = xs + cL;
   const Real mw_x1 = xr - cR;
 
-  Print() << "\n=== TWO-BRANCH BASELINE ===\n";
+  // Third branch coordinates - extends UPWARD from upper-left
+  const Real z_y_top = std::min(y_upper_hi + Z, yhi - h);  // Top of third branch
+  const Real z_x_right = xs;  // Right edge aligns with left junction
+
+  Print() << "\n=== THREE-BRANCH GEOMETRY ===\n";
   Print() << "Domain: [" << xlo << ", " << xhi << "] x [" << ylo << ", " << yhi << "]\n";
   Print() << "Base duct: y=[" << y_base_lo << ", " << y_base_hi << "]\n";
   Print() << "Upper branch: y=[" << y_upper_lo << ", " << y_upper_hi << "]\n";
   Print() << "Lower branch: y=[" << y_lower_lo << ", " << y_lower_hi << "]\n";
-  Print() << "===========================\n\n";
+  Print() << "Third branch (UPWARD from upper-left): x=[" << xlo << ", " << z_x_right << "], y=[" << y_upper_hi << ", " << z_y_top << "]\n";
+  Print() << "Z extension = " << Z << "\n";
+  Print() << "=============================\n\n";
 
-  auto s_top          = boxS(xlo, y_upper_hi, xhi, yhi);
+  // Original TwoBranch walls
+  auto s_top          = boxS(xlo, z_y_top, xhi, yhi);  // MODIFIED: top wall now above third branch
   auto s_bottom       = boxS(xlo, ylo, xhi, y_lower_lo);
-  auto s_left_upper   = boxS(xlo, y_base_hi, xs, y_upper_hi);
+  auto s_left_upper   = boxS(xlo, y_base_hi, xs, y_upper_hi);  // This stays the same
   auto s_left_lower   = boxS(xlo, y_lower_lo, xs, y_base_lo);
   auto s_right_upper  = boxS(xr, y_base_hi, xhi, y_upper_hi);
   auto s_right_lower  = boxS(xr, y_lower_lo, xhi, y_base_lo);
   auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
+
+  // Third branch walls - right wall only (left side is domain boundary)
+  auto s_zbranch_right = boxS(z_x_right, y_upper_hi, z_x_right + h, z_y_top);
 
   auto u1 = makeUnion(s_top, s_bottom);
   auto u2 = makeUnion(u1, s_left_upper);
   auto u3 = makeUnion(u2, s_left_lower);
   auto u4 = makeUnion(u3, s_right_upper);
   auto u5 = makeUnion(u4, s_right_lower);
-  auto walls = makeUnion(u5, s_mid_between);
+  auto u6 = makeUnion(u5, s_mid_between);
+  auto walls = makeUnion(u6, s_zbranch_right);
 
-  Print() << "[EB] ThreeBranch (currently TwoBranch baseline)\n";
+  Print() << "[EB] ThreeBranch with UPWARD extension from upper-left\n";
 
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
