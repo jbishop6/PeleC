@@ -479,12 +479,6 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   cL = std::min(std::max(cL, 0.0), max_pad);
   cR = std::min(std::max(cR, 0.0), max_pad);
 
-  auto boxS = [] (Real x0, Real y0, Real x1, Real y1) {
-    Array<Real, AMREX_SPACEDIM> lo{AMREX_D_DECL(std::min(x0,x1), std::min(y0,y1), 0.0)};
-    Array<Real, AMREX_SPACEDIM> hi{AMREX_D_DECL(std::max(x0,x1), std::max(y0,y1), 0.0)};
-    return BoxIF(lo, hi, false);
-  };
-
   const Real y_base_lo  = ymid - 0.5 * W;
   const Real y_base_hi  = ymid + 0.5 * W;
   const Real y_upper_lo = y_base_hi;
@@ -497,35 +491,60 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   const Real mw_x0 = xs + cL;
   const Real mw_x1 = xr - cR;
 
-  // Third branch - vertical channel on RIGHT side
+  // Third branch coordinates
   const Real z_y_bottom = std::max(y_lower_lo - Z, ylo + h);
-  const Real z_x_left = xr;  // Left edge at junction
 
-  Print() << "\n=== THREE-BRANCH GEOMETRY ===\n";
-  Print() << "Vertical third branch: x=[" << z_x_left << ", " << xhi << "], y=[" << z_y_bottom << ", " << y_lower_lo << "]\n";
-  Print() << "==============================\n\n";
+  Print() << "\n=== THREE-BRANCH GEOMETRY (PlaneIF Explicit) ===\n";
+  Print() << "Target vertical channel: x=[" << xr << ", " << xhi << "], y=[" << z_y_bottom << ", " << y_lower_lo << "]\n";
+  Print() << "================================================\n\n";
 
-  // Build walls - the KEY is to NOT fill the area where the vertical channel should be
-  auto s_top          = boxS(xlo, y_upper_hi, xhi, yhi);
-  auto s_bottom       = boxS(xlo, ylo, xhi, z_y_bottom);  // Bottom wall stops at bottom of third branch
-  auto s_left_upper   = boxS(xlo, y_base_hi, xs, y_upper_hi);
-  auto s_left_lower   = boxS(xlo, y_lower_lo, xs, y_base_lo);
-  auto s_right_upper  = boxS(xr, y_base_hi, xhi, y_upper_hi);
-  // KEY: s_right_lower is REMOVED - this was blocking the third branch area
-  auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
+  // Use PlaneIF to explicitly define FLUID regions
+  
+  // Base horizontal duct (full width, between y_base_lo and y_base_hi)
+  auto base_ymin = PlaneIF({AMREX_D_DECL(0.0, y_base_lo, 0.0)}, {AMREX_D_DECL(0.0, 1.0, 0.0)}, false);
+  auto base_ymax = PlaneIF({AMREX_D_DECL(0.0, y_base_hi, 0.0)}, {AMREX_D_DECL(0.0, -1.0, 0.0)}, false);
+  auto base_duct = makeIntersection(base_ymin, base_ymax);
 
-  // Add walls to the LEFT of the third branch (between lower branch and third branch)
-  auto s_between_lower_and_third = boxS(xr, z_y_bottom, z_x_left, y_lower_lo);
+  // Upper branch (between xs and xr, y_upper_lo and y_upper_hi)
+  auto upper_ymin = PlaneIF({AMREX_D_DECL(0.0, y_upper_lo, 0.0)}, {AMREX_D_DECL(0.0, 1.0, 0.0)}, false);
+  auto upper_ymax = PlaneIF({AMREX_D_DECL(0.0, y_upper_hi, 0.0)}, {AMREX_D_DECL(0.0, -1.0, 0.0)}, false);
+  auto upper_xmin = PlaneIF({AMREX_D_DECL(xs, 0.0, 0.0)}, {AMREX_D_DECL(-1.0, 0.0, 0.0)}, false);
+  auto upper_xmax = PlaneIF({AMREX_D_DECL(xr, 0.0, 0.0)}, {AMREX_D_DECL(1.0, 0.0, 0.0)}, false);
+  auto upper_branch = makeIntersection(upper_ymin, upper_ymax, upper_xmin, upper_xmax);
 
-  // Union all walls
-  auto u1 = makeUnion(s_top, s_bottom);
-  auto u2 = makeUnion(u1, s_left_upper);
-  auto u3 = makeUnion(u2, s_left_lower);
-  auto u4 = makeUnion(u3, s_right_upper);
-  auto u5 = makeUnion(u4, s_mid_between);
-  auto walls = makeUnion(u5, s_between_lower_and_third);
+  // Lower branch (between xs and xr, y_lower_lo and y_lower_hi)
+  auto lower_ymin = PlaneIF({AMREX_D_DECL(0.0, y_lower_lo, 0.0)}, {AMREX_D_DECL(0.0, 1.0, 0.0)}, false);
+  auto lower_ymax = PlaneIF({AMREX_D_DECL(0.0, y_lower_hi, 0.0)}, {AMREX_D_DECL(0.0, -1.0, 0.0)}, false);
+  auto lower_xmin = PlaneIF({AMREX_D_DECL(xs, 0.0, 0.0)}, {AMREX_D_DECL(-1.0, 0.0, 0.0)}, false);
+  auto lower_xmax = PlaneIF({AMREX_D_DECL(xr, 0.0, 0.0)}, {AMREX_D_DECL(1.0, 0.0, 0.0)}, false);
+  auto lower_branch = makeIntersection(lower_ymin, lower_ymax, lower_xmin, lower_xmax);
 
-  Print() << "[EB] ThreeBranch with vertical channel on right\n";
+  // THIRD BRANCH - VERTICAL channel on RIGHT side
+  // Key: xmin and xmax define the VERTICAL boundaries (left and right walls)
+  //      ymin and ymax define the EXTENT (how tall it is)
+  auto third_ymin = PlaneIF({AMREX_D_DECL(0.0, z_y_bottom, 0.0)}, {AMREX_D_DECL(0.0, 1.0, 0.0)}, false);
+  auto third_ymax = PlaneIF({AMREX_D_DECL(0.0, y_lower_lo, 0.0)}, {AMREX_D_DECL(0.0, -1.0, 0.0)}, false);
+  auto third_xmin = PlaneIF({AMREX_D_DECL(xr, 0.0, 0.0)}, {AMREX_D_DECL(-1.0, 0.0, 0.0)}, false);
+  auto third_xmax = PlaneIF({AMREX_D_DECL(xhi, 0.0, 0.0)}, {AMREX_D_DECL(1.0, 0.0, 0.0)}, false);
+  auto third_branch = makeIntersection(third_ymin, third_ymax, third_xmin, third_xmax);
+
+  // Center wall (divider between upper and lower)
+  auto wall_ymin = PlaneIF({AMREX_D_DECL(0.0, y_mid_lo, 0.0)}, {AMREX_D_DECL(0.0, 1.0, 0.0)}, true);
+  auto wall_ymax = PlaneIF({AMREX_D_DECL(0.0, y_mid_hi, 0.0)}, {AMREX_D_DECL(0.0, -1.0, 0.0)}, true);
+  auto wall_xmin = PlaneIF({AMREX_D_DECL(mw_x0, 0.0, 0.0)}, {AMREX_D_DECL(-1.0, 0.0, 0.0)}, true);
+  auto wall_xmax = PlaneIF({AMREX_D_DECL(mw_x1, 0.0, 0.0)}, {AMREX_D_DECL(1.0, 0.0, 0.0)}, true);
+  auto center_wall = makeIntersection(wall_ymin, wall_ymax, wall_xmin, wall_xmax);
+
+  // Union all FLUID regions
+  auto all_fluid = makeUnion(base_duct, upper_branch, lower_branch, third_branch);
+  
+  // Subtract the center wall from fluid
+  auto fluid_final = makeDifference(all_fluid, center_wall);
+
+  // Complement to get SOLID walls
+  auto walls = makeComplement(fluid_final);
+
+  Print() << "[EB] ThreeBranch with PlaneIF - explicit vertical third branch\n";
 
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
