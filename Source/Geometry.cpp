@@ -497,29 +497,35 @@ ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   const Real mw_x0 = xs + cL;
   const Real mw_x1 = xr - cR;
 
-  // Third branch coordinates
+  // Third branch - vertical channel on RIGHT side
   const Real z_y_bottom = std::max(y_lower_lo - Z, ylo + h);
+  const Real z_x_left = xr;  // Left edge at junction
 
-  Print() << "\n=== THREE-BRANCH GEOMETRY (SIMPLIFIED) ===\n";
-  Print() << "Vertical third branch: x=[" << xr << ", " << xhi << "], y=[" << z_y_bottom << ", " << y_lower_lo << "]\n";
-  Print() << "==========================================\n\n";
+  Print() << "\n=== THREE-BRANCH GEOMETRY ===\n";
+  Print() << "Vertical third branch: x=[" << z_x_left << ", " << xhi << "], y=[" << z_y_bottom << ", " << y_lower_lo << "]\n";
+  Print() << "==============================\n\n";
 
-  // Build walls - SIMPLE approach
+  // Build walls - the KEY is to NOT fill the area where the vertical channel should be
   auto s_top          = boxS(xlo, y_upper_hi, xhi, yhi);
-  auto s_bottom       = boxS(xlo, ylo, xhi, z_y_bottom);  // Stops at bottom of third branch
+  auto s_bottom       = boxS(xlo, ylo, xhi, z_y_bottom);  // Bottom wall stops at bottom of third branch
   auto s_left_upper   = boxS(xlo, y_base_hi, xs, y_upper_hi);
   auto s_left_lower   = boxS(xlo, y_lower_lo, xs, y_base_lo);
   auto s_right_upper  = boxS(xr, y_base_hi, xhi, y_upper_hi);
-  // s_right_lower is REMOVED - this opens up the third branch area
+  // KEY: s_right_lower is REMOVED - this was blocking the third branch area
   auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
 
+  // Add walls to the LEFT of the third branch (between lower branch and third branch)
+  auto s_between_lower_and_third = boxS(xr, z_y_bottom, z_x_left, y_lower_lo);
+
+  // Union all walls
   auto u1 = makeUnion(s_top, s_bottom);
   auto u2 = makeUnion(u1, s_left_upper);
   auto u3 = makeUnion(u2, s_left_lower);
   auto u4 = makeUnion(u3, s_right_upper);
-  auto walls = makeUnion(u4, s_mid_between);
+  auto u5 = makeUnion(u4, s_mid_between);
+  auto walls = makeUnion(u5, s_between_lower_and_third);
 
-  Print() << "[EB] ThreeBranch - simplified vertical channel\n";
+  Print() << "[EB] ThreeBranch with vertical channel on right\n";
 
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
