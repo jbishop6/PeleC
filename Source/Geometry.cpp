@@ -504,18 +504,19 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   const Real z_x_left = xr;
   const Real z_x_right = xr + W;  // Same width as base duct
 
-  Print() << "\n=== THREE-BRANCH GEOMETRY (Uniform Width) ===\n";
+  Print() << "\n=== THREE-BRANCH GEOMETRY (Fixed Width) ===\n";
   Print() << "Two-branch system: xs=" << xs << " xr=" << xr << "\n";
   Print() << "Third branch (vertical): x=[" << z_x_left << ", " << z_x_right 
           << "], y=[" << ylo << ", " << y_lower_lo << "]\n";
   Print() << "Vertical branch width: " << (z_x_right - z_x_left) << "\n";
-  Print() << "=============================================\n\n";
+  Print() << "===========================================\n\n";
 
-  // Modified walls
+  // Domain boundary walls
   auto s_top          = boxS(xlo, y_upper_hi, xhi, yhi);
   auto s_bottom_left  = boxS(xlo, ylo, z_x_left, y_lower_lo);
   auto s_bottom_right = boxS(z_x_right, ylo, xhi, y_lower_lo);
 
+  // Two-branch walls
   auto s_left_upper   = boxS(xlo, y_base_hi, xs, y_upper_hi);
   auto s_left_lower   = boxS(xlo, y_lower_lo, xs, y_base_lo);
   auto s_right_upper  = boxS(xr, y_base_hi, xhi, y_upper_hi);
@@ -523,9 +524,12 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
 
   auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
 
-  // Third branch walls - NOW EXTEND FROM ylo (not z_y_bottom)
+  // Third branch walls - side walls extending full height
   auto s_zbranch_left  = boxS(z_x_left, ylo, z_x_left + zW, y_lower_lo);
   auto s_zbranch_right = boxS(z_x_right - zW, ylo, z_x_right, y_lower_lo);
+  
+  // NEW: Bottom wall for vertical channel (closes the bottom)
+  auto s_zbranch_bottom = boxS(z_x_left + zW, ylo, z_x_right - zW, ylo + zW);
 
   // Union everything
   auto u1 = makeUnion(s_top, s_bottom_left);
@@ -536,7 +540,8 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   auto u6 = makeUnion(u5, s_right_lower);
   auto u7 = makeUnion(u6, s_mid_between);
   auto u8 = makeUnion(u7, s_zbranch_left);
-  auto walls = makeUnion(u8, s_zbranch_right);
+  auto u9 = makeUnion(u8, s_zbranch_right);
+  auto walls = makeUnion(u9, s_zbranch_bottom);  // Add bottom wall
 
   Print() << "[EB] ThreeBranch with uniform-width vertical channel\n";
 
