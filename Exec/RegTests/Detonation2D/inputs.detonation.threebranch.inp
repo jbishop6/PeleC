@@ -78,7 +78,7 @@ geo.Z        = 0.08
 geo.xs       = 0.30
 geo.xr       = 0.70 
 geo.mid      = 0.025390625
-geo.y_offset = 0.0
+geo.y_offset = 0.1
 
 geo.cL = 0.02   # left-side mid-wall retraction
 geo.cR = 0.02   # right-side mid-wall retraction
