@@ -449,11 +449,10 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
 
   ParmParse pp("geo");
 
-  // Geometry input parameters
+  // Geometry parameters
   Real W = 0.04, H = 0.04, L = 0.04, xs = 0.30, xr = 0.70;
   Real mid = 0.02;
-  Real cL  = 0.00;
-  Real cR  = 0.00;
+  Real cL = 0.00, cR = 0.00;
   Real y_offset = 0.0;
   Real Z = 0.08;
   Real vert_offset = 0.0;
@@ -481,22 +480,22 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   cL = std::min(std::max(cL, 0.0), max_pad);
   cR = std::min(std::max(cR, 0.0), max_pad);
 
-  // BoxIF helper
+  // Box helper
   auto boxS = [] (Real x0, Real y0, Real x1, Real y1) {
-    Array<Real, AMREX_SPACEDIM> lo{AMREX_D_DECL(std::min(x0,x1), std::min(y0,y1), 0.0)};
-    Array<Real, AMREX_SPACEDIM> hi{AMREX_D_DECL(std::max(x0,x1), std::max(y0,y1), 0.0)};
+    Array<Real, AMREX_SPACEDIM> lo{AMREX_D_DECL(std::min(x0, x1), std::min(y0, y1), 0.0)};
+    Array<Real, AMREX_SPACEDIM> hi{AMREX_D_DECL(std::max(x0, x1), std::max(y0, y1), 0.0)};
     return BoxIF(lo, hi, false);
   };
 
-  // Safe box constructor: skip if zero-width
-  auto maybe_boxS = [&boxS](Real x0, Real x1, Real y0, Real y1) -> std::shared_ptr<amrex::EB2::ImplicitFunction> {
+  // Safe wall generator
+  auto maybe_boxS = [&boxS](Real x0, Real x1, Real y0, Real y1) -> std::shared_ptr<amrex::EB2::BaseIF> {
     if (x1 > x0 + 1e-12)
-        return std::make_shared<BoxIF>(boxS(x0, y0, x1, y1));
+      return std::make_shared<BoxIF>(boxS(x0, y0, x1, y1));
     else
-        return std::make_shared<BoxIF>(boxS(1.0, 1.0, 1.0, 1.0)); // dummy empty box
+      return std::make_shared<BoxIF>(boxS(1.0, 1.0, 1.0, 1.0)); // dummy
   };
 
-  // Vertical extents
+  // Y extents
   const Real y_base_lo  = ymid - 0.5 * W;
   const Real y_base_hi  = ymid + 0.5 * W;
   const Real y_upper_hi = y_base_hi + H;
@@ -505,10 +504,11 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   const Real y_mid_lo = ymid - 0.5 * mid;
   const Real y_mid_hi = ymid + 0.5 * mid;
 
+  // Middle wall extent
   const Real mw_x0 = xs + cL;
   const Real mw_x1 = xr - cR;
 
-  // Vertical branch
+  // Third branch (vertical)
   const Real z_x_left  = xr + vert_offset;
   const Real z_x_right = z_x_left + W;
 
@@ -517,7 +517,7 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   Print() << "geo.vert_offset = " << vert_offset << "\n";
   Print() << "=====================================\n\n";
 
-  // Construct EB geometry pieces
+  // Walls
   auto s_top           = boxS(xlo, y_upper_hi, xhi, yhi);
   auto s_bottom_left   = boxS(xlo, ylo, z_x_left, y_lower_lo);
   auto s_bottom_right  = boxS(z_x_right, ylo, xhi, y_lower_lo);
@@ -527,21 +527,20 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   auto s_right_lower   = boxS(z_x_right, y_lower_lo, xhi, y_base_lo);
   auto s_mid_between   = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
 
-  // Union all pieces
+  // Union
   auto u1 = makeUnion(s_top, s_bottom_left);
   auto u2 = makeUnion(u1, s_bottom_right);
   auto u3 = makeUnion(u2, s_left_upper);
   auto u4 = makeUnion(u3, s_left_lower);
-  auto u5 = makeUnion(u4, *s_right_upper);  // dereference shared_ptr
+  auto u5 = makeUnion(u4, *s_right_upper);
   auto u6 = makeUnion(u5, s_right_lower);
   auto walls = makeUnion(u6, s_mid_between);
 
-  Print() << "[EB] ThreeBranch geometry built cleanly.\n";
+  Print() << "[EB] ThreeBranch geometry successfully built.\n";
 
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
 }
-
 
 void
 CheckpointFile::build(
