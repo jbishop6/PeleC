@@ -85,4 +85,5 @@ geo.cR = 0.02   # right-side mid-wall retraction
 
 geo.Z = 0.08     # Height of the third branch (vertical)
 geo.zW = 0.005   # Wall thickness of third branch
-geo.vert_offset = -0.01 # Adjust this to move vertical branch
+# geo.vert_offset = -0.01 # Adjust this to move vertical branch
+geo.z_pos = 0.7 # vertical branch position
