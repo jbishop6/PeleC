@@ -76,7 +76,7 @@ geo.L        = 0.0390625
 geo.Z        = 0.08
 
 geo.xs       = 0.30
-geo.xr       = 0.72 # 0.7 originally trying to make upper branch slightly longer
+geo.xr       = 0.70 
 geo.mid      = 0.025390625
 geo.y_offset = 0.0
 
