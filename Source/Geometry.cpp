@@ -449,21 +449,22 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
 
   ParmParse pp("geo");
 
-  // Geometry parameters
   Real W = 0.04, H = 0.04, L = 0.04, xs = 0.30, xr = 0.70;
   Real mid = 0.02;
-  Real cL = 0.00, cR = 0.00;
+  Real cL  = 0.00;
+  Real cR  = 0.00;
   Real y_offset = 0.0;
   Real Z = 0.08;
-  Real vert_offset = 0.0;
+  Real z_pos = 0.70;  // NEW: Position of vertical branch (default at xr)
 
-  // Read inputs
   pp.query("W", W);  pp.query("H", H);  pp.query("L", L);
   pp.query("xs", xs); pp.query("xr", xr); pp.query("mid", mid);
   pp.query("cL", cL); pp.query("cR", cR); pp.query("y_offset", y_offset);
-  pp.query("Z", Z); pp.query("vert_offset", vert_offset);
+  pp.query("Z", Z);
+  pp.query("z_pos", z_pos);  // NEW: Query the vertical branch position
 
   const RealBox& rb = geom.ProbDomain();
+
   const Real xlo = rb.lo(0), xhi = rb.hi(0);
   const Real ylo = rb.lo(1), yhi = rb.hi(1);
   const Real ymid = 0.5 * (ylo + yhi) + y_offset;
@@ -472,71 +473,72 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   const Real dy = geom.CellSize(1);
   const Real h  = std::max(dx, dy);
 
-  xs  = std::min(std::max(xs, xlo + 2*h), xhi - 3*W - 2*h);
-  xr  = std::min(std::max(xr, xs + 6*h), xhi - 3*W - 2*h);
+  xs  = std::min(std::max(xs, xlo + 2*h), xhi - 2*h);
+  xr  = std::min(std::max(xr, xs + 6*h), xhi - 2*h);
   mid = std::min(std::max(mid, 4*h), std::max(W - 4*h, 4*h + 1e-12));
 
   const Real max_pad = std::max(0.0, 0.5*(xr - xs) - 3*h);
   cL = std::min(std::max(cL, 0.0), max_pad);
   cR = std::min(std::max(cR, 0.0), max_pad);
 
-  // Box helper
+  // NEW: Constrain z_pos to valid range (between xs and xhi, with room for width)
+  z_pos = std::min(std::max(z_pos, xs), xhi);
+
   auto boxS = [] (Real x0, Real y0, Real x1, Real y1) {
-    Array<Real, AMREX_SPACEDIM> lo{AMREX_D_DECL(std::min(x0, x1), std::min(y0, y1), 0.0)};
-    Array<Real, AMREX_SPACEDIM> hi{AMREX_D_DECL(std::max(x0, x1), std::max(y0, y1), 0.0)};
+    Array<Real, AMREX_SPACEDIM> lo{AMREX_D_DECL(std::min(x0,x1), std::min(y0,y1), 0.0)};
+    Array<Real, AMREX_SPACEDIM> hi{AMREX_D_DECL(std::max(x0,x1), std::max(y0,y1), 0.0)};
     return BoxIF(lo, hi, false);
   };
 
-  // Safe wall generator
-  auto maybe_boxS = [&boxS](Real x0, Real x1, Real y0, Real y1) -> std::shared_ptr<amrex::EB2::BaseIF> {
-    if (x1 > x0 + 1e-12)
-      return std::make_shared<BoxIF>(boxS(x0, y0, x1, y1));
-    else
-      return std::make_shared<BoxIF>(boxS(1.0, 1.0, 1.0, 1.0)); // dummy
-  };
-
-  // Y extents
   const Real y_base_lo  = ymid - 0.5 * W;
   const Real y_base_hi  = ymid + 0.5 * W;
+  const Real y_upper_lo = y_base_hi;
   const Real y_upper_hi = y_base_hi + H;
   const Real y_lower_lo = y_base_lo - L;
+  const Real y_lower_hi = y_base_lo;
 
   const Real y_mid_lo = ymid - 0.5 * mid;
   const Real y_mid_hi = ymid + 0.5 * mid;
 
-  // Middle wall extent
   const Real mw_x0 = xs + cL;
   const Real mw_x1 = xr - cR;
 
-  // Third branch (vertical)
-  const Real z_x_left  = xr + vert_offset;
-  const Real z_x_right = z_x_left + W;
+  // MODIFIED: Vertical branch position now controlled by z_pos parameter
+  const Real z_x_left = z_pos;
+  const Real z_x_right = xhi;  // Flush with right wall
 
-  Print() << "\n=== THREE-BRANCH GEOMETRY (Final) ===\n";
-  Print() << "Vertical branch: x=[" << z_x_left << ", " << z_x_right << "]\n";
-  Print() << "geo.vert_offset = " << vert_offset << "\n";
-  Print() << "=====================================\n\n";
+  Print() << "\n=== THREE-BRANCH GEOMETRY (Movable Vertical Branch) ===\n";
+  Print() << "Vertical branch position (z_pos): " << z_pos << "\n";
+  Print() << "Vertical branch: x=[" << z_x_left << ", " << z_x_right 
+          << "], y=[" << ylo << ", " << y_lower_lo << "]\n";
+  Print() << "Vertical branch width: " << (z_x_right - z_x_left) << "\n";
+  Print() << "=======================================================\n\n";
 
-  // Walls
-  auto s_top           = boxS(xlo, y_upper_hi, xhi, yhi);
-  auto s_bottom_left   = boxS(xlo, ylo, z_x_left, y_lower_lo);
-  auto s_bottom_right  = boxS(z_x_right, ylo, xhi, y_lower_lo);
-  auto s_left_upper    = boxS(xlo, y_base_hi, xs, y_upper_hi);
-  auto s_left_lower    = boxS(xlo, y_lower_lo, xs, y_base_lo);
-  auto s_right_upper   = maybe_boxS(xr, z_x_left, y_base_hi, y_upper_hi);
-  auto s_right_lower   = boxS(z_x_right, y_lower_lo, xhi, y_base_lo);
-  auto s_mid_between   = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
+  // Top boundary wall
+  auto s_top = boxS(xlo, y_upper_hi, xhi, yhi);
 
-  // Union
+  // Bottom walls - adjusted for movable vertical branch
+  auto s_bottom_left  = boxS(xlo, ylo, z_x_left, y_lower_lo);
+  auto s_bottom_right = boxS(z_x_right, ylo, xhi, y_lower_lo);
+
+  // Two-branch system walls
+  auto s_left_upper   = boxS(xlo, y_base_hi, xs, y_upper_hi);
+  auto s_left_lower   = boxS(xlo, y_lower_lo, xs, y_base_lo);
+  auto s_right_upper  = boxS(xr, y_base_hi, xhi, y_upper_hi);
+  auto s_right_lower  = boxS(z_x_right, y_lower_lo, xhi, y_base_lo);
+
+  auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
+
+  // Union everything
   auto u1 = makeUnion(s_top, s_bottom_left);
   auto u2 = makeUnion(u1, s_bottom_right);
   auto u3 = makeUnion(u2, s_left_upper);
   auto u4 = makeUnion(u3, s_left_lower);
-  auto u5 = makeUnion(u4, *s_right_upper);
+  auto u5 = makeUnion(u4, s_right_upper);
   auto u6 = makeUnion(u5, s_right_lower);
   auto walls = makeUnion(u6, s_mid_between);
 
-  Print() << "[EB] ThreeBranch geometry successfully built.\n";
+  Print() << "[EB] ThreeBranch with movable vertical branch at x=" << z_pos << "\n";
 
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
