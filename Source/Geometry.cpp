@@ -459,7 +459,7 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   pp.query("W", W);  pp.query("H", H);  pp.query("L", L);
   pp.query("xs", xs); pp.query("xr", xr); pp.query("mid", mid);
   pp.query("cL", cL); pp.query("cR", cR); pp.query("y_offset", y_offset);
-  pp.query("Z", Z);
+  pp.query("Z", Z); // <--- this is now used directly
 
   const RealBox& rb = geom.ProbDomain();
 
@@ -489,7 +489,7 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   const Real y_base_hi  = ymid + 0.5 * W;
   const Real y_upper_lo = y_base_hi;
   const Real y_upper_hi = y_base_hi + H;
-  const Real y_lower_lo = y_base_lo - L;
+  const Real y_lower_lo = ylo + Z;  // Use Z from input file
   const Real y_lower_hi = y_base_lo;
 
   const Real y_mid_lo = ymid - 0.5 * mid;
@@ -498,32 +498,32 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   const Real mw_x0 = xs + cL;
   const Real mw_x1 = xr - cR;
 
-  // Third branch - vertical channel parameters
   const Real z_x_left = xr;
   const Real z_x_right = xr + W;
 
-  Print() << "\n=== THREE-BRANCH GEOMETRY (Uniform Width) ===\n";
+  Print() << "\n=== THREE-BRANCH GEOMETRY ===\n";
   Print() << "Vertical branch: x=[" << z_x_left << ", " << z_x_right 
           << "], y=[" << ylo << ", " << y_lower_lo << "]\n";
-  Print() << "Vertical branch width: " << W << "\n";
-  Print() << "=============================================\n\n";
+  Print() << "Vertical height = " << Z << ", Vertical width = " << W << "\n";
+  Print() << "==========================================\n\n";
 
-  // Top boundary wall
+  // Top wall
   auto s_top = boxS(xlo, y_upper_hi, xhi, yhi);
 
-  // Bottom walls — leave a vertical gap of exactly width W
-  auto s_bottom_left  = boxS(xlo, ylo, z_x_left, y_lower_lo);  // Everything left of vertical channel
-  auto s_bottom_right = boxS(z_x_right, ylo, xhi, y_lower_lo); // Everything right of vertical channel
+  // Bottom walls (leave vertical gap)
+  auto s_bottom_left  = boxS(xlo, ylo, z_x_left, y_lower_lo);
+  auto s_bottom_right = boxS(z_x_right, ylo, xhi, y_lower_lo);
 
-  // Two-branch system walls
+  // Horizontal branch extensions
   auto s_left_upper   = boxS(xlo, y_base_hi, xs, y_upper_hi);
   auto s_left_lower   = boxS(xlo, y_lower_lo, xs, y_base_lo);
   auto s_right_upper  = boxS(xr, y_base_hi, xhi, y_upper_hi);
   auto s_right_lower  = boxS(z_x_right, y_lower_lo, xhi, y_base_lo);
 
+  // Middle wall
   auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
 
-  // Union everything
+  // Union all solids
   auto u1 = makeUnion(s_top, s_bottom_left);
   auto u2 = makeUnion(u1, s_bottom_right);
   auto u3 = makeUnion(u2, s_left_upper);
@@ -532,11 +532,12 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   auto u6 = makeUnion(u5, s_right_lower);
   auto walls = makeUnion(u6, s_mid_between);
 
-  Print() << "[EB] ThreeBranch with uniform vertical and horizontal width\n";
+  Print() << "[EB] ThreeBranch geometry built successfully\n";
 
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
 }
+
 
 void
 CheckpointFile::build(
