@@ -70,18 +70,18 @@ eb2.max_coarsening_level = 0
 eb2.geom_type = threebranch
 
 # ThreeBranch geometry parameters
-geo.W        = 0.041015625
-geo.H        = 0.0390625
-geo.L        = 0.0390625
-geo.Z        = 0.08
+# ------------------ EMBEDDED BOUNDARY -------------------
+eb2.geom_type = threebranch
+
+geo.W        = 0.04       # duct width (horizontal)
+geo.H        = 0.06       # total height of both ducts + mid-wall
+geo.L        = 0.04       # unused currently, optional
+geo.Z        = 0.08       # vertical branch height
+geo.zW       = 0.005      # vertical branch width
+geo.mid      = 0.02       # mid-wall thickness
 
 geo.xs       = 0.30
 geo.xr       = 0.70
-geo.mid      = 0.025390625
-geo.y_offset = 0.0
+geo.cL       = 0.01
+geo.cR       = 0.01
 
-geo.cL = 0.02   # left-side mid-wall retraction
-geo.cR = 0.02   # right-side mid-wall retraction
-
-geo.Z = 0.02     # Height of the third branch (vertical)
-geo.zW = 0.005   # Wall thickness of third branch
