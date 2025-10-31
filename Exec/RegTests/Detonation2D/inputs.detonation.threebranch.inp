@@ -77,7 +77,7 @@ geo.W        = 0.04       # duct width (horizontal)
 geo.H        = 0.06       # total height of both ducts + mid-wall
 geo.L        = 0.04       # unused currently, optional
 geo.Z        = 0.08       # vertical branch height
-geo.zW       = 0.005      # vertical branch width
+geo.zW       = 0.01      # vertical branch width
 geo.mid      = 0.02       # mid-wall thickness
 
 geo.xs       = 0.30
