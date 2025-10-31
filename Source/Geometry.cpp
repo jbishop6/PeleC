@@ -454,13 +454,12 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   Real cL  = 0.00;
   Real cR  = 0.00;
   Real y_offset = 0.0;
-  Real Z = 0.08;     // Height of vertical branch (optional, not used directly here)
-  Real zW = 0.005;   // Thickness (width) of vertical branch
+  Real Z = 0.08;
 
   pp.query("W", W);  pp.query("H", H);  pp.query("L", L);
   pp.query("xs", xs); pp.query("xr", xr); pp.query("mid", mid);
   pp.query("cL", cL); pp.query("cR", cR); pp.query("y_offset", y_offset);
-  pp.query("Z", Z); pp.query("zW", zW);
+  pp.query("Z", Z);
 
   const RealBox& rb = geom.ProbDomain();
 
@@ -499,54 +498,45 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   const Real mw_x0 = xs + cL;
   const Real mw_x1 = xr - cR;
 
-  // Coordinates of the vertical branch (flush with lower horizontal duct)
-  const Real z_x_left  = xr;
-  const Real z_x_right = xr + zW;
+  // Third branch - vertical channel parameters
+  const Real z_x_left = xr;
+  const Real z_x_right = xr + W;
 
-  // === Logging ===
-  Print() << "\n=== THREE-BRANCH GEOMETRY (Vertical Flush) ===\n";
-  Print() << "Horizontal branch width: " << W << "\n";
-  Print() << "Vertical branch width (zW): " << zW << "\n";
-  Print() << "Vertical branch from y = " << ylo << " to " << y_base_lo << "\n";
-  Print() << "==============================================\n\n";
+  Print() << "\n=== THREE-BRANCH GEOMETRY (Uniform Width) ===\n";
+  Print() << "Vertical branch: x=[" << z_x_left << ", " << z_x_right 
+          << "], y=[" << ylo << ", " << y_lower_lo << "]\n";
+  Print() << "Vertical branch width: " << W << "\n";
+  Print() << "=============================================\n\n";
 
-  // === Solid regions ===
-
-  // Top wall
+  // Top boundary wall
   auto s_top = boxS(xlo, y_upper_hi, xhi, yhi);
 
-  // Bottom walls — leaving space for vertical branch
-  auto s_bottom_left  = boxS(xlo, ylo, z_x_left, y_lower_lo);
-  auto s_bottom_right = boxS(z_x_right, ylo, xhi, y_lower_lo);
+  // Bottom walls — leave a vertical gap of exactly width W
+  auto s_bottom_left  = boxS(xlo, ylo, z_x_left, y_lower_lo);  // Everything left of vertical channel
+  auto s_bottom_right = boxS(z_x_right, ylo, xhi, y_lower_lo); // Everything right of vertical channel
 
-  // Horizontal channel walls
+  // Two-branch system walls
   auto s_left_upper   = boxS(xlo, y_base_hi, xs, y_upper_hi);
   auto s_left_lower   = boxS(xlo, y_lower_lo, xs, y_base_lo);
   auto s_right_upper  = boxS(xr, y_base_hi, xhi, y_upper_hi);
   auto s_right_lower  = boxS(z_x_right, y_lower_lo, xhi, y_base_lo);
 
-  // Middle wall between upper and lower branches
   auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
 
-  // Vertical branch wall (new addition, flush with lower branch)
-  auto s_vertical = boxS(z_x_left, ylo, z_x_right, y_base_lo);
-
-  // === Union all solids ===
+  // Union everything
   auto u1 = makeUnion(s_top, s_bottom_left);
   auto u2 = makeUnion(u1, s_bottom_right);
   auto u3 = makeUnion(u2, s_left_upper);
   auto u4 = makeUnion(u3, s_left_lower);
   auto u5 = makeUnion(u4, s_right_upper);
   auto u6 = makeUnion(u5, s_right_lower);
-  auto walls = makeUnion(u6, s_mid_between, s_vertical);
+  auto walls = makeUnion(u6, s_mid_between);
 
-  Print() << "[EB] ThreeBranch: xs=" << xs << ", xr=" << xr << ", mid=" << mid
-          << ", cL=" << cL << ", cR=" << cR << ", zW=" << zW << ", dx=" << dx << ", dy=" << dy << "\n";
+  Print() << "[EB] ThreeBranch with uniform vertical and horizontal width\n";
 
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
 }
-
 
 
 void
