@@ -473,10 +473,11 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   const Real dy = geom.CellSize(1);
   const Real h  = std::max(dx, dy);
 
-  Real xr = xs + X;
+  // Calculate xr as the EXIT position (right edge of branches)
+  Real xr = xs + X;  // Should be 0.30 + 0.40 = 0.70
 
   xs  = std::min(std::max(xs, xlo + 2*h), xhi - 2*h);
-  xr  = std::min(std::max(xr, xs + 6*h), xhi - 2*h);
+  
   mid = std::min(std::max(mid, 4*h), std::max(W - 4*h, 4*h + 1e-12));
 
   const Real max_pad = std::max(0.0, 0.5*(xr - xs) - 3*h);
@@ -502,22 +503,23 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   const Real mw_x0 = xs + cL;
   const Real mw_x1 = xr - cR;
 
-  // Third branch: left edge at xr (exit position)
-  const Real z_x_left = xr;
-  const Real z_x_right = xr + W;
+  // CORRECTED: Third branch at EXIT (xr), not at midpoint
+  const Real z_x_left = xr;           // Left edge at exit = 0.70
+  const Real z_x_right = xr + W;      // Right edge = 0.70 + 0.04 = 0.74
   const Real z_y_top = y_lower_lo;
   const Real z_y_bottom = z_y_top - Z;
 
-  Print() << "\n=== THREE-BRANCH GEOMETRY ===\n";
-  Print() << "xs=" << xs << ", xr=" << xr << ", X=" << X << "\n";
-  Print() << "Third branch: x=[" << z_x_left << ", " << z_x_right 
+  Print() << "\n=== THREE-BRANCH GEOMETRY (Exit Position) ===\n";
+  Print() << "xs=" << xs << ", X=" << X << ", xr=" << xr << "\n";
+  Print() << "Third branch at EXIT: x=[" << z_x_left << ", " << z_x_right 
           << "], y=[" << z_y_bottom << ", " << z_y_top << "]\n";
-  Print() << "==============================\n\n";
+  Print() << "Should be at x ≈ 0.70 to 0.74\n";
+  Print() << "=============================================\n\n";
 
   // Top boundary wall
   auto s_top = boxS(xlo, y_upper_hi, xhi, yhi);
 
-  // Bottom walls
+  // Bottom walls - gap at EXIT position (xr = 0.70)
   auto s_bottom_left  = boxS(xlo, ylo, xr, y_lower_lo);
   auto s_bottom_under = boxS(xr, ylo, z_x_right, z_y_bottom);
   auto s_bottom_right = boxS(z_x_right, ylo, xhi, y_lower_lo);
@@ -540,7 +542,7 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   auto u7 = makeUnion(u6, s_right_lower);
   auto walls = makeUnion(u7, s_mid_between);
 
-  Print() << "[EB] ThreeBranch with exit-aligned vertical branch\n";
+  Print() << "[EB] ThreeBranch at exit position\n";
 
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
