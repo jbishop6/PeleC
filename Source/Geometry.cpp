@@ -450,7 +450,7 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   ParmParse pp("geo");
 
   Real W = 0.04, H = 0.04, L = 0.04, xs = 0.30;
-  Real X = 0.40;  // NEW: Horizontal length of branches (replaces xr)
+  Real X = 0.40;  // Horizontal length of branches
   Real mid = 0.02;
   Real cL  = 0.00;
   Real cR  = 0.00;
@@ -459,7 +459,7 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
 
   pp.query("W", W);  pp.query("H", H);  pp.query("L", L);
   pp.query("xs", xs); 
-  pp.query("X", X);  // NEW: Query X parameter
+  pp.query("X", X);
   pp.query("mid", mid);
   pp.query("cL", cL); pp.query("cR", cR); pp.query("y_offset", y_offset);
   pp.query("Z", Z);
@@ -474,7 +474,7 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   const Real dy = geom.CellSize(1);
   const Real h  = std::max(dx, dy);
 
-  // NEW: Calculate xr from X
+  // Calculate xr from X
   Real xr = xs + X;
 
   xs  = std::min(std::max(xs, xlo + 2*h), xhi - 2*h);
@@ -504,43 +504,48 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   const Real mw_x0 = xs + cL;
   const Real mw_x1 = xr - cR;
 
-  // Third branch - vertical channel parameters
-  const Real z_x_left = xr;
-  const Real z_x_right = xr + W;
+  // NEW: Third branch positioned at MIDPOINT of X (aligned with separator)
+  const Real x_separator = xs + 0.5 * X;  // Midpoint of horizontal branches
+  const Real z_x_left = x_separator - 0.5 * W;  // Center the branch on separator
+  const Real z_x_right = x_separator + 0.5 * W;
+  const Real z_y_top = y_lower_lo;  // Inlet at bottom of lower branch
+  const Real z_y_bottom = z_y_top - Z;  // Extends down by Z
 
-  Print() << "\n=== THREE-BRANCH GEOMETRY (X-Adjustable) ===\n";
+  Print() << "\n=== THREE-BRANCH GEOMETRY (Separator-Aligned) ===\n";
   Print() << "X (horizontal branch length): " << X << "\n";
-  Print() << "Calculated xr = xs + X = " << xs << " + " << X << " = " << xr << "\n";
+  Print() << "Separator position: x = " << x_separator << " (xs + X/2)\n";
   Print() << "Vertical branch: x=[" << z_x_left << ", " << z_x_right 
-          << "], y=[" << ylo << ", " << y_lower_lo << "]\n";
-  Print() << "Vertical branch width: " << W << "\n";
-  Print() << "============================================\n\n";
+          << "], y=[" << z_y_bottom << ", " << z_y_top << "]\n";
+  Print() << "Vertical branch centered on separator with width W = " << W << "\n";
+  Print() << "=================================================\n\n";
 
   // Top boundary wall
   auto s_top = boxS(xlo, y_upper_hi, xhi, yhi);
 
-  // Bottom walls — leave a vertical gap of exactly width W
+  // Bottom walls - leave gap for vertical branch at separator position
   auto s_bottom_left  = boxS(xlo, ylo, z_x_left, y_lower_lo);
+  auto s_bottom_middle = boxS(z_x_left, ylo, z_x_right, z_y_bottom);  // Under vertical branch
   auto s_bottom_right = boxS(z_x_right, ylo, xhi, y_lower_lo);
 
   // Two-branch system walls
   auto s_left_upper   = boxS(xlo, y_base_hi, xs, y_upper_hi);
   auto s_left_lower   = boxS(xlo, y_lower_lo, xs, y_base_lo);
   auto s_right_upper  = boxS(xr, y_base_hi, xhi, y_upper_hi);
-  auto s_right_lower  = boxS(z_x_right, y_lower_lo, xhi, y_base_lo);
+  auto s_right_lower  = boxS(xr, y_lower_lo, xhi, y_base_lo);
 
   auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
 
   // Union everything
   auto u1 = makeUnion(s_top, s_bottom_left);
-  auto u2 = makeUnion(u1, s_bottom_right);
-  auto u3 = makeUnion(u2, s_left_upper);
-  auto u4 = makeUnion(u3, s_left_lower);
-  auto u5 = makeUnion(u4, s_right_upper);
-  auto u6 = makeUnion(u5, s_right_lower);
-  auto walls = makeUnion(u6, s_mid_between);
+  auto u2 = makeUnion(u1, s_bottom_middle);
+  auto u3 = makeUnion(u2, s_bottom_right);
+  auto u4 = makeUnion(u3, s_left_upper);
+  auto u5 = makeUnion(u4, s_left_lower);
+  auto u6 = makeUnion(u5, s_right_upper);
+  auto u7 = makeUnion(u6, s_right_lower);
+  auto walls = makeUnion(u7, s_mid_between);
 
-  Print() << "[EB] ThreeBranch with X-adjustable horizontal length\n";
+  Print() << "[EB] ThreeBranch with separator-aligned vertical branch\n";
 
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
