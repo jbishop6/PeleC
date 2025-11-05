@@ -6,8 +6,8 @@ stop_time = 1.959e-6
 geometry.is_periodic = 0 0
 geometry.coord_sys   = 0
 geometry.prob_lo     = 0.0  0.0
-geometry.prob_hi     = 1.0  1.0  # 1.0
-amr.n_cell           = 1024 1024 #1024
+geometry.prob_hi     = 1.0  0.125
+amr.n_cell           = 512  64
 
 # ------------------ BOUNDARY CONDITIONS -------------------
 pelec.lo_bc = "SlipWall" "SlipWall"
@@ -45,7 +45,8 @@ amr.check_int  = 100
 # ------------------ PLOTFILES -------------------
 amr.plot_files_output = 1
 amr.plot_file         = plt
-amr.plot_int          = 100
+amr.plot_int          = 1
+# put vfrac in plot_vars (not derive) so it is guaranteed to appear
 amr.plot_vars         = vfrac density Temp
 amr.derive_plot_vars  = pressure x_velocity y_velocity magvel magvort
 
@@ -63,25 +64,27 @@ prob.right_gas = HE
 
 # ------------------ EMBEDDED BOUNDARY (EB) -------------------
 pelec.eb_in_domain = 1
-ebd.boundary_grad_stencil_type = 1  # ghost nodes
 
+# Use your new factory-registered geometry: TwoBranch::identifier() == "twobranch"
 eb2.build_type = all
 eb2.max_coarsening_level = 0
 eb2.geom_type = threebranch
 
-# ThreeBranch geometry parameters
-# ------------------ EMBEDDED BOUNDARY -------------------
-eb2.geom_type = threebranch
+# same params the rotated_box uses (your TwoBranch currently clones that)
+eb2.box_lo = 0.40 0.03
+eb2.box_hi = 0.60 0.09
+eb2.box_has_fluid_inside = 0
+eb2.box_rotation = 0
+eb2.box_rotation_axe = 2
 
-geo.W        = 0.04       # duct width (horizontal)
-geo.H        = 0.06       # total height of both ducts + mid-wall
-geo.L        = 0.04       # unused currently, optional
-geo.Z        = 0.08       # vertical branch height
-geo.zW       = 0.01      # vertical branch width
-geo.mid      = 0.02       # mid-wall thickness
+# Two-branch geometry knobs (domain units; tweak as you like)
+geo.W  = 0.041015625
+geo.H  = 0.0390625
+geo.L  = 0.0390625
+geo.xs = 0.30
+geo.xr = 0.70
+geo.mid = 0.02
 
-geo.xs       = 0.30
-geo.xr       = 0.70
-geo.cL       = 0.01
-geo.cR       = 0.01
-
+# NEW: retract mid-wall from each end to connect branches
+geo.cL = 0.05    # left-side connection length
+geo.cR = 0.05    # right-side connection length
