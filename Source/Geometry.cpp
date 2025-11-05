@@ -450,7 +450,7 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   ParmParse pp("geo");
 
   Real W = 0.04, H = 0.04, L = 0.04, xs = 0.30;
-  Real X = 0.40;  // Horizontal length of branches
+  Real X = 0.40;
   Real mid = 0.02;
   Real cL  = 0.00;
   Real cR  = 0.00;
@@ -474,7 +474,6 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   const Real dy = geom.CellSize(1);
   const Real h  = std::max(dx, dy);
 
-  // Calculate xr from X
   Real xr = xs + X;
 
   xs  = std::min(std::max(xs, xlo + 2*h), xhi - 2*h);
@@ -504,28 +503,27 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   const Real mw_x0 = xs + cL;
   const Real mw_x1 = xr - cR;
 
-  // NEW: Third branch positioned at MIDPOINT of X (aligned with separator)
-  const Real x_separator = xs + 0.5 * X;  // Midpoint of horizontal branches
-  const Real z_x_left = x_separator - 0.5 * W;  // Center the branch on separator
+  // Third branch positioned at separator (midpoint of X)
+  const Real x_separator = xs + 0.5 * X;
+  const Real z_x_left = x_separator - 0.5 * W;
   const Real z_x_right = x_separator + 0.5 * W;
-  const Real z_y_top = y_lower_lo;  // Inlet at bottom of lower branch
-  const Real z_y_bottom = z_y_top - Z;  // Extends down by Z
+  const Real z_y_top = y_lower_lo;
+  const Real z_y_bottom = z_y_top - Z;
 
   Print() << "\n=== THREE-BRANCH GEOMETRY (Separator-Aligned) ===\n";
-  Print() << "X (horizontal branch length): " << X << "\n";
-  Print() << "Separator position: x = " << x_separator << " (xs + X/2)\n";
+  Print() << "xs=" << xs << ", xr=" << xr << ", X=" << X << "\n";
+  Print() << "Separator at x=" << x_separator << " (should be " << (xs + 0.5*X) << ")\n";
   Print() << "Vertical branch: x=[" << z_x_left << ", " << z_x_right 
           << "], y=[" << z_y_bottom << ", " << z_y_top << "]\n";
-  Print() << "Vertical branch centered on separator with width W = " << W << "\n";
   Print() << "=================================================\n\n";
 
   // Top boundary wall
   auto s_top = boxS(xlo, y_upper_hi, xhi, yhi);
 
-  // Bottom walls - leave gap for vertical branch at separator position
-  auto s_bottom_left  = boxS(xlo, ylo, z_x_left, y_lower_lo);
-  auto s_bottom_middle = boxS(z_x_left, ylo, z_x_right, z_y_bottom);  // Under vertical branch
-  auto s_bottom_right = boxS(z_x_right, ylo, xhi, y_lower_lo);
+  // CRITICAL FIX: Bottom walls positioned relative to SEPARATOR, not xr
+  auto s_bottom_left  = boxS(xlo, ylo, z_x_left, y_lower_lo);           // Left of separator
+  auto s_bottom_middle = boxS(z_x_left, ylo, z_x_right, z_y_bottom);    // Under vertical branch
+  auto s_bottom_right = boxS(z_x_right, ylo, xhi, y_lower_lo);          // Right of separator
 
   // Two-branch system walls
   auto s_left_upper   = boxS(xlo, y_base_hi, xs, y_upper_hi);
@@ -550,7 +548,6 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
 }
-
 
 void
 CheckpointFile::build(
