@@ -441,7 +441,6 @@ void TwoBranch::build (const amrex::Geometry& geom,
   EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
 }
 
-
 void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
 {
   using namespace amrex;
@@ -503,37 +502,37 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   const Real mw_x0 = xs + cL;
   const Real mw_x1 = xr - cR;
 
-  // Third branch: LEFT EDGE flush with exit (xr)
+  // Third branch: left edge at xr (exit position)
   const Real z_x_left = xr;
   const Real z_x_right = xr + W;
   const Real z_y_top = y_lower_lo;
   const Real z_y_bottom = z_y_top - Z;
 
-  Print() << "\n=== THREE-BRANCH GEOMETRY (Exit-Aligned) ===\n";
+  Print() << "\n=== THREE-BRANCH GEOMETRY ===\n";
   Print() << "xs=" << xs << ", xr=" << xr << ", X=" << X << "\n";
-  Print() << "Vertical branch LEFT EDGE at exit: x=[" << z_x_left << ", " << z_x_right 
+  Print() << "Third branch: x=[" << z_x_left << ", " << z_x_right 
           << "], y=[" << z_y_bottom << ", " << z_y_top << "]\n";
-  Print() << "============================================\n\n";
+  Print() << "==============================\n\n";
 
   // Top boundary wall
   auto s_top = boxS(xlo, y_upper_hi, xhi, yhi);
 
-  // Bottom walls - gap starts at xr (exit position)
-  auto s_bottom_left  = boxS(xlo, ylo, z_x_left, y_lower_lo);
-  auto s_bottom_middle = boxS(z_x_left, ylo, z_x_right, z_y_bottom);
+  // Bottom walls
+  auto s_bottom_left  = boxS(xlo, ylo, xr, y_lower_lo);
+  auto s_bottom_under = boxS(xr, ylo, z_x_right, z_y_bottom);
   auto s_bottom_right = boxS(z_x_right, ylo, xhi, y_lower_lo);
 
-  // Two-branch system walls - RIGHT WALLS must stop at xr, not extend past
+  // Two-branch system walls
   auto s_left_upper   = boxS(xlo, y_base_hi, xs, y_upper_hi);
   auto s_left_lower   = boxS(xlo, y_lower_lo, xs, y_base_lo);
   auto s_right_upper  = boxS(xr, y_base_hi, xhi, y_upper_hi);
-  auto s_right_lower  = boxS(xr, y_lower_lo, xhi, y_base_lo);  // Stops at xr
+  auto s_right_lower  = boxS(z_x_right, y_lower_lo, xhi, y_base_lo);
 
   auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
 
   // Union everything
   auto u1 = makeUnion(s_top, s_bottom_left);
-  auto u2 = makeUnion(u1, s_bottom_middle);
+  auto u2 = makeUnion(u1, s_bottom_under);
   auto u3 = makeUnion(u2, s_bottom_right);
   auto u4 = makeUnion(u3, s_left_upper);
   auto u5 = makeUnion(u4, s_left_lower);
