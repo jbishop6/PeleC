@@ -473,11 +473,11 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   const Real dy = geom.CellSize(1);
   const Real h  = std::max(dx, dy);
 
-  // Calculate xr WITHOUT constraints
+  // Constrain xs FIRST
+  xs = std::min(std::max(xs, xlo + 2*h), xhi - 2*h);
+  
+  // THEN calculate xr from the constrained xs
   Real xr = xs + X;
-
-  // Only constrain xs
-  xs  = std::min(std::max(xs, xlo + 2*h), xhi - 2*h);
   
   mid = std::min(std::max(mid, 4*h), std::max(W - 4*h, 4*h + 1e-12));
 
@@ -504,22 +504,22 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   const Real mw_x0 = xs + cL;
   const Real mw_x1 = xr - cR;
 
-  // Third branch at RIGHT exit (xr)
+  // Third branch at RIGHT exit (xr = xs + X)
   const Real z_x_left = xr;
   const Real z_x_right = xr + W;
   const Real z_y_top = y_lower_lo;
   const Real z_y_bottom = std::max(z_y_top - Z, ylo + 2*h);
 
-  Print() << "\n=== THREE-BRANCH GEOMETRY (Right Exit) ===\n";
+  Print() << "\n=== THREE-BRANCH GEOMETRY (Fixed) ===\n";
   Print() << "xs=" << xs << ", X=" << X << ", xr=" << xr << "\n";
-  Print() << "Third branch at RIGHT: x=[" << z_x_left << ", " << z_x_right 
+  Print() << "Third branch: x=[" << z_x_left << ", " << z_x_right 
           << "], y=[" << z_y_bottom << ", " << z_y_top << "]\n";
-  Print() << "==========================================\n\n";
+  Print() << "=====================================\n\n";
 
   // Top boundary wall
   auto s_top = boxS(xlo, y_upper_hi, xhi, yhi);
 
-  // Bottom walls with gap for third branch at RIGHT
+  // Bottom walls with gap for third branch
   auto s_bottom_left  = boxS(xlo, ylo, xr, y_lower_lo);
   auto s_bottom_under = boxS(xr, ylo, z_x_right, z_y_bottom);
   auto s_bottom_right = boxS(z_x_right, ylo, xhi, y_lower_lo);
@@ -542,7 +542,7 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   auto u7 = makeUnion(u6, s_right_lower);
   auto walls = makeUnion(u7, s_mid_between);
 
-  Print() << "[EB] ThreeBranch with right-exit vertical branch\n";
+  Print() << "[EB] ThreeBranch with aligned third branch\n";
 
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
