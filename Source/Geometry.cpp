@@ -500,26 +500,27 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   const Real y_mid_hi = ymid + 0.5 * mid;
 
   const Real mw_x0 = xs + cL;
-  const Real mw_x1 = xr - cR;  // RIGHT EDGE of blue separator
+  const Real mw_x1 = xr - cR;
 
-  // CORRECTED: Third branch flush to RIGHT EDGE of blue separator
-  const Real z_x_left = mw_x1;
-  const Real z_x_right = mw_x1 + W;
+  // CORRECTED: Third branch flush to RIGHT EDGE of blue wall at xr
+  const Real z_x_left = xr;
+  const Real z_x_right = xr + W;
   const Real z_y_top = y_lower_lo;
   const Real z_y_bottom = std::max(z_y_top - Z, ylo + 2*h);
 
-  Print() << "\n=== THREE-BRANCH GEOMETRY (Flush to Separator) ===\n";
-  Print() << "Blue separator: x=[" << mw_x0 << ", " << mw_x1 << "]\n";
-  Print() << "Third branch flush at mw_x1: x=[" << z_x_left << ", " << z_x_right 
+  Print() << "\n=== THREE-BRANCH GEOMETRY (Flush to Right Edge) ===\n";
+  Print() << "Blue wall extends from xs=" << xs << " to xr=" << xr << "\n";
+  Print() << "Third branch flush at xr: x=[" << z_x_left << ", " << z_x_right 
           << "], y=[" << z_y_bottom << ", " << z_y_top << "]\n";
-  Print() << "==================================================\n\n";
+  Print() << "Should be at x ≈ 0.70 to 0.74\n";
+  Print() << "===================================================\n\n";
 
   // Top boundary wall
   auto s_top = boxS(xlo, y_upper_hi, xhi, yhi);
 
-  // Bottom walls with gap at separator edge (mw_x1)
-  auto s_bottom_left  = boxS(xlo, ylo, mw_x1, y_lower_lo);
-  auto s_bottom_under = boxS(mw_x1, ylo, z_x_right, z_y_bottom);
+  // Bottom walls with gap at xr (right edge of blue wall)
+  auto s_bottom_left  = boxS(xlo, ylo, xr, y_lower_lo);
+  auto s_bottom_under = boxS(xr, ylo, z_x_right, z_y_bottom);
   auto s_bottom_right = boxS(z_x_right, ylo, xhi, y_lower_lo);
 
   // Two-branch system walls
@@ -540,12 +541,11 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   auto u7 = makeUnion(u6, s_right_lower);
   auto walls = makeUnion(u7, s_mid_between);
 
-  Print() << "[EB] ThreeBranch flush to separator edge\n";
+  Print() << "[EB] ThreeBranch flush to right edge of separator\n";
 
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
 }
-
 
 void
 CheckpointFile::build(
