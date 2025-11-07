@@ -502,6 +502,10 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   const Real mw_x0 = xs + cL;
   const Real mw_x1 = xr - cR;
 
+  Print() << "DEBUG: cL=" << cL << ", cR=" << cR << "\n";
+  Print() << "DEBUG: mw_x0=" << mw_x0 << ", mw_x1=" << mw_x1 << "\n";
+  Print() << "DEBUG: xs=" << xs << ", xr=" << xr << "\n";
+
   // CORRECTED: Third branch flush to RIGHT EDGE of blue wall at xr
   const Real z_x_left = mw_x1;
   const Real z_x_right = mw_x1 + W;
