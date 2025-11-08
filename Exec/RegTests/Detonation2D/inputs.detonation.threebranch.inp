@@ -79,7 +79,6 @@ eb2.box_rotation_axe = 2
 
 # Two-branch geometry knobs (domain units; tweak as you like)
 geo.W  = 0.041015625
-geo.H  = 0.1
 geo.L  = 0.0390625
 geo.xs = 0.30
 
@@ -93,4 +92,7 @@ geo.cR = 0.05    # right-side connection length
 # Adjustable parameters of the system
 geo.Z = 0.08
 geo.X = 0.4
-geo.branch_spacing = 0.1 # Represents H in diagram
+#geo.branch_spacing = 0.1 # Represents H in diagram
+geo.H = 0.1 #Total height fro top of upper branch to bottom of lower branch
+geo.upper_fraction = 0.33 #Optional fraction of H for upper channel
+geo.lower_fraction = 0.33 #Optional fraction of H for lower channel
