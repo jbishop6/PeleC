@@ -528,7 +528,7 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   auto s_left_upper   = boxS(xlo, y_base_hi, xs, y_upper_hi);
   auto s_left_lower   = boxS(xlo, y_lower_lo, xs, y_base_lo);
   auto s_right_upper  = boxS(xr, y_base_hi, xhi, y_upper_hi);
-  auto s_right_lower  = boxS(xr, y_lower_lo, xhi, y_base_lo);
+  auto s_right_lower  = boxS(z_x_right, y_lower_lo, xhi, y_base_lo);  // CHANGED: starts at z_x_right instead of xr
 
   auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
 
