@@ -448,22 +448,28 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
 
   ParmParse pp("geo");
 
-  Real W = 0.04, H = 0.04, L = 0.04, xs = 0.30;
+  Real W = 0.04, H = 0.12, L = 0.04, xs = 0.30;
   Real X = 0.40;
   Real mid = 0.02;
   Real cL  = 0.00;
   Real cR  = 0.00;
   Real y_offset = 0.0;
   Real Z = 0.08;
-  Real branch_spacing = 0.04;  // NEW: Controls the H in your diagram
+  Real upper_fraction = 0.33;  // Fraction of H for upper channel
+  Real lower_fraction = 0.33;  // Fraction of H for lower channel
 
-  pp.query("W", W);  pp.query("H", H);  pp.query("L", L);
+  pp.query("W", W);  
+  pp.query("H", H);  // NOW controls total height in diagram
+  pp.query("L", L);
   pp.query("xs", xs); 
   pp.query("X", X);
   pp.query("mid", mid);
-  pp.query("cL", cL); pp.query("cR", cR); pp.query("y_offset", y_offset);
+  pp.query("cL", cL); 
+  pp.query("cR", cR); 
+  pp.query("y_offset", y_offset);
   pp.query("Z", Z);
-  pp.query("branch_spacing", branch_spacing);  // NEW: Read from input file
+  pp.query("upper_fraction", upper_fraction);
+  pp.query("lower_fraction", lower_fraction);
 
   const RealBox& rb = geom.ProbDomain();
 
@@ -481,9 +487,20 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   
   mid = std::min(std::max(mid, 4*h), std::max(W - 4*h, 4*h + 1e-12));
 
-  // NEW: Ensure minimum branch spacing for flow
-  const Real min_branch_spacing = 4*h;  // Minimum spacing for numerical stability
-  branch_spacing = std::max(branch_spacing, min_branch_spacing);
+  // Ensure fractions are valid
+  upper_fraction = std::max(0.2, std::min(0.45, upper_fraction));
+  lower_fraction = std::max(0.2, std::min(0.45, lower_fraction));
+  
+  // Calculate actual channel heights from H
+  const Real upper_channel_height = H * upper_fraction;
+  const Real lower_channel_height = H * lower_fraction;
+  const Real gap_height = H - upper_channel_height - lower_channel_height;
+  
+  // Ensure minimum gap for flow
+  const Real min_gap = 4*h;
+  if (gap_height < min_gap) {
+    Print() << "WARNING: H too small for adequate flow gap. Adjusting channel heights.\n";
+  }
 
   const Real max_pad = std::max(0.0, 0.5*(xr - xs) - 3*h);
   cL = std::min(std::max(cL, 0.0), max_pad);
@@ -495,13 +512,14 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
     return BoxIF(lo, hi, false);
   };
 
-  // MODIFIED: Calculate branch positions using branch_spacing
-  const Real y_base_lo  = ymid - 0.5 * branch_spacing;
-  const Real y_base_hi  = ymid + 0.5 * branch_spacing;
-  const Real y_upper_lo = y_base_hi;
-  const Real y_upper_hi = y_base_hi + H;
-  const Real y_lower_lo = y_base_lo - L;
-  const Real y_lower_hi = y_base_lo;
+  // Calculate branch positions from H
+  const Real y_upper_hi = ymid + 0.5 * H;
+  const Real y_upper_lo = y_upper_hi - upper_channel_height;
+  const Real y_lower_hi = ymid - 0.5 * H + lower_channel_height;
+  const Real y_lower_lo = ymid - 0.5 * H;
+  
+  const Real y_base_hi = y_upper_lo;
+  const Real y_base_lo = y_lower_hi;
 
   const Real y_mid_lo = ymid - 0.5 * mid;
   const Real y_mid_hi = ymid + 0.5 * mid;
@@ -509,27 +527,28 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   const Real mw_x0 = xs + cL;
   const Real mw_x1 = xr - cR;
 
-  // Third branch positioned at RIGHT EDGE of blue separator (mw_x1)
+  // Third branch positioned at RIGHT EDGE of blue separator
   const Real z_x_left = mw_x1;
   const Real z_x_right = mw_x1 + W; 
   const Real z_y_top = y_lower_lo;
   const Real z_y_bottom = std::max(z_y_top - Z, ylo + 2*h);
 
   Print() << "\n=== THREE-BRANCH GEOMETRY ===\n";
+  Print() << "Total height H: " << H << "\n";
+  Print() << "Upper channel height: " << upper_channel_height << "\n";
+  Print() << "Lower channel height: " << lower_channel_height << "\n";
+  Print() << "Gap between branches: " << gap_height << "\n";
   Print() << "xs=" << xs << ", xr=" << xr << ", X=" << X << "\n";
   Print() << "cL=" << cL << ", cR=" << cR << "\n";
-  Print() << "Branch spacing (H in diagram): " << branch_spacing << "\n";
-  Print() << "Upper branch height: " << H << "\n";
-  Print() << "Lower branch height: " << L << "\n";
   Print() << "Blue separator: x=[" << mw_x0 << ", " << mw_x1 << "]\n";
-  Print() << "Third branch at mw_x1: x=[" << z_x_left << ", " << z_x_right 
+  Print() << "Third branch: x=[" << z_x_left << ", " << z_x_right 
           << "], y=[" << z_y_bottom << ", " << z_y_top << "]\n";
   Print() << "=============================\n\n";
 
   // Top boundary wall
   auto s_top = boxS(xlo, y_upper_hi, xhi, yhi);
 
-  // Bottom walls - gap starts at mw_x1 (right edge of separator)
+  // Bottom walls - gap starts at mw_x1
   auto s_bottom_left  = boxS(xlo, ylo, mw_x1, y_lower_lo);
   auto s_bottom_under = boxS(mw_x1, ylo, z_x_right, z_y_bottom);
   auto s_bottom_right = boxS(z_x_right, ylo, xhi, y_lower_lo);
@@ -552,7 +571,7 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   auto u7 = makeUnion(u6, s_right_lower);
   auto walls = makeUnion(u7, s_mid_between);
 
-  Print() << "[EB] ThreeBranch with adjustable branch spacing\n";
+  Print() << "[EB] ThreeBranch with H controlling total height\n";
 
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
