@@ -503,10 +503,8 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   const Real mw_x1 = xr - cR;
 
   // Third branch positioned at RIGHT EDGE of blue separator (mw_x1)
-  // Width matches upper branch exit width
-  const Real upper_exit_width = xr - mw_x1;
   const Real z_x_left = mw_x1;
-  const Real z_x_right = mw_x1 + upper_exit_width;
+  const Real z_x_right = mw_x1 + W;
   const Real z_y_top = y_lower_lo;
   const Real z_y_bottom = std::max(z_y_top - Z, ylo + 2*h);
 
@@ -514,10 +512,8 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   Print() << "xs=" << xs << ", xr=" << xr << ", X=" << X << "\n";
   Print() << "cL=" << cL << ", cR=" << cR << "\n";
   Print() << "Blue separator: x=[" << mw_x0 << ", " << mw_x1 << "]\n";
-  Print() << "Upper exit width: " << upper_exit_width << "\n";
   Print() << "Third branch at mw_x1: x=[" << z_x_left << ", " << z_x_right 
           << "], y=[" << z_y_bottom << ", " << z_y_top << "]\n";
-  Print() << "Third branch width: " << (z_x_right - z_x_left) << "\n";
   Print() << "=============================\n\n";
 
   // Top boundary wall
@@ -532,7 +528,7 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   auto s_left_upper   = boxS(xlo, y_base_hi, xs, y_upper_hi);
   auto s_left_lower   = boxS(xlo, y_lower_lo, xs, y_base_lo);
   auto s_right_upper  = boxS(xr, y_base_hi, xhi, y_upper_hi);
-  auto s_right_lower  = boxS(z_x_right, y_lower_lo, xhi, y_base_lo);
+  auto s_right_lower  = boxS(z_x_right, y_lower_lo, xhi, y_base_lo);  // CHANGED: starts at z_x_right instead of xr
 
   auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
 
@@ -546,7 +542,7 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   auto u7 = makeUnion(u6, s_right_lower);
   auto walls = makeUnion(u7, s_mid_between);
 
-  Print() << "[EB] ThreeBranch with matched widths\n";
+  Print() << "[EB] ThreeBranch with third branch at separator right edge\n";
 
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
