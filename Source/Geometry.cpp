@@ -448,19 +448,17 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
 
   ParmParse pp("geo");
 
-  Real W = 0.04, H = 0.12, L = 0.04, xs = 0.30;
+  Real W = 0.04, H = 0.04, L = 0.04, xs = 0.30;
   Real X = 0.40;
   Real mid = 0.02;
   Real cL  = 0.00;
   Real cR  = 0.00;
   Real y_offset = 0.0;
   Real Z = 0.08;
-  Real upper_fraction = 0.33;  // Fraction of H for upper channel
-  Real lower_fraction = 0.33;  // Fraction of H for lower channel
 
   pp.query("W", W);  
-  pp.query("H", H);  // NOW controls total height in diagram
-  pp.query("L", L);
+  pp.query("H", H);  // NOW controls gap thickness between branches
+  pp.query("L", L);  // Height of both upper and lower channels
   pp.query("xs", xs); 
   pp.query("X", X);
   pp.query("mid", mid);
@@ -468,8 +466,6 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   pp.query("cR", cR); 
   pp.query("y_offset", y_offset);
   pp.query("Z", Z);
-  pp.query("upper_fraction", upper_fraction);
-  pp.query("lower_fraction", lower_fraction);
 
   const RealBox& rb = geom.ProbDomain();
 
@@ -487,21 +483,6 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   
   mid = std::min(std::max(mid, 4*h), std::max(W - 4*h, 4*h + 1e-12));
 
-  // Ensure fractions are valid
-  upper_fraction = std::max(0.2, std::min(0.45, upper_fraction));
-  lower_fraction = std::max(0.2, std::min(0.45, lower_fraction));
-  
-  // Calculate actual channel heights from H
-  const Real upper_channel_height = H * upper_fraction;
-  const Real lower_channel_height = H * lower_fraction;
-  const Real gap_height = H - upper_channel_height - lower_channel_height;
-  
-  // Ensure minimum gap for flow
-  const Real min_gap = 4*h;
-  if (gap_height < min_gap) {
-    Print() << "WARNING: H too small for adequate flow gap. Adjusting channel heights.\n";
-  }
-
   const Real max_pad = std::max(0.0, 0.5*(xr - xs) - 3*h);
   cL = std::min(std::max(cL, 0.0), max_pad);
   cR = std::min(std::max(cR, 0.0), max_pad);
@@ -512,14 +493,13 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
     return BoxIF(lo, hi, false);
   };
 
-  // Calculate branch positions from H
-  const Real y_upper_hi = ymid + 0.5 * H;
-  const Real y_upper_lo = y_upper_hi - upper_channel_height;
-  const Real y_lower_hi = ymid - 0.5 * H + lower_channel_height;
-  const Real y_lower_lo = ymid - 0.5 * H;
-  
-  const Real y_base_hi = y_upper_lo;
-  const Real y_base_lo = y_lower_hi;
+  // H controls the gap thickness, L controls channel heights
+  const Real y_base_lo  = ymid - 0.5 * H;
+  const Real y_base_hi  = ymid + 0.5 * H;
+  const Real y_upper_lo = y_base_hi;
+  const Real y_upper_hi = y_base_hi + L;
+  const Real y_lower_lo = y_base_lo - L;
+  const Real y_lower_hi = y_base_lo;
 
   const Real y_mid_lo = ymid - 0.5 * mid;
   const Real y_mid_hi = ymid + 0.5 * mid;
@@ -534,10 +514,9 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   const Real z_y_bottom = std::max(z_y_top - Z, ylo + 2*h);
 
   Print() << "\n=== THREE-BRANCH GEOMETRY ===\n";
-  Print() << "Total height H: " << H << "\n";
-  Print() << "Upper channel height: " << upper_channel_height << "\n";
-  Print() << "Lower channel height: " << lower_channel_height << "\n";
-  Print() << "Gap between branches: " << gap_height << "\n";
+  Print() << "Gap thickness H: " << H << "\n";
+  Print() << "Channel height L: " << L << "\n";
+  Print() << "Total height (top to bottom): " << (2*L + H) << "\n";
   Print() << "xs=" << xs << ", xr=" << xr << ", X=" << X << "\n";
   Print() << "cL=" << cL << ", cR=" << cR << "\n";
   Print() << "Blue separator: x=[" << mw_x0 << ", " << mw_x1 << "]\n";
@@ -571,7 +550,7 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   auto u7 = makeUnion(u6, s_right_lower);
   auto walls = makeUnion(u7, s_mid_between);
 
-  Print() << "[EB] ThreeBranch with H controlling total height\n";
+  Print() << "[EB] ThreeBranch with H controlling gap thickness\n";
 
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
