@@ -457,8 +457,8 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   Real Z = 0.08;
 
   pp.query("W", W);  
-  pp.query("H", H);  // NOW controls gap thickness between branches
-  pp.query("L", L);  // Height of both upper and lower channels
+  pp.query("H", H);  // Controls ONLY blue separator thickness
+  pp.query("L", L);  // Controls channel heights (stays constant)
   pp.query("xs", xs); 
   pp.query("X", X);
   pp.query("mid", mid);
@@ -493,13 +493,13 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
     return BoxIF(lo, hi, false);
   };
 
-  // H controls the gap thickness, L controls channel heights
-  const Real y_base_lo  = ymid - 0.5 * H;
-  const Real y_base_hi  = ymid + 0.5 * H;
-  const Real y_upper_lo = y_base_hi;
-  const Real y_upper_hi = y_base_hi + L;
-  const Real y_lower_lo = y_base_lo - L;
-  const Real y_lower_hi = y_base_lo;
+  // CORRECTED: H controls separator, L controls channel heights independently
+  const Real y_base_lo  = ymid - 0.5 * H;  // Bottom of separator
+  const Real y_base_hi  = ymid + 0.5 * H;  // Top of separator
+  const Real y_upper_lo = y_base_hi;       // Upper channel starts at top of separator
+  const Real y_upper_hi = y_upper_lo + L;  // Upper channel height = L (independent of H)
+  const Real y_lower_hi = y_base_lo;       // Lower channel ends at bottom of separator
+  const Real y_lower_lo = y_lower_hi - L;  // Lower channel height = L (independent of H)
 
   const Real y_mid_lo = ymid - 0.5 * mid;
   const Real y_mid_hi = ymid + 0.5 * mid;
@@ -514,9 +514,12 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   const Real z_y_bottom = std::max(z_y_top - Z, ylo + 2*h);
 
   Print() << "\n=== THREE-BRANCH GEOMETRY ===\n";
-  Print() << "Gap thickness H: " << H << "\n";
-  Print() << "Channel height L: " << L << "\n";
-  Print() << "Total height (top to bottom): " << (2*L + H) << "\n";
+  Print() << "Separator thickness H: " << H << "\n";
+  Print() << "Channel height L: " << L << " (constant)\n";
+  Print() << "Total system height: " << (2*L + H) << "\n";
+  Print() << "Upper channel: y=[" << y_upper_lo << ", " << y_upper_hi << "], height=" << (y_upper_hi - y_upper_lo) << "\n";
+  Print() << "Separator: y=[" << y_base_lo << ", " << y_base_hi << "], thickness=" << H << "\n";
+  Print() << "Lower channel: y=[" << y_lower_lo << ", " << y_lower_hi << "], height=" << (y_lower_hi - y_lower_lo) << "\n";
   Print() << "xs=" << xs << ", xr=" << xr << ", X=" << X << "\n";
   Print() << "cL=" << cL << ", cR=" << cR << "\n";
   Print() << "Blue separator: x=[" << mw_x0 << ", " << mw_x1 << "]\n";
@@ -550,7 +553,7 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   auto u7 = makeUnion(u6, s_right_lower);
   auto walls = makeUnion(u7, s_mid_between);
 
-  Print() << "[EB] ThreeBranch with H controlling gap thickness\n";
+  Print() << "[EB] ThreeBranch: H controls separator only, L stays constant\n";
 
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
