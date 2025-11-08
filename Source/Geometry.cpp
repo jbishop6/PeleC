@@ -504,7 +504,7 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
 
   // Third branch positioned at RIGHT EDGE of blue separator (mw_x1)
   const Real z_x_left = mw_x1;
-  const Real z_x_right = mw_x1 + W;
+  const Real z_x_right = mw_x1 + xr; // Was originally + W
   const Real z_y_top = y_lower_lo;
   const Real z_y_bottom = std::max(z_y_top - Z, ylo + 2*h);
 
