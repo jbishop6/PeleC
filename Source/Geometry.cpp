@@ -455,7 +455,6 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   Real cR  = 0.00;
   Real y_offset = 0.0;
   Real Z = 0.08;
-  Real separator_right = 0.70;  // FIXED position for separator right edge and third branch
 
   pp.query("W", W);  pp.query("H", H);  pp.query("L", L);
   pp.query("xs", xs); 
@@ -463,7 +462,6 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   pp.query("mid", mid);
   pp.query("cL", cL); pp.query("cR", cR); pp.query("y_offset", y_offset);
   pp.query("Z", Z);
-  pp.query("separator_right", separator_right);  // Allow override via input file if desired
 
   const RealBox& rb = geom.ProbDomain();
 
@@ -477,7 +475,7 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
 
   xs = std::min(std::max(xs, xlo + 2*h), xhi - 2*h);
   
-  Real xr = xs + X;  // xr still calculated for branch length, but doesn't control third branch
+  Real xr = xs + X;
   
   mid = std::min(std::max(mid, 4*h), std::max(W - 4*h, 4*h + 1e-12));
 
@@ -502,27 +500,28 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   const Real y_mid_hi = ymid + 0.5 * mid;
 
   const Real mw_x0 = xs + cL;
-  const Real mw_x1 = separator_right;  // FIXED: Use separator_right instead of xr - cR
+  const Real mw_x1 = xr - cR;
 
-  // Third branch at FIXED position (separator_right)
-  const Real z_x_left = separator_right;
-  const Real z_x_right = separator_right + W;
+  // Third branch positioned at right edge of separator
+  const Real z_x_left = mw_x1;
+  const Real z_x_right = mw_x1 + W;
   const Real z_y_top = y_lower_lo;
   const Real z_y_bottom = std::max(z_y_top - Z, ylo + 2*h);
 
-  Print() << "\n=== THREE-BRANCH GEOMETRY (Fixed Third Branch) ===\n";
-  Print() << "xs=" << xs << ", X=" << X << ", xr=" << xr << "\n";
-  Print() << "Separator right edge (FIXED): " << separator_right << "\n";
-  Print() << "Third branch at FIXED position: x=[" << z_x_left << ", " << z_x_right 
+  Print() << "\n=== THREE-BRANCH GEOMETRY ===\n";
+  Print() << "xs=" << xs << ", xr=" << xr << ", X=" << X << "\n";
+  Print() << "cL=" << cL << ", cR=" << cR << "\n";
+  Print() << "mw_x0=" << mw_x0 << ", mw_x1=" << mw_x1 << "\n";
+  Print() << "Third branch: x=[" << z_x_left << ", " << z_x_right 
           << "], y=[" << z_y_bottom << ", " << z_y_top << "]\n";
-  Print() << "==================================================\n\n";
+  Print() << "=============================\n\n";
 
   // Top boundary wall
   auto s_top = boxS(xlo, y_upper_hi, xhi, yhi);
 
-  // Bottom walls with gap for third branch at FIXED position
-  auto s_bottom_left  = boxS(xlo, ylo, separator_right, y_lower_lo);
-  auto s_bottom_under = boxS(separator_right, ylo, z_x_right, z_y_bottom);
+  // Bottom walls with gap for third branch
+  auto s_bottom_left  = boxS(xlo, ylo, mw_x1, y_lower_lo);
+  auto s_bottom_under = boxS(mw_x1, ylo, z_x_right, z_y_bottom);
   auto s_bottom_right = boxS(z_x_right, ylo, xhi, y_lower_lo);
 
   // Two-branch system walls
@@ -543,7 +542,7 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   auto u7 = makeUnion(u6, s_right_lower);
   auto walls = makeUnion(u7, s_mid_between);
 
-  Print() << "[EB] ThreeBranch with fixed third branch position\n";
+  Print() << "[EB] ThreeBranch\n";
 
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
