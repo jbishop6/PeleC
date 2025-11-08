@@ -502,26 +502,26 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   const Real mw_x0 = xs + cL;
   const Real mw_x1 = xr - cR;
 
-  // CHANGED: Third branch positioned at xr (right edge of branch system)
-  const Real z_x_left = xr;
-  const Real z_x_right = xr + W;
+  // Third branch positioned at RIGHT EDGE of blue separator (mw_x1)
+  const Real z_x_left = mw_x1;
+  const Real z_x_right = mw_x1 + W;
   const Real z_y_top = y_lower_lo;
   const Real z_y_bottom = std::max(z_y_top - Z, ylo + 2*h);
 
   Print() << "\n=== THREE-BRANCH GEOMETRY ===\n";
   Print() << "xs=" << xs << ", xr=" << xr << ", X=" << X << "\n";
   Print() << "cL=" << cL << ", cR=" << cR << "\n";
-  Print() << "mw_x0=" << mw_x0 << ", mw_x1=" << mw_x1 << "\n";
-  Print() << "Third branch at xr: x=[" << z_x_left << ", " << z_x_right 
+  Print() << "Blue separator: x=[" << mw_x0 << ", " << mw_x1 << "]\n";
+  Print() << "Third branch at mw_x1: x=[" << z_x_left << ", " << z_x_right 
           << "], y=[" << z_y_bottom << ", " << z_y_top << "]\n";
   Print() << "=============================\n\n";
 
   // Top boundary wall
   auto s_top = boxS(xlo, y_upper_hi, xhi, yhi);
 
-  // CHANGED: Bottom walls - gap starts at xr
-  auto s_bottom_left  = boxS(xlo, ylo, xr, y_lower_lo);
-  auto s_bottom_under = boxS(xr, ylo, z_x_right, z_y_bottom);
+  // Bottom walls - gap starts at mw_x1 (right edge of separator)
+  auto s_bottom_left  = boxS(xlo, ylo, mw_x1, y_lower_lo);
+  auto s_bottom_under = boxS(mw_x1, ylo, z_x_right, z_y_bottom);
   auto s_bottom_right = boxS(z_x_right, ylo, xhi, y_lower_lo);
 
   // Two-branch system walls
@@ -542,7 +542,7 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   auto u7 = makeUnion(u6, s_right_lower);
   auto walls = makeUnion(u7, s_mid_between);
 
-  Print() << "[EB] ThreeBranch\n";
+  Print() << "[EB] ThreeBranch with third branch at separator right edge\n";
 
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
