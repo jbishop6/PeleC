@@ -6,8 +6,8 @@ stop_time = 1.959e-6
 geometry.is_periodic = 0 0
 geometry.coord_sys   = 0
 geometry.prob_lo     = 0.0  0.0
-geometry.prob_hi     = 1.0  0.5   #0.125
-amr.n_cell           = 512  256 #64
+geometry.prob_hi     = 1.0  1.0   #0.125
+amr.n_cell           = 512  512 #64
 
 # ------------------ BOUNDARY CONDITIONS -------------------
 pelec.lo_bc = "SlipWall" "SlipWall"
@@ -90,7 +90,7 @@ geo.cL = 0.05    # left-side connection length
 geo.cR = 0.05    # right-side connection length
 
 # Adjustable parameters of the system
-geo.Z = 0.16
+geo.Z = 0.08
 geo.X = 0.4
 geo.H = 0.1 #Total height from top of upper branch to bottom of lower branch
 
