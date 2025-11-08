@@ -455,6 +455,7 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   Real cR  = 0.00;
   Real y_offset = 0.0;
   Real Z = 0.08;
+  Real branch_spacing = 0.04;  // NEW: Controls the H in your diagram
 
   pp.query("W", W);  pp.query("H", H);  pp.query("L", L);
   pp.query("xs", xs); 
@@ -462,6 +463,7 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   pp.query("mid", mid);
   pp.query("cL", cL); pp.query("cR", cR); pp.query("y_offset", y_offset);
   pp.query("Z", Z);
+  pp.query("branch_spacing", branch_spacing);  // NEW: Read from input file
 
   const RealBox& rb = geom.ProbDomain();
 
@@ -479,6 +481,10 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   
   mid = std::min(std::max(mid, 4*h), std::max(W - 4*h, 4*h + 1e-12));
 
+  // NEW: Ensure minimum branch spacing for flow
+  const Real min_branch_spacing = 4*h;  // Minimum spacing for numerical stability
+  branch_spacing = std::max(branch_spacing, min_branch_spacing);
+
   const Real max_pad = std::max(0.0, 0.5*(xr - xs) - 3*h);
   cL = std::min(std::max(cL, 0.0), max_pad);
   cR = std::min(std::max(cR, 0.0), max_pad);
@@ -489,8 +495,9 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
     return BoxIF(lo, hi, false);
   };
 
-  const Real y_base_lo  = ymid - 0.5 * W;
-  const Real y_base_hi  = ymid + 0.5 * W;
+  // MODIFIED: Calculate branch positions using branch_spacing
+  const Real y_base_lo  = ymid - 0.5 * branch_spacing;
+  const Real y_base_hi  = ymid + 0.5 * branch_spacing;
   const Real y_upper_lo = y_base_hi;
   const Real y_upper_hi = y_base_hi + H;
   const Real y_lower_lo = y_base_lo - L;
@@ -511,6 +518,9 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   Print() << "\n=== THREE-BRANCH GEOMETRY ===\n";
   Print() << "xs=" << xs << ", xr=" << xr << ", X=" << X << "\n";
   Print() << "cL=" << cL << ", cR=" << cR << "\n";
+  Print() << "Branch spacing (H in diagram): " << branch_spacing << "\n";
+  Print() << "Upper branch height: " << H << "\n";
+  Print() << "Lower branch height: " << L << "\n";
   Print() << "Blue separator: x=[" << mw_x0 << ", " << mw_x1 << "]\n";
   Print() << "Third branch at mw_x1: x=[" << z_x_left << ", " << z_x_right 
           << "], y=[" << z_y_bottom << ", " << z_y_top << "]\n";
@@ -528,7 +538,7 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   auto s_left_upper   = boxS(xlo, y_base_hi, xs, y_upper_hi);
   auto s_left_lower   = boxS(xlo, y_lower_lo, xs, y_base_lo);
   auto s_right_upper  = boxS(xr, y_base_hi, xhi, y_upper_hi);
-  auto s_right_lower  = boxS(z_x_right, y_lower_lo, xhi, y_base_lo);  // CHANGED: starts at z_x_right instead of xr
+  auto s_right_lower  = boxS(z_x_right, y_lower_lo, xhi, y_base_lo);
 
   auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
 
@@ -542,7 +552,7 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   auto u7 = makeUnion(u6, s_right_lower);
   auto walls = makeUnion(u7, s_mid_between);
 
-  Print() << "[EB] ThreeBranch with third branch at separator right edge\n";
+  Print() << "[EB] ThreeBranch with adjustable branch spacing\n";
 
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
