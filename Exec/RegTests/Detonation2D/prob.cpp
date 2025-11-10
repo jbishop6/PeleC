@@ -36,7 +36,9 @@ void amrex_probinit(const int*, const int*, const int*,
     // -------------------------------------------------
     //  ONE-SIDED DETONATION LAUNCH (hotspot on left)
     // -------------------------------------------------
-    P->idir = 0;          // x-direction split
+    
+    // DEFAULT VALUES (can be overridden by input file)
+    P->idir = 0;          // x-direction split (default)
     P->frac = 0.02;       // hotspot occupies 2% of domain width
 
     // --- Left = hotspot ---
@@ -51,19 +53,37 @@ void amrex_probinit(const int*, const int*, const int*,
     P->p_r   = 1.0e5;      // Pa
     P->u_r   = 0.0;
 
+    // --- Read from input file (OVERRIDE defaults) ---
+    amrex::ParmParse pp("prob");
+    
+    pp.query("idir", P->idir);        // ADD THIS LINE
+    pp.query("frac", P->frac);        // ADD THIS LINE
+    pp.query("rho_l", P->rho_l);      // ADD THIS LINE
+    pp.query("T_l", P->T_l);          // ADD THIS LINE
+    pp.query("p_l", P->p_l);          // ADD THIS LINE
+    pp.query("u_l", P->u_l);          // ADD THIS LINE
+    pp.query("rho_r", P->rho_r);      // ADD THIS LINE
+    pp.query("T_r", P->T_r);          // ADD THIS LINE
+    pp.query("p_r", P->p_r);          // ADD THIS LINE
+    pp.query("u_r", P->u_r);          // ADD THIS LINE
+
     // --- Gases ---
     std::string leftGas  = "H2";
     std::string rightGas = "O2";
-    amrex::ParmParse pp("prob");
     pp.query("left_gas", leftGas);
     pp.query("right_gas", rightGas);
 
     P->left_gas_id  = species_id_from_name(leftGas);
     P->right_gas_id = species_id_from_name(rightGas);
 
+    // --- Validate idir ---
+    if (P->idir < 0 || P->idir >= AMREX_SPACEDIM) {
+        amrex::Abort("invalid idir !!!");
+    }
+
     // --- Split location ---
     for (int d = 0; d < AMREX_SPACEDIM; ++d)
-        P->split[d] = problo[d] + P->frac * (probhi[d] - problo[d]);
+        P->split[d] = problo[d] + P->frac * (probhi[d] - probhi[d]);
 
     // --- Compute rho*e for both states ---
     amrex::Real e = 0.0;
