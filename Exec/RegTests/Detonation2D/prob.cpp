@@ -83,7 +83,7 @@ void amrex_probinit(const int*, const int*, const int*,
 
     // --- Split location ---
     for (int d = 0; d < AMREX_SPACEDIM; ++d)
-        P->split[d] = problo[d] + P->frac * (probhi[d] - probhi[d]);
+        P->split[d] = problo[d] + P->frac * (probhi[d] - problo[d]);
 
     // --- Compute rho*e for both states ---
     amrex::Real e = 0.0;
