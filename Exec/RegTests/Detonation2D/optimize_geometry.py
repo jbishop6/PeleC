@@ -7,8 +7,9 @@ import subprocess
 import yt
 from glob import glob
 import sys
-print("[DEBUG] Python script started", file=sys.stderr)
+from unyt import cm  # ✅ Import units to fix unyt UnitOperationError
 
+print("[DEBUG] Python script started", file=sys.stderr)
 
 # Setup paths
 INP_FILE = "inputs.detonation.threebranch.inp"
@@ -20,9 +21,10 @@ geo_Z = 0.1
 geo_X = 0.4
 geo_H = 0.1
 
+
 # === Modify geometry and plotfile output path in .inp file ===
 def modify_geometry_params(path, Z, X, H, plot_dir):
-    with open(path, 'r') as f:
+    with open(path, "r") as f:
         lines = f.readlines()
 
     updated_lines = []
@@ -44,11 +46,12 @@ def modify_geometry_params(path, Z, X, H, plot_dir):
     if not plot_line_found:
         updated_lines.append(f"\namr.plot_file = {plot_dir}/plt\n")
 
-    with open(path, 'w') as f:
+    with open(path, "w") as f:
         f.writelines(updated_lines)
 
     print(f"[INFO] Updated geometry: Z={Z}, X={X}, H={H}")
     print(f"[INFO] Plot file output set to: {plot_dir}/plt")
+
 
 # === Run simulation ===
 def run_simulation(executable, inp_file):
@@ -62,12 +65,14 @@ def run_simulation(executable, inp_file):
 
     print("[INFO] Simulation completed successfully")
 
+
 # === Get plotfile directory (e.g., plt00000) ===
 def get_plotfile_path(base_dir):
     plot_dirs = sorted(glob(os.path.join(base_dir, "plt*")))
     if not plot_dirs:
         raise RuntimeError(f"No plotfiles found in {base_dir}.")
     return plot_dirs[-1]
+
 
 # === Extract thrust from plotfile ===
 def extract_thrust_from_plotfile(plotfile_dir, outlet_x=1.0, tolerance=1e-4):
@@ -78,7 +83,11 @@ def extract_thrust_from_plotfile(plotfile_dir, outlet_x=1.0, tolerance=1e-4):
     rho = ad["density"]
     vx = ad["x_velocity"]
 
-    mask = np.abs(x - outlet_x) < tolerance
+    # ✅ Convert outlet_x and tolerance to unit-aware quantities
+    outlet_x_val = outlet_x * cm
+    tolerance_val = tolerance * cm
+
+    mask = np.abs(x - outlet_x_val) < tolerance_val
     if not np.any(mask):
         raise RuntimeError("No cells found near outlet_x")
 
@@ -90,19 +99,21 @@ def extract_thrust_from_plotfile(plotfile_dir, outlet_x=1.0, tolerance=1e-4):
     print(f"[INFO] Computed thrust from {plotfile_dir}: {thrust:.3e}")
     return thrust
 
+
 # === Log results ===
 def log_results(Z, X, H, thrust):
     file_exists = os.path.isfile(RESULTS_LOG)
-    with open(RESULTS_LOG, 'a', newline='') as csvfile:
+    with open(RESULTS_LOG, "a", newline="") as csvfile:
         writer = csv.writer(csvfile)
         if not file_exists:
             writer.writerow(["geo.Z", "geo.X", "geo.H", "max_thrust"])
         writer.writerow([Z, X, H, thrust])
     print(f"[INFO] Logged results to {RESULTS_LOG}")
 
+
 # === MAIN WORKFLOW ===
 if __name__ == "__main__":
-    run_id = f"Z{geo_Z}_X{geo_X}_H{geo_H}".replace('.', 'p')
+    run_id = f"Z{geo_Z}_X{geo_X}_H{geo_H}".replace(".", "p")
     output_dir = os.path.join("outputs", f"run_{run_id}")
     os.makedirs(output_dir, exist_ok=True)
 
