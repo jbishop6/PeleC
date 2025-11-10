@@ -33,43 +33,54 @@ void amrex_probinit(const int*, const int*, const int*,
     auto* P = PeleC::h_prob_parm_device;
     auto eos = pele::physics::PhysicsType::eos();
 
-    // --- Hotspot geometry ---
-    const amrex::Real hotspot_width = 0.003;   // 3 mm slab near x_lo
+    // -------------------------------------------------
+    //  ONE-SIDED DETONATION LAUNCH (hotspot on left)
+    // -------------------------------------------------
+    P->idir = 0;          // x-direction split
+    P->frac = 0.02;       // hotspot occupies 2% of domain width
 
-    // --- Base (fresh mixture) conditions ---
-    P->rho_base = 1.2;           // kg/m^3  (≈ air density)
-    P->T_base   = 300.0;         // K
-    P->p_base   = 1.0e5;         // Pa
+    // --- Left = hotspot ---
+    P->rho_l = 1.2;        // kg/m^3
+    P->T_l   = 3000.0;     // K (ignite)
+    P->p_l   = 1.0e5;      // Pa (same as ambient or slightly higher)
+    P->u_l   = 0.0;
 
-    // --- Hotspot (ignition) conditions ---
-    P->T_hot = 3000.0;           // K
-    P->p_hot = 1.0e5;            // same pressure (can raise to 5e5 if needed)
+    // --- Right = fresh mixture ---
+    P->rho_r = 1.2;        // kg/m^3
+    P->T_r   = 300.0;      // K
+    P->p_r   = 1.0e5;      // Pa
+    P->u_r   = 0.0;
 
-    // --- Mixture composition (stoich H2/air) ---
-    amrex::Real Ymix[NUM_SPECIES] = {0.0};
-    Ymix[species_id_from_name("H2")] = 0.028;
-    Ymix[species_id_from_name("O2")] = 0.224;
-    Ymix[species_id_from_name("N2")] = 0.748;  // 3.76× O2 fraction
-    // normalize just in case
-    amrex::Real sumY = 0.0;
-    for (int n=0; n<NUM_SPECIES; ++n) sumY += Ymix[n];
-    for (int n=0; n<NUM_SPECIES; ++n) Ymix[n] /= sumY;
+    // --- Gases ---
+    std::string leftGas  = "H2";
+    std::string rightGas = "O2";
+    amrex::ParmParse pp("prob");
+    pp.query("left_gas", leftGas);
+    pp.query("right_gas", rightGas);
 
-    // store for device use if you have prob.H vars (optional)
-    for (int n=0; n<NUM_SPECIES; ++n) P->Y_base[n] = Ymix[n];
-    for (int n=0; n<NUM_SPECIES; ++n) P->Y_hot[n]  = Ymix[n];
+    P->left_gas_id  = species_id_from_name(leftGas);
+    P->right_gas_id = species_id_from_name(rightGas);
 
-    // compute rho*e for each state
-    amrex::Real e;
-    eos.RYP2E(P->rho_base, Ymix, P->p_base, e);
-    P->rhoe_base = P->rho_base * e;
-    eos.RYP2E(P->rho_base, Ymix, P->p_hot, e);   // same rho, higher T
-    P->rhoe_hot = P->rho_base * e;
+    // --- Split location ---
+    for (int d = 0; d < AMREX_SPACEDIM; ++d)
+        P->split[d] = problo[d] + P->frac * (probhi[d] - problo[d]);
 
-    // store hotspot spatial extent for later use in prob_initdata (on GPU)
-    P->hotspot_xhi = problo[0] + hotspot_width;
+    // --- Compute rho*e for both states ---
+    amrex::Real e = 0.0;
+    amrex::Real Yl[NUM_SPECIES] = {0.0};
+    if (P->left_gas_id >= 0 && P->left_gas_id < NUM_SPECIES)
+        Yl[P->left_gas_id] = 1.0;
+    eos.RYP2E(P->rho_l, Yl, P->p_l, e);
+    P->rhoe_l = P->rho_l * e;
+
+    amrex::Real Yr[NUM_SPECIES] = {0.0};
+    if (P->right_gas_id >= 0 && P->right_gas_id < NUM_SPECIES)
+        Yr[P->right_gas_id] = 1.0;
+    eos.RYP2E(P->rho_r, Yr, P->p_r, e);
+    P->rhoe_r = P->rho_r * e;
 }
 } // extern "C"
+
 
 // Optional hooks
 void PeleC::problem_post_init() {}
