@@ -28,7 +28,7 @@ pelec.cfl      = 0.3
 pelec.init_shrink = 0.5
 
 pelec.lo_bc = "SlipWall" "SlipWall"
-pelec.hi_bc = "Outflow"  "SlipWall"
+pelec.hi_bc = "SlipWall"  "SlipWall"
 
 prob.idir  = 0
 prob.frac  = 0.02
