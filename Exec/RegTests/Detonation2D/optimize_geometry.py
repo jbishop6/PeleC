@@ -6,6 +6,9 @@ import csv
 import subprocess
 import yt
 from glob import glob
+import sys
+print("[DEBUG] Python script started", file=sys.stderr)
+
 
 # Setup paths
 INP_FILE = "inputs.detonation.threebranch.inp"
