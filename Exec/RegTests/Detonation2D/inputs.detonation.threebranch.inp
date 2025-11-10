@@ -21,12 +21,18 @@ pelec.diffuse_spec = 0
 
 # ------------------ DETONATION WAVE ------------------
 pelec.do_react = 1
-# reactor.type   = cvode
 pelec.chem_integrator = "ReactorCvode"
-reactor.reltol = 1e-6
-reactor.abstol = 1e-12
-pelec.cfl      = 0.3
+pelec.use_typ_vals_chem = 1
+cvode.solve_type = "denseAJ_direct"
+ode.rtol = 1.0e-6
+ode.atol = 1.0e-5
+
+
+# ------------------ TIME STEP CONTROL -------------------
+pelec.cfl         = 0.3
 pelec.init_shrink = 0.5
+pelec.change_max  = 1.05
+pelec.dt_cutoff   = 5.e-20
 
 pelec.lo_bc = "SlipWall" "SlipWall"
 pelec.hi_bc = "SlipWall"  "SlipWall"
