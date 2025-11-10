@@ -21,7 +21,8 @@ pelec.diffuse_spec = 0
 
 # ------------------ DETONATION WAVE ------------------
 pelec.do_react = 1
-reactor.type   = cvode
+# reactor.type   = cvode
+pelec.chem_integrator = "ReactorCvode"
 reactor.reltol = 1e-6
 reactor.abstol = 1e-12
 pelec.cfl      = 0.3
