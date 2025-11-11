@@ -101,6 +101,15 @@ def extract_thrust_from_plotfile(plotfile_dir, tolerance=1e-4):
     if not np.any(mask):
         raise RuntimeError("No cells found near outlet_x")
 
+    print(f"[DEBUG] Number of cells at outlet: {np.count_nonzero(mask)}")
+
+    if np.any(mask):
+        print(f"[DEBUG] Mean rho at outlet (kg/m^3): {rho[mask].mean().value}")
+        print(f"[DEBUG] Mean vx at outlet (m/s): {vx[mask].mean().value}")
+        print(f"[DEBUG] Max vx at outlet (m/s): {vx[mask].max().value}")
+        print(f"[DEBUG] Max rho at outlet (kg/m^3): {rho[mask].max().value}")
+
+
     rho_out = rho[mask]
     vx_out = vx[mask]
 
