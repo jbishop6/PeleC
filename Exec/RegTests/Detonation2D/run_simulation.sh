@@ -22,3 +22,5 @@ cd "$SLURM_SUBMIT_DIR"
 python optimize_geometry.py
 
 echo "Job finished at $(date)"
+
+echo "echo '✅ Job $SLURM_JOB_ID finished on $(hostname) at $(date)'" >> $HOME/.bashrc
