@@ -75,7 +75,7 @@ def get_plotfile_path(base_dir):
 
 
 # === Extract thrust from plotfile ===
-def extract_thrust_from_plotfile(plotfile_dir, outlet_x=0.99, tolerance=1e-3):
+def extract_thrust_from_plotfile(plotfile_dir, tolerance=1e-4):
     ds = yt.load(plotfile_dir)
     ad = ds.all_data()
 
@@ -83,28 +83,32 @@ def extract_thrust_from_plotfile(plotfile_dir, outlet_x=0.99, tolerance=1e-3):
     rho = ad["density"]
     vx = ad["x_velocity"]
 
-    x /= 100 # Converting cm to m
-    rho = rho * (100**3) / 1000 # Converting g/cm^3 to kg/m^3
-    vx /= 100 # Converting cm/s to m/s
+    # Convert to SI units
+    x /= 100                      # cm → m
+    rho = rho * (100**3) / 1000   # g/cm³ → kg/m³
+    vx /= 100                     # cm/s → m/s
 
-    outlet_x_val = outlet_x * cm
-    tolerance_val = tolerance * cm
+    # Auto-detect max x position and pick outlet just inside domain
+    x_max_cm = x.max().to("cm")
+    outlet_x_val = x_max_cm - 1e-4 * cm   # 0.0001 cm inside the boundary
+    tolerance_val = 1e-4 * cm             # tolerance in cm
 
-    print(f"[DEBUG] x range: {x.min().to('cm')} to {x.max().to('cm')}")
-    print(f"[DEBUG] Searching near outlet_x = {outlet_x_val} with tol = {tolerance_val}")
+    print(f"[DEBUG] x range: {x.min().to('cm')} to {x_max_cm}")
+    print(f"[DEBUG] Using outlet_x = {outlet_x_val} with tolerance = {tolerance_val}")
 
+    # Mask and extract
     mask = np.abs(x - outlet_x_val) < tolerance_val
     if not np.any(mask):
         raise RuntimeError("No cells found near outlet_x")
 
     rho_out = rho[mask]
     vx_out = vx[mask]
-    dy = float((ds.domain_width[1] / ds.domain_dimensions[1]).to('m')) # Convert cm to m
+
+    dy = float((ds.domain_width[1] / ds.domain_dimensions[1]).to("m"))  # cm → m
 
     thrust = np.sum(rho_out * vx_out**2) * dy
-    print(f"[INFO] Computed thrust from {plotfile_dir}: {thrust:.3e}")
+    print(f"[INFO] Computed thrust from {plotfile_dir}: {thrust:.3e} N")
     return thrust
-
 
 # === Log results ===
 def log_results(Z, X, H, thrust):
