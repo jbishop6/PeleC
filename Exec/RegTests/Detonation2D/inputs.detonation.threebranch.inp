@@ -82,7 +82,7 @@ amr.derive_plot_vars  = pressure x_velocity y_velocity magvel magvort
 
 # ------------------ PROBLEM PARAMETERS -------------------
 prob.p_l   = 1e7
-prob.u_l   = 0.0
+prob.u_l   = 1e4
 prob.rho_l = 9.6e-4
 prob.p_r   = 1e6
 prob.u_r   = 0.0
