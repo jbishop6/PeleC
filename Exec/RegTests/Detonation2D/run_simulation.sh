@@ -8,10 +8,16 @@
 
 echo "Job started on $(hostname) at $(date)"
 
-# Load required modules (if needed)
-module load python/3.10  # You may need to adjust this
+# === Initialize Conda ===
+source ~/miniconda3/etc/profile.d/conda.sh
 
-# Run your Python script
+# === Activate your environment ===
+conda activate pelecopt
+
+# === Change to working directory ===
+cd "$SLURM_SUBMIT_DIR"
+
+# === Run your script ===
 python optimize_geometry.py
 
 echo "Job finished at $(date)"
