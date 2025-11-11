@@ -3,8 +3,9 @@
 #SBATCH --output=slurm_output.log
 #SBATCH --error=slurm_error.log
 #SBATCH --partition=compute-long
-#SBATCH --ntasks=1
-#SBATCH --cpus-per-task=4
+#SBATCH --nodes=1
+#SBATCH --ntasks=4
+#SBATCH --cpus-per-task=1
 
 echo "Job started on $(hostname) at $(date)"
 
