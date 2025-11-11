@@ -7,7 +7,7 @@ import subprocess
 import yt
 from glob import glob
 import sys
-from unyt import cm  # ✅ Import units to fix unyt UnitOperationError
+from unyt import cm  # Import units to fix unyt UnitOperationError
 
 print("[DEBUG] Python script started", file=sys.stderr)
 
@@ -75,7 +75,7 @@ def get_plotfile_path(base_dir):
 
 
 # === Extract thrust from plotfile ===
-def extract_thrust_from_plotfile(plotfile_dir, outlet_x=1.0, tolerance=1e-4):
+def extract_thrust_from_plotfile(plotfile_dir, outlet_x=0.99, tolerance=1e-3):
     ds = yt.load(plotfile_dir)
     ad = ds.all_data()
 
@@ -83,9 +83,11 @@ def extract_thrust_from_plotfile(plotfile_dir, outlet_x=1.0, tolerance=1e-4):
     rho = ad["density"]
     vx = ad["x_velocity"]
 
-    # ✅ Convert outlet_x and tolerance to unit-aware quantities
     outlet_x_val = outlet_x * cm
     tolerance_val = tolerance * cm
+
+    print(f"[DEBUG] x range: {x.min().to('cm')} to {x.max().to('cm')}")
+    print(f"[DEBUG] Searching near outlet_x = {outlet_x_val} with tol = {tolerance_val}")
 
     mask = np.abs(x - outlet_x_val) < tolerance_val
     if not np.any(mask):
