@@ -83,6 +83,10 @@ def extract_thrust_from_plotfile(plotfile_dir, outlet_x=0.99, tolerance=1e-3):
     rho = ad["density"]
     vx = ad["x_velocity"]
 
+    x /= 100 # Converting cm to m
+    rho = rho * (100**3) / 1000 # Converting g/cm^3 to kg/m^3
+    vx /= 100 # Converting cm/s to m/s
+
     outlet_x_val = outlet_x * cm
     tolerance_val = tolerance * cm
 
@@ -95,7 +99,7 @@ def extract_thrust_from_plotfile(plotfile_dir, outlet_x=0.99, tolerance=1e-3):
 
     rho_out = rho[mask]
     vx_out = vx[mask]
-    dy = float(ds.domain_width[1] / ds.domain_dimensions[1])
+    dy = float((ds.domain_width[1] / ds.domain_dimensions[1]).to('m')) # Convert cm to m
 
     thrust = np.sum(rho_out * vx_out**2) * dy
     print(f"[INFO] Computed thrust from {plotfile_dir}: {thrust:.3e}")
