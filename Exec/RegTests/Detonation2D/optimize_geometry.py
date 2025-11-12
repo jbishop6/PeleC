@@ -115,9 +115,15 @@ def extract_thrust_from_plotfile(plotfile_dir, tolerance=1e-4):
 
     dy = float((ds.domain_width[1] / ds.domain_dimensions[1]).to("m"))  # cm → m
 
-    thrust = np.sum(rho_out * vx_out**2) * dy
-    print(f"[INFO] Computed thrust from {plotfile_dir}: {thrust:.3e} N")
+    # Compute thrust with units
+    thrust_with_units = np.sum(rho_out * vx_out**2) * dy
+
+    # Convert to SI units (Newtons)
+    thrust = thrust_with_units.to("N").value  # extract float in Newtons
+
+    print(f"[INFO] Computed thrust: {thrust:.3e} N")
     return thrust
+
 
 # === Log results ===
 def log_results(Z, X, H, thrust):
