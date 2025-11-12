@@ -73,9 +73,8 @@ def get_plotfile_path(base_dir):
         raise RuntimeError(f"No plotfiles found in {base_dir}.")
     return plot_dirs[-1]
 
-
 # === Extract thrust from plotfile ===
-def extract_thrust_from_plotfile(plotfile_dir, tolerance=1e-4):
+def extract_thrust_from_plotfile(plotfile_dir, outlet_x=0.99, tolerance=1e-3):
     ds = yt.load(plotfile_dir)
     ad = ds.all_data()
 
@@ -83,46 +82,32 @@ def extract_thrust_from_plotfile(plotfile_dir, tolerance=1e-4):
     rho = ad["density"]
     vx = ad["x_velocity"]
 
-    # Convert to SI units
-    x /= 100                      # cm → m
-    rho = rho * (100**3) / 1000   # g/cm³ → kg/m³
-    vx /= 100                     # cm/s → m/s
+    # Convert everything to SI
+    x /= 100                           # cm → m
+    rho = rho * (100**3) / 1000       # g/cm³ → kg/m³
+    vx /= 100                         # cm/s → m/s
+    dy = float((ds.domain_width[1] / ds.domain_dimensions[1]).to("m"))  # cm → m
 
-    # Auto-detect max x position and pick outlet just inside domain
-    x_max_cm = x.max().to("cm")
-    outlet_x_val = x_max_cm - 1e-4 * cm   # 0.0001 cm inside the boundary
-    tolerance_val = 1e-4 * cm             # tolerance in cm
+    outlet_x_val = outlet_x  # Now in meters
+    tolerance_val = tolerance  # In meters
 
-    print(f"[DEBUG] x range: {x.min().to('cm')} to {x_max_cm}")
-    print(f"[DEBUG] Using outlet_x = {outlet_x_val} with tolerance = {tolerance_val}")
+    print(f"[DEBUG] x range: {x.min()} m to {x.max()} m")
+    print(f"[DEBUG] Using outlet_x = {outlet_x_val} m with tolerance = {tolerance_val} m")
 
-    # Mask and extract
     mask = np.abs(x - outlet_x_val) < tolerance_val
     if not np.any(mask):
         raise RuntimeError("No cells found near outlet_x")
 
-    print(f"[DEBUG] Number of cells at outlet: {np.count_nonzero(mask)}")
-
-    if np.any(mask):
-        print(f"[DEBUG] Mean rho at outlet (kg/m^3): {rho[mask].mean().value}")
-        print(f"[DEBUG] Mean vx at outlet (m/s): {vx[mask].mean().value}")
-        print(f"[DEBUG] Max vx at outlet (m/s): {vx[mask].max().value}")
-        print(f"[DEBUG] Max rho at outlet (kg/m^3): {rho[mask].max().value}")
-
-
     rho_out = rho[mask]
     vx_out = vx[mask]
 
-    dy = float((ds.domain_width[1] / ds.domain_dimensions[1]).to("m"))  # cm → m
-
-    # Compute thrust with units
-    thrust_with_units = np.sum(rho_out * vx_out**2) * dy
-
-    # Convert to SI units (Newtons)
-    thrust = thrust_with_units.to("N").value  # extract float in Newtons
+    # Compute thrust (SI units)
+    thrust_with_units = np.sum(rho_out * vx_out**2) * dy  # units: kg·m/s² = N
+    thrust = float(thrust_with_units)  # convert to scalar
 
     print(f"[INFO] Computed thrust: {thrust:.3e} N")
     return thrust
+
 
 
 # === Log results ===
