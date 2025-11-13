@@ -74,39 +74,73 @@ def get_plotfile_path(base_dir):
     return plot_dirs[-1]
 
 # === Extract thrust from plotfile ===
-def extract_thrust_from_plotfile(plotfile_dir, outlet_x=0.99, tolerance=1e-3):
-    from unyt import m  # Import meter unit
+def extract_thrust_from_plotfile(plotfile_dir, outlet_x=0.99, tolerance=0.05):
+    """
+    Extract thrust from simulation output
+    
+    Args:
+        plotfile_dir: path to plotfile directory
+        outlet_x: x-location of outlet (fraction of domain, 0-1)
+        tolerance: tolerance for finding outlet cells (fraction of domain)
+    """
+    import yt
+    from unyt import m
     
     ds = yt.load(plotfile_dir)
     ad = ds.all_data()
     
-    x = ad["x"].to("m")  # Keep as unyt_array in meters
-    rho = ad["density"].to("kg/m**3")  # Convert to SI with units
-    vx = ad["x_velocity"].to("m/s")  # Convert to SI with units
+    # Get data arrays (these come with unyt units from yt)
+    x_raw = ad["x"]
+    rho_raw = ad["density"]
+    vx_raw = ad["x_velocity"]
     
-    dy = (ds.domain_width[1] / ds.domain_dimensions[1]).to("m")
+    # Convert to SI and strip units completely using .v (value) attribute
+    x_m = x_raw.to("m").v  # Convert to meters, then extract numpy array
+    rho_kg = rho_raw.to("kg/m**3").v  # Convert to kg/m³, extract array
+    vx_m = vx_raw.to("m/s").v  # Convert to m/s, extract array
     
-    # Create outlet_x with units
-    outlet_x_val = outlet_x * m
-    tolerance_val = tolerance * m
+    # Get cell size in y-direction
+    dy = float((ds.domain_width[1] / ds.domain_dimensions[1]).to("m"))
     
-    print(f"[DEBUG] x range: {x.min()} to {x.max()}")
-    print(f"[DEBUG] Using outlet_x = {outlet_x_val} with tolerance = {tolerance_val}")
+    # Domain info (for debugging)
+    x_min = float(ds.domain_left_edge[0].to("m"))
+    x_max = float(ds.domain_right_edge[0].to("m"))
+    domain_length = x_max - x_min
     
-    # Now unit arithmetic works correctly
-    mask = np.abs(x - outlet_x_val) < tolerance_val
+    print(f"[DEBUG] Domain x-range: [{x_min:.3f}, {x_max:.3f}] m")
+    print(f"[DEBUG] Domain length: {domain_length:.3f} m")
+    print(f"[DEBUG] Data x-range: [{x_m.min():.3f}, {x_m.max():.3f}] m")
     
-    if not np.any(mask):
-        raise RuntimeError("No cells found near outlet_x")
+    # Calculate outlet position in meters
+    outlet_x_m = x_min + outlet_x * domain_length
+    tolerance_m = tolerance * domain_length
     
-    rho_out = rho[mask]
-    vx_out = vx[mask]
+    print(f"[DEBUG] Looking for outlet at x = {outlet_x_m:.3f} m ± {tolerance_m:.3f} m")
     
-    # Compute thrust with units
-    thrust_with_units = np.sum(rho_out * vx_out**2) * dy
-    thrust = float(thrust_with_units.to("N"))  # Convert to Newtons
+    # Create mask for cells near outlet
+    mask = np.abs(x_m - outlet_x_m) < tolerance_m
     
-    print(f"[INFO] Computed thrust: {thrust:.3e} N")
+    n_cells = np.sum(mask)
+    print(f"[DEBUG] Found {n_cells} cells near outlet")
+    
+    if n_cells == 0:
+        print(f"[WARNING] No cells found near outlet_x = {outlet_x}")
+        print(f"[WARNING] Try increasing tolerance (current: {tolerance})")
+        print(f"[WARNING] Or adjust outlet_x position (current: {outlet_x})")
+        raise RuntimeError(f"No cells found near outlet_x={outlet_x} with tolerance={tolerance}")
+    
+    # Extract outlet values
+    rho_out = rho_kg[mask]
+    vx_out = vx_m[mask]
+    
+    # Compute thrust: F = ∫(ρu² + p) dA
+    # Simplified: F ≈ Σ(ρu²) * dy (momentum flux)
+    # Note: You may want to add pressure term if available
+    thrust = float(np.sum(rho_out * vx_out**2) * dy)
+    
+    print(f"[INFO] Computed thrust: {thrust:.6e} N")
+    print(f"[INFO] Mean outlet velocity: {np.mean(vx_out):.3f} m/s")
+    print(f"[INFO] Mean outlet density: {np.mean(rho_out):.3f} kg/m³")
     
     return thrust
 
