@@ -75,40 +75,40 @@ def get_plotfile_path(base_dir):
 
 # === Extract thrust from plotfile ===
 def extract_thrust_from_plotfile(plotfile_dir, outlet_x=0.99, tolerance=1e-3):
+    from unyt import m  # Import meter unit
+    
     ds = yt.load(plotfile_dir)
     ad = ds.all_data()
-
-    x = ad["x"]
-    rho = ad["density"]
-    vx = ad["x_velocity"]
-
-    # Convert everything to SI
-    x /= 100                           # cm → m
-    rho = rho * (100**3) / 1000       # g/cm³ → kg/m³
-    vx /= 100                         # cm/s → m/s
-    dy = float((ds.domain_width[1] / ds.domain_dimensions[1]).to("m"))  # cm → m
-
-    outlet_x_val = outlet_x  # Now in meters
-    tolerance_val = tolerance  # In meters
-
-    print(f"[DEBUG] x range: {x.min()} m to {x.max()} m")
-    print(f"[DEBUG] Using outlet_x = {outlet_x_val} m with tolerance = {tolerance_val} m")
-
+    
+    x = ad["x"].to("m")  # Keep as unyt_array in meters
+    rho = ad["density"].to("kg/m**3")  # Convert to SI with units
+    vx = ad["x_velocity"].to("m/s")  # Convert to SI with units
+    
+    dy = (ds.domain_width[1] / ds.domain_dimensions[1]).to("m")
+    
+    # Create outlet_x with units
+    outlet_x_val = outlet_x * m
+    tolerance_val = tolerance * m
+    
+    print(f"[DEBUG] x range: {x.min()} to {x.max()}")
+    print(f"[DEBUG] Using outlet_x = {outlet_x_val} with tolerance = {tolerance_val}")
+    
+    # Now unit arithmetic works correctly
     mask = np.abs(x - outlet_x_val) < tolerance_val
+    
     if not np.any(mask):
         raise RuntimeError("No cells found near outlet_x")
-
+    
     rho_out = rho[mask]
     vx_out = vx[mask]
-
-    # Compute thrust (SI units)
-    thrust_with_units = np.sum(rho_out * vx_out**2) * dy  # units: kg·m/s² = N
-    thrust = float(thrust_with_units)  # convert to scalar
-
+    
+    # Compute thrust with units
+    thrust_with_units = np.sum(rho_out * vx_out**2) * dy
+    thrust = float(thrust_with_units.to("N"))  # Convert to Newtons
+    
     print(f"[INFO] Computed thrust: {thrust:.3e} N")
+    
     return thrust
-
-
 
 # === Log results ===
 def log_results(Z, X, H, thrust):
