@@ -74,76 +74,64 @@ def get_plotfile_path(base_dir):
     return plot_dirs[-1]
 
 # === Extract thrust from plotfile ===
-def extract_thrust_from_plotfile(plotfile_dir, outlet_x=0.99, tolerance=0.05):
+def extract_thrust_from_plotfile(plotfile_dir, outlet_x=0.95, tolerance=0.10):
     """
-    Extract thrust from simulation output
-    
-    Args:
-        plotfile_dir: path to plotfile directory
-        outlet_x: x-location of outlet (fraction of domain, 0-1)
-        tolerance: tolerance for finding outlet cells (fraction of domain)
+    Extract thrust from simulation output - CORRECTED for cm units
     """
     import yt
-    from unyt import m
+    import numpy as np
     
     ds = yt.load(plotfile_dir)
     ad = ds.all_data()
     
-    # Get data arrays (these come with unyt units from yt)
-    x_raw = ad["x"]
-    rho_raw = ad["density"]
-    vx_raw = ad["x_velocity"]
+    # Get data - these come in CGS units (cm, g, cm/s)
+    x_cm = ad["x"].to("cm").v  # Keep in cm
+    rho_cgs = ad["density"].to("g/cm**3").v  # g/cm³
+    vx_cgs = ad["x_velocity"].to("cm/s").v  # cm/s
     
-    # Convert to SI and strip units completely using .v (value) attribute
-    x_m = x_raw.to("m").v  # Convert to meters, then extract numpy array
-    rho_kg = rho_raw.to("kg/m**3").v  # Convert to kg/m³, extract array
-    vx_m = vx_raw.to("m/s").v  # Convert to m/s, extract array
+    # Get cell size in y-direction (in cm)
+    dy_cm = float((ds.domain_width[1] / ds.domain_dimensions[1]).to("cm"))
     
-    # Get cell size in y-direction
-    dy = float((ds.domain_width[1] / ds.domain_dimensions[1]).to("m"))
-    
-    # Domain info (for debugging)
-    x_min = float(ds.domain_left_edge[0].to("m"))
-    x_max = float(ds.domain_right_edge[0].to("m"))
+    # Domain info
+    x_min = float(ds.domain_left_edge[0].to("cm"))
+    x_max = float(ds.domain_right_edge[0].to("cm"))
     domain_length = x_max - x_min
     
-    print(f"[DEBUG] Domain x-range: [{x_min:.3f}, {x_max:.3f}] m")
-    print(f"[DEBUG] Domain length: {domain_length:.3f} m")
-    print(f"[DEBUG] Data x-range: [{x_m.min():.3f}, {x_m.max():.3f}] m")
+    print(f"[DEBUG] Domain: [{x_min:.3f}, {x_max:.3f}] cm")
+    print(f"[DEBUG] Domain length: {domain_length:.3f} cm")
     
-    # Calculate outlet position in meters
-    outlet_x_m = x_min + outlet_x * domain_length
-    tolerance_m = tolerance * domain_length
+    # Calculate outlet position in cm
+    outlet_x_cm = x_min + outlet_x * domain_length
+    tolerance_cm = tolerance * domain_length
     
-    print(f"[DEBUG] Looking for outlet at x = {outlet_x_m:.3f} m ± {tolerance_m:.3f} m")
+    print(f"[DEBUG] Looking for outlet at x = {outlet_x_cm:.3f} cm ± {tolerance_cm:.3f} cm")
     
-    # Create mask for cells near outlet
-    mask = np.abs(x_m - outlet_x_m) < tolerance_m
-    
+    # Create mask
+    mask = np.abs(x_cm - outlet_x_cm) < tolerance_cm
     n_cells = np.sum(mask)
     print(f"[DEBUG] Found {n_cells} cells near outlet")
     
     if n_cells == 0:
-        print(f"[WARNING] No cells found near outlet_x = {outlet_x}")
-        print(f"[WARNING] Try increasing tolerance (current: {tolerance})")
-        print(f"[WARNING] Or adjust outlet_x position (current: {outlet_x})")
-        raise RuntimeError(f"No cells found near outlet_x={outlet_x} with tolerance={tolerance}")
+        raise RuntimeError(f"No cells found near outlet")
     
-    # Extract outlet values
-    rho_out = rho_kg[mask]
-    vx_out = vx_m[mask]
+    # Extract outlet values (still in CGS)
+    rho_out = rho_cgs[mask]  # g/cm³
+    vx_out = vx_cgs[mask]    # cm/s
     
-    # Compute thrust: F = ∫(ρu² + p) dA
-    # Simplified: F ≈ Σ(ρu²) * dy (momentum flux)
-    # Note: You may want to add pressure term if available
-    thrust = float(np.sum(rho_out * vx_out**2) * dy)
+    # Compute thrust in CGS: F = Σ(ρu²) * dy
+    # Units: (g/cm³) * (cm/s)² * cm = g·cm/s² = dyne
+    thrust_dyne = float(np.sum(rho_out * vx_out**2) * dy_cm)
     
-    print(f"[INFO] Computed thrust: {thrust:.6e} N")
-    print(f"[INFO] Mean outlet velocity: {np.mean(vx_out):.3f} m/s")
-    print(f"[INFO] Mean outlet density: {np.mean(rho_out):.3f} kg/m³")
+    # Convert dyne to Newton: 1 N = 10^5 dyne
+    thrust_N = thrust_dyne / 1e5
     
-    return thrust
-
+    print(f"[INFO] Thrust (CGS): {thrust_dyne:.6e} dyne")
+    print(f"[INFO] Thrust (SI): {thrust_N:.6e} N")
+    print(f"[INFO] Mean outlet velocity: {np.mean(vx_out):.1f} cm/s = {np.mean(vx_out)/100:.1f} m/s")
+    print(f"[INFO] Mean outlet density: {np.mean(rho_out):.6f} g/cm³ = {np.mean(rho_out)*1000:.3f} kg/m³")
+    
+    return thrust_N
+    
 # === Log results ===
 def log_results(Z, X, H, thrust):
     file_exists = os.path.isfile(RESULTS_LOG)
