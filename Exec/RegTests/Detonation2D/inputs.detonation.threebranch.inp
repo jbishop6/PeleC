@@ -95,32 +95,33 @@ prob.right_gas = HE
 # ------------------ EMBEDDED BOUNDARY (EB) -------------------
 pelec.eb_in_domain = 1
 
-# Use your new factory-registered geometry: TwoBranch::identifier() == "twobranch"
 eb2.build_type = all
 eb2.max_coarsening_level = 0
 eb2.geom_type = threebranch
 
-# same params the rotated_box uses (your TwoBranch currently clones that)
+# same params the rotated_box uses 
 eb2.box_lo = 0.40 0.03
 eb2.box_hi = 0.60 0.09
 eb2.box_has_fluid_inside = 0
 eb2.box_rotation = 0
 eb2.box_rotation_axe = 2
 
-# Two-branch geometry knobs (domain units; tweak as you like)
-geo.W  = 0.041015625
-geo.L  = 0.0390625
-geo.xs = 0.30
 
-geo.xr = 0.70
-geo.mid = 0.02
+# geo.W  = 0.041015625
+geo.L  = 0.0390625
+
+# Box separating the upper and lower channel 
+geo.xs = 0.30 # left edge of box
+geo.xr = 0.70 # right edge of box
+geo.mid = 0.02 # thickness of box
 
 # NEW: retract mid-wall from each end to connect branches
 geo.cL = 0.05    # left-side connection length
 geo.cR = 0.05    # right-side connection length
 
 # Adjustable parameters of the system
-geo.Z = 0.1
-geo.X = 0.4
+geo.Z = 0.1 # Length of third branch
+geo.X = 0.4 # Length of channel (circumference of RDE)
 geo.H = 0.1 #Total height from top of upper branch to bottom of lower branch
+geo.W = 0.1 # Thickness of the third branch
 
