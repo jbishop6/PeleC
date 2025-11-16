@@ -10,6 +10,7 @@ import yt
 from glob import glob
 import sys
 from unyt import cm
+from scipy.stats.qmc import LatinHypercube
 
 print("[DEBUG] Python script started", file=sys.stderr)
 
@@ -19,281 +20,345 @@ SIM_EXECUTABLE = "./PeleC2d.gnu.ex"
 RESULTS_LOG = "results_log.csv"
 
 # Parameters to optimize
-geo_Z = 0.1
-geo_X = 0.4
-geo_H = 0.1
+# geo_Z = 0.1
+# geo_X = 0.4
+# geo_H = 0.1
 
 
-# === Modify geometry and plotfile output path in .inp file ===
-def modify_geometry_params(path, Z, X, H, plot_dir):
-    with open(path, "r") as f:
-        lines = f.readlines()
-    updated_lines = []
-    plot_line_found = False
-    for line in lines:
-        if line.strip().startswith("geo.Z"):
-            updated_lines.append(f"geo.Z = {Z}\n")
-        elif line.strip().startswith("geo.X"):
-            updated_lines.append(f"geo.X = {X}\n")
-        elif line.strip().startswith("geo.H"):
-            updated_lines.append(f"geo.H = {H}\n")
-        elif line.strip().startswith("amr.plot_file"):
-            updated_lines.append(f"amr.plot_file = {plot_dir}/plt\n")
-            plot_line_found = True
-        else:
-            updated_lines.append(line)
+# Creating the surrogate function for Bayesian Optimization
+# Typically surrogate function are data points generated from a sample
+# In this case there are no prior data points and thus need to generate some
+# This will be done by using Latin Hypercube Sampling (so random guesses are made)
+
+# Setting bounds based on physical constraints in PeleC
+bounds = np.array([
+    [0.05, 1.0] # Z parameter
+    [0.05, 0.8 ] # X parameter
+    [0.05, 1.5] # H parameter
+    [0.05, 0.5] # W parameter
+])
+
+# Ensuring they are a valid combination of inputs so PeleC doesn't crash
+def is_valid_inputs(x)
+    geo_X, geo_H, geo_Z, geo_W = x
+    return (geo_X + geo_W <= 1.0) and (geo_H + geo_Z <= 2.0)
     
-    if not plot_line_found:
-        updated_lines.append(f"\namr.plot_file = {plot_dir}/plt\n")
+def generate_valid_lhs_samples(bounds, n_samples=5, max_attempts_per_sample=500):
+    dim = bounds.shape[0]
+    valid_samples = []
+
+    while len(valid_samples) < n_samples:
+        attempts = 0
+        found_valid = False
+
+        while attempts < max_attempts_per_sample:
+            # Generate 1 LHS sample
+            sampler = LatinHypercube(d=dim)
+            lhs_unit = sampler.random(n=1)
+            candidate = bounds[:, 0] + lhs_unit[0] * (bounds[:, 1] - bounds[:,0])
+
+            if is_valid_input(candidate):
+                valid_samples.append(candidate)
+                found_valid = True
+                break
+
+            attempts += 1
+
+    if not found_valid:
+        raise RuntimeError(f"Failed to find valid sample after {max_attempts_per_sample} attempts.")
+return np.array(valid_samples)
+                           
     
-    with open(path, "w") as f:
-        f.writelines(updated_lines)
+
+
+
+max_iters = 15 # Starting at 15 since computationally expensive
+tol = 1e-2 # For early stage of testing
+prev_best = 0
+
+for i in range(max_iters):
+
+    # === Modify geometry and plotfile output path in .inp file ===
+    def modify_geometry_params(path, Z, X, H, plot_dir):
+        with open(path, "r") as f:
+            lines = f.readlines()
+        updated_lines = []
+        plot_line_found = False
+        for line in lines:
+            if line.strip().startswith("geo.Z"):
+                updated_lines.append(f"geo.Z = {Z}\n")
+            elif line.strip().startswith("geo.X"):
+                updated_lines.append(f"geo.X = {X}\n")
+            elif line.strip().startswith("geo.H"):
+                updated_lines.append(f"geo.H = {H}\n")
+            elif line.strip().startswith("geo.W"):
+                updated_lines.append(f"geo.W = {W}\n")
+            elif line.strip().startswith("amr.plot_file"):
+                updated_lines.append(f"amr.plot_file = {plot_dir}/plt\n")
+                plot_line_found = True
+            else:
+                updated_lines.append(line)
     
-    print(f"[INFO] Updated geometry: Z={Z}, X={X}, H={H}")
-    print(f"[INFO] Plot file output set to: {plot_dir}/plt")
+        if not plot_line_found:
+            updated_lines.append(f"\namr.plot_file = {plot_dir}/plt\n")
+    
+        with open(path, "w") as f:
+            f.writelines(updated_lines)
+    
+        print(f"[INFO] Updated geometry: Z={Z}, X={X}, H={H}, W={W}")
+        print(f"[INFO] Plot file output set to: {plot_dir}/plt")
 
 
 # === Run simulation ===
-def run_simulation(executable, inp_file):
-    print(f"[INFO] Running: {executable} {inp_file}")
-    result = subprocess.run([executable, inp_file], capture_output=True, text=True)
-    if result.returncode != 0:
-        print("[ERROR] Simulation failed:")
-        print(result.stderr)
-        raise RuntimeError("Simulation run failed")
-    print("[INFO] Simulation completed successfully")
+    def run_simulation(executable, inp_file):
+        print(f"[INFO] Running: {executable} {inp_file}")
+        result = subprocess.run([executable, inp_file], capture_output=True, text=True)
+        if result.returncode != 0:
+            print("[ERROR] Simulation failed:")
+            print(result.stderr)
+            raise RuntimeError("Simulation run failed")
+        print("[INFO] Simulation completed successfully")
 
 
 # === Get ALL plotfile directories ===
-def get_all_plotfiles(base_dir):
-    """Get all plotfile directories sorted by time"""
-    plot_dirs = sorted(glob(os.path.join(base_dir, "plt*")))
-    if not plot_dirs:
-        raise RuntimeError(f"No plotfiles found in {base_dir}.")
-    print(f"[INFO] Found {len(plot_dirs)} plotfiles")
-    return plot_dirs
+    def get_all_plotfiles(base_dir):
+        """Get all plotfile directories sorted by time"""
+        plot_dirs = sorted(glob(os.path.join(base_dir, "plt*")))
+        if not plot_dirs:
+            raise RuntimeError(f"No plotfiles found in {base_dir}.")
+        print(f"[INFO] Found {len(plot_dirs)} plotfiles")
+        return plot_dirs
 
 
 # === Extract thrust from single plotfile ===
-def extract_thrust_from_plotfile(plotfile_dir, outlet_x=0.95, tolerance=0.10):
+    def extract_thrust_from_plotfile(plotfile_dir, outlet_x=0.95, tolerance=0.10):
     """
     Extract thrust from simulation output (CGS units)
     Returns thrust in Newtons
     """
-    ds = yt.load(plotfile_dir)
-    ad = ds.all_data()
+        ds = yt.load(plotfile_dir)
+        ad = ds.all_data()
     
     # Get data in CGS units (cm, g, cm/s)
-    x_cm = ad["x"].to("cm").v
-    rho_cgs = ad["density"].to("g/cm**3").v
-    vx_cgs = ad["x_velocity"].to("cm/s").v
+        x_cm = ad["x"].to("cm").v
+        rho_cgs = ad["density"].to("g/cm**3").v
+        vx_cgs = ad["x_velocity"].to("cm/s").v
     
     # Get cell size in y-direction (in cm)
-    dy_cm = float((ds.domain_width[1] / ds.domain_dimensions[1]).to("cm"))
+        dy_cm = float((ds.domain_width[1] / ds.domain_dimensions[1]).to("cm"))
     
     # Domain info
-    x_min = float(ds.domain_left_edge[0].to("cm"))
-    x_max = float(ds.domain_right_edge[0].to("cm"))
-    domain_length = x_max - x_min
+        x_min = float(ds.domain_left_edge[0].to("cm"))
+        x_max = float(ds.domain_right_edge[0].to("cm"))
+        domain_length = x_max - x_min
     
     # Calculate outlet position in cm
-    outlet_x_cm = x_min + outlet_x * domain_length
-    tolerance_cm = tolerance * domain_length
+        outlet_x_cm = x_min + outlet_x * domain_length
+        tolerance_cm = tolerance * domain_length
     
     # Create mask
-    mask = np.abs(x_cm - outlet_x_cm) < tolerance_cm
-    n_cells = np.sum(mask)
+        mask = np.abs(x_cm - outlet_x_cm) < tolerance_cm
+        n_cells = np.sum(mask)
     
-    if n_cells == 0:
-        raise RuntimeError(f"No cells found near outlet in {plotfile_dir}")
+        if n_cells == 0:
+            raise RuntimeError(f"No cells found near outlet in {plotfile_dir}")
     
     # Extract outlet values (in CGS)
-    rho_out = rho_cgs[mask]
-    vx_out = vx_cgs[mask]
+        rho_out = rho_cgs[mask]
+        vx_out = vx_cgs[mask]
     
     # Compute thrust: F = Σ(ρu²) * dy
     # Units: (g/cm³) * (cm/s)² * cm = g·cm/s² = dyne
-    thrust_dyne = float(np.sum(rho_out * vx_out**2) * dy_cm)
+        thrust_dyne = float(np.sum(rho_out * vx_out**2) * dy_cm)
     
     # Convert dyne to Newton: 1 N = 10^5 dyne
-    thrust_N = thrust_dyne / 1e5
+        thrust_N = thrust_dyne / 1e5
     
-    return thrust_N
+        return thrust_N
 
 
 # === Analyze thrust over all timesteps ===
-def analyze_thrust_timeseries(plotfiles, output_dir):
+    def analyze_thrust_timeseries(plotfiles, output_dir):
     """
     Analyze thrust from all plotfiles and compute statistics
     """
-    print(f"\n{'='*60}")
-    print("ANALYZING THRUST TIME SERIES")
-    print(f"{'='*60}\n")
+        print(f"\n{'='*60}")
+        print("ANALYZING THRUST TIME SERIES")
+        print(f"{'='*60}\n")
     
-    results = []
+        results = []
     
-    for i, pf in enumerate(plotfiles):
-        try:
-            ds = yt.load(pf)
-            time_s = float(ds.current_time.to("s"))
-            time_us = time_s * 1e6
+        for i, pf in enumerate(plotfiles):
+            try:
+                ds = yt.load(pf)
+                time_s = float(ds.current_time.to("s"))
+                time_us = time_s * 1e6
             
-            thrust_N = extract_thrust_from_plotfile(pf)
+                thrust_N = extract_thrust_from_plotfile(pf)
             
-            results.append({
-                'plotfile': os.path.basename(pf),
-                'time_s': time_s,
-                'time_us': time_us,
-                'thrust_N': thrust_N
-            })
+                results.append({
+                    'plotfile': os.path.basename(pf),
+                    'time_s': time_s,
+                    'time_us': time_us,
+                    'thrust_N': thrust_N
+                })
             
-            print(f"[{i+1:3d}/{len(plotfiles)}] t={time_us:7.2f} μs | F={thrust_N:8.3f} N")
+                print(f"[{i+1:3d}/{len(plotfiles)}] t={time_us:7.2f} μs | F={thrust_N:8.3f} N")
             
-        except Exception as e:
-            print(f"[ERROR] Failed to process {pf}: {e}")
-            continue
+            except Exception as e:
+                print(f"[ERROR] Failed to process {pf}: {e}")
+                continue
     
-    if not results:
-        raise RuntimeError("No thrust data extracted from any plotfile")
+        if not results:
+            raise RuntimeError("No thrust data extracted from any plotfile")
     
     # Calculate statistics
-    thrust_values = [r['thrust_N'] for r in results]
-    thrust_avg = np.mean(thrust_values)
-    thrust_std = np.std(thrust_values)
-    thrust_max = np.max(thrust_values)
-    thrust_min = np.min(thrust_values)
+        thrust_values = [r['thrust_N'] for r in results]
+        thrust_avg = np.mean(thrust_values)
+        thrust_std = np.std(thrust_values)
+        thrust_max = np.max(thrust_values)
+        thrust_min = np.min(thrust_values)
     
-    print(f"\n{'='*60}")
-    print("THRUST STATISTICS")
-    print(f"{'='*60}")
-    print(f"Average thrust:  {thrust_avg:.3f} N")
-    print(f"Std deviation:   {thrust_std:.3f} N")
-    print(f"Maximum thrust:  {thrust_max:.3f} N")
-    print(f"Minimum thrust:  {thrust_min:.3f} N")
-    print(f"Coefficient of variation: {(thrust_std/thrust_avg)*100:.1f}%")
-    print(f"{'='*60}\n")
+        print(f"\n{'='*60}")
+        print("THRUST STATISTICS")
+        print(f"{'='*60}")
+        print(f"Average thrust:  {thrust_avg:.3f} N")
+        print(f"Std deviation:   {thrust_std:.3f} N")
+        print(f"Maximum thrust:  {thrust_max:.3f} N")
+        print(f"Minimum thrust:  {thrust_min:.3f} N")
+        print(f"Coefficient of variation: {(thrust_std/thrust_avg)*100:.1f}%")
+        print(f"{'='*60}\n")
     
     # Save detailed time series to CSV
-    timeseries_csv = os.path.join(output_dir, "thrust_timeseries.csv")
-    with open(timeseries_csv, 'w', newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=results[0].keys())
-        writer.writeheader()
-        writer.writerows(results)
-    print(f"[INFO] Time series saved to: {timeseries_csv}")
+        timeseries_csv = os.path.join(output_dir, "thrust_timeseries.csv")
+        with open(timeseries_csv, 'w', newline='') as f:
+            writer = csv.DictWriter(f, fieldnames=results[0].keys())
+            writer.writeheader()
+            writer.writerows(results)
+        print(f"[INFO] Time series saved to: {timeseries_csv}")
     
     # Save summary statistics
-    summary_txt = os.path.join(output_dir, "thrust_summary.txt")
-    with open(summary_txt, 'w') as f:
-        f.write(f"THRUST ANALYSIS SUMMARY\n")
-        f.write(f"{'='*40}\n\n")
-        f.write(f"Geometry Parameters:\n")
-        f.write(f"  Z = {geo_Z}\n")
-        f.write(f"  X = {geo_X}\n")
-        f.write(f"  H = {geo_H}\n\n")
-        f.write(f"Thrust Statistics:\n")
-        f.write(f"  Average:  {thrust_avg:.6f} N\n")
-        f.write(f"  Std Dev:  {thrust_std:.6f} N\n")
-        f.write(f"  Maximum:  {thrust_max:.6f} N\n")
-        f.write(f"  Minimum:  {thrust_min:.6f} N\n")
-        f.write(f"  CV:       {(thrust_std/thrust_avg)*100:.2f}%\n\n")
-        f.write(f"Number of samples: {len(results)}\n")
-    print(f"[INFO] Summary saved to: {summary_txt}")
+        summary_txt = os.path.join(output_dir, "thrust_summary.txt")
+        with open(summary_txt, 'w') as f:
+            f.write(f"THRUST ANALYSIS SUMMARY\n")
+            f.write(f"{'='*40}\n\n")
+            f.write(f"Geometry Parameters:\n")
+            f.write(f"  Z = {geo_Z}\n")
+            f.write(f"  X = {geo_X}\n")
+            f.write(f"  H = {geo_H}\n\n")
+            f.write(f"Thrust Statistics:\n")
+            f.write(f"  Average:  {thrust_avg:.6f} N\n")
+            f.write(f"  Std Dev:  {thrust_std:.6f} N\n")
+            f.write(f"  Maximum:  {thrust_max:.6f} N\n")
+            f.write(f"  Minimum:  {thrust_min:.6f} N\n")
+            f.write(f"  CV:       {(thrust_std/thrust_avg)*100:.2f}%\n\n")
+            f.write(f"Number of samples: {len(results)}\n")
+        print(f"[INFO] Summary saved to: {summary_txt}")
     
     # Create thrust evolution plot
-    create_thrust_plot(results, output_dir)
+        create_thrust_plot(results, output_dir)
     
-    return {
-        'thrust_avg': thrust_avg,
-        'thrust_std': thrust_std,
-        'thrust_max': thrust_max,
-        'thrust_min': thrust_min,
-        'thrust_timeseries': results
-    }
+        return {
+            'thrust_avg': thrust_avg,
+            'thrust_std': thrust_std,
+            'thrust_max': thrust_max,
+            'thrust_min': thrust_min,
+            'thrust_timeseries': results
+        }
 
 
 # === Create thrust evolution plot ===
-def create_thrust_plot(results, output_dir):
+    def create_thrust_plot(results, output_dir):
     """
     Create plot showing thrust evolution over time
     """
-    times = [r['time_us'] for r in results]
-    thrust = [r['thrust_N'] for r in results]
+        times = [r['time_us'] for r in results]
+        thrust = [r['thrust_N'] for r in results]
     
-    thrust_avg = np.mean(thrust)
-    thrust_std = np.std(thrust)
+        thrust_avg = np.mean(thrust)
+        thrust_std = np.std(thrust)
     
-    fig, ax = plt.subplots(figsize=(10, 6))
+        fig, ax = plt.subplots(figsize=(10, 6))
     
-    ax.plot(times, thrust, 'b-', linewidth=2, marker='o', 
+        ax.plot(times, thrust, 'b-', linewidth=2, marker='o', 
             markersize=4, label='Instantaneous Thrust')
-    ax.axhline(thrust_avg, color='r', linestyle='--', 
-               linewidth=2, label=f'Average: {thrust_avg:.2f} N')
-    ax.fill_between(times, thrust_avg-thrust_std, thrust_avg+thrust_std,
-                     alpha=0.2, color='r', label=f'±1σ: {thrust_std:.2f} N')
+        ax.axhline(thrust_avg, color='r', linestyle='--', 
+            linewidth=2, label=f'Average: {thrust_avg:.2f} N')
+        ax.fill_between(times, thrust_avg-thrust_std, thrust_avg+thrust_std,
+            alpha=0.2, color='r', label=f'±1σ: {thrust_std:.2f} N')
     
-    ax.set_xlabel('Time (μs)', fontsize=12, fontweight='bold')
-    ax.set_ylabel('Thrust (N)', fontsize=12, fontweight='bold')
-    ax.set_title(f'Thrust Evolution (Z={geo_Z}, X={geo_X}, H={geo_H})', 
+        ax.set_xlabel('Time (μs)', fontsize=12, fontweight='bold')
+        ax.set_ylabel('Thrust (N)', fontsize=12, fontweight='bold')
+        ax.set_title(f'Thrust Evolution (Z={geo_Z}, X={geo_X}, H={geo_H})', 
                  fontsize=14, fontweight='bold')
-    ax.grid(True, alpha=0.3)
-    ax.legend(fontsize=10)
+        ax.grid(True, alpha=0.3)
+        ax.legend(fontsize=10)
     
-    plt.tight_layout()
+        plt.tight_layout()
     
-    plot_path = os.path.join(output_dir, "thrust_evolution.png")
-    plt.savefig(plot_path, dpi=150, bbox_inches='tight')
-    plt.close()
+        plot_path = os.path.join(output_dir, "thrust_evolution.png")
+        plt.savefig(plot_path, dpi=150, bbox_inches='tight')
+        plt.close()
     
-    print(f"[INFO] Thrust plot saved to: {plot_path}")
+        print(f"[INFO] Thrust plot saved to: {plot_path}")
 
 
 # === Log results ===
-def log_results(Z, X, H, thrust_stats):
+    def log_results(Z, X, H, W, thrust_stats):
     """
     Log results to CSV with both average and peak thrust
     """
-    file_exists = os.path.isfile(RESULTS_LOG)
-    with open(RESULTS_LOG, "a", newline="") as csvfile:
-        writer = csv.writer(csvfile)
-        if not file_exists:
-            writer.writerow(["geo.Z", "geo.X", "geo.H", 
+        file_exists = os.path.isfile(RESULTS_LOG)
+        with open(RESULTS_LOG, "a", newline="") as csvfile:
+            writer = csv.writer(csvfile)
+            if not file_exists:
+                writer.writerow(["geo.Z", "geo.X", "geo.H", "geo.W",
                            "thrust_avg", "thrust_std", "thrust_max", "thrust_min"])
-        writer.writerow([Z, X, H, 
+            writer.writerow([Z, X, H, W,
                         thrust_stats['thrust_avg'],
                         thrust_stats['thrust_std'],
                         thrust_stats['thrust_max'],
                         thrust_stats['thrust_min']])
-    print(f"[INFO] Logged results to {RESULTS_LOG}")
+        print(f"[INFO] Logged results to {RESULTS_LOG}")
 
 
 # === MAIN WORKFLOW ===
-if __name__ == "__main__":
+    if __name__ == "__main__":
     # Create run directory
-    run_id = f"Z{geo_Z}_X{geo_X}_H{geo_H}".replace(".", "p")
-    output_dir = os.path.join("outputs", f"run_{run_id}")
-    os.makedirs(output_dir, exist_ok=True)
+        run_id = f"Z{geo_Z}_X{geo_X}_H{geo_H}_W{geo_W}".replace(".", "p")
+        output_dir = os.path.join("outputs", f"run_{run_id}")
+        os.makedirs(output_dir, exist_ok=True)
     
-    print(f"\n{'='*60}")
-    print(f"RDE OPTIMIZATION RUN: {run_id}")
-    print(f"{'='*60}\n")
+        print(f"\n{'='*60}")
+        print(f"RDE OPTIMIZATION RUN: {run_id}")
+        print(f"{'='*60}\n")
     
     # Modify input file and run simulation
-    modify_geometry_params(INP_FILE, geo_Z, geo_X, geo_H, output_dir)
-    run_simulation(SIM_EXECUTABLE, INP_FILE)
+        modify_geometry_params(INP_FILE, geo_Z, geo_X, geo_H, geo_W, output_dir)
+        run_simulation(SIM_EXECUTABLE, INP_FILE)
     
     # Get all plotfiles
-    plotfiles = get_all_plotfiles(output_dir)
+        plotfiles = get_all_plotfiles(output_dir)
     
     # Analyze thrust over all timesteps
-    thrust_stats = analyze_thrust_timeseries(plotfiles, output_dir)
+        thrust_stats = analyze_thrust_timeseries(plotfiles, output_dir)
     
     # Log results
-    log_results(geo_Z, geo_X, geo_H, thrust_stats)
+        log_results(geo_Z, geo_X, geo_H, geo_W, thrust_stats)
     
-    print(f"\n{'='*60}")
-    print("RUN COMPLETE")
-    print(f"{'='*60}")
-    print(f"Average thrust: {thrust_stats['thrust_avg']:.3f} N")
-    print(f"Peak thrust:    {thrust_stats['thrust_max']:.3f} N")
-    print(f"Results saved to: {output_dir}")
-    print(f"{'='*60}\n")
+        print(f"\n{'='*60}")
+        print("RUN COMPLETE")
+        print(f"{'='*60}")
+        print(f"Average thrust: {thrust_stats['thrust_avg']:.3f} N")
+        print(f"Peak thrust:    {thrust_stats['thrust_max']:.3f} N")
+        print(f"Results saved to: {output_dir}")
+        print(f"{'='*60}\n")
+    
+    # Bayesian Optimization
+    curr_best = thrust_max
+    impovement = abs(curr_best - prev_best)
+    if improvement < TOL:
+        break
+
+
+    prev_best = curr_best # Resetting for next loop
