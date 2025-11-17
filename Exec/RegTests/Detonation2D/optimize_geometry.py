@@ -361,7 +361,7 @@ X_init = generate_valid_lhs_samples(bounds, n_samples=init_samp_num)
 # Evaluate PeleC for each
 def run_single_lhs_sample(x):
     geo_Z, geo_X, geo_H, geo_W = x
-     print(f"[DEBUG] Starting simulation for Z={geo_Z}, X={geo_X}, H={geo_H}, W={geo_W}")
+    print(f"[DEBUG] Starting simulation for Z={geo_Z}, X={geo_X}, H={geo_H}, W={geo_W}")
     return run_pelec_and_extract_thrust(geo_Z, geo_X, geo_H, geo_W, INP_FILE, SIM_EXECUTABLE)
 
 Y_init = []
