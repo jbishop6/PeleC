@@ -361,8 +361,13 @@ X_init = generate_valid_lhs_samples(bounds, n_samples=init_samp_num)
 # Evaluate PeleC for each
 def run_single_lhs_sample(x):
     geo_Z, geo_X, geo_H, geo_W = x
-    print(f"[DEBUG] Starting simulation for Z={geo_Z}, X={geo_X}, H={geo_H}, W={geo_W}")
-    return run_pelec_and_extract_thrust(geo_Z, geo_X, geo_H, geo_W, INP_FILE, SIM_EXECUTABLE)
+    print(f"[DEBUG] Starting LHS simulation for Z={geo_Z}, X={geo_X}, H={geo_H}, W={geo_W}", file=sys.stderr)
+    try:
+        result = run_pelec_and_extract_thrust(geo_Z, geo_X, geo_H, geo_W, INP_FILE, SIM_EXECUTABLE)
+        return result
+    except Exception as e:
+        print(f"[ERROR] Failed LHS run for {x} — Exception: {e}", file=sys.stderr)
+        return None
 
 Y_init = []
 with concurrent.futures.ProcessPoolExecutor(max_workers=os.cpu_count()) as executor:
@@ -370,12 +375,18 @@ with concurrent.futures.ProcessPoolExecutor(max_workers=os.cpu_count()) as execu
     future_to_x = {executor.submit(run_single_lhs_sample,x): x for x in X_init}
 
     for future in concurrent.futures.as_completed(future_to_x):
-        x = future_to_x[future]
-        try:
-            result = future.result()
+    x = future_to_x[future]
+    try:
+        result = future.result()
+        if result:
             Y_init.append(result['thrust_max'])
-        except Exception as exc:
-            print(f"[ERROR] Simulation for {x} generated an exception: {exc}")
+        else:
+            print(f"[WARN] No result for {x}", file=sys.stderr)
+    except Exception as exc:
+        print(f"[ERROR] Future failed for {x} — Exception: {exc}", file=sys.stderr)
+
+if len(Y_init) == 0:
+    raise RuntimeError("All initial simulations failed. Cannot train GP.")
 
 
 
