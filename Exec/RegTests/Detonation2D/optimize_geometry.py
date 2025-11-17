@@ -60,33 +60,44 @@ def generate_valid_lhs_samples(bounds, n_samples=5, max_attempts_per_sample=500)
                            
 # === Modify geometry and plotfile output path in .inp file ===
 def modify_geometry_params(path, Z, X, H, W, plot_dir):
+    replacements = {
+        'geo.Z': f"geo.Z = {Z}",
+        'geo.X': f"geo.X = {X}",
+        'geo.H': f"geo.H = {H}",
+        'geo.W': f"geo.W = {W}",
+        'amr.plot_file': f"amr.plot_file = {plot_dir}/plt"
+    }
+
     with open(path, "r") as f:
         lines = f.readlines()
-        updated_lines = []
-        plot_line_found = False
+
+    updated_lines = []
+    found_keys = set()
+
     for line in lines:
-        if line.strip().startswith("geo.Z"):
-            updated_lines.append(f"geo.Z = {Z}\n")
-        elif line.strip().startswith("geo.X"):
-            updated_lines.append(f"geo.X = {X}\n")
-        elif line.strip().startswith("geo.H"):
-            updated_lines.append(f"geo.H = {H}\n")
-        elif line.strip().startswith("geo.W"):
-            updated_lines.append(f"geo.W = {W}\n")
-        elif line.strip().startswith("amr.plot_file"):
-            updated_lines.append(f"amr.plot_file = {plot_dir}/plt\n")
-            plot_line_found = True
-        else:
+        line_stripped = line.strip()
+        replaced = False
+        for key, new_line in replacements.items():
+            if line_stripped.startswith(key):
+                updated_lines.append(new_line + "\n")
+                found_keys.add(key)
+                replaced = True
+                break
+        if not replaced:
             updated_lines.append(line)
-    
-    if not plot_line_found:
-        updated_lines.append(f"\namr.plot_file = {plot_dir}/plt\n")
-    
+
+    # Add missing keys
+    for key, new_line in replacements.items():
+        if key not in found_keys:
+            updated_lines.append(new_line + "\n")
+
     with open(path, "w") as f:
         f.writelines(updated_lines)
-    
-    print(f"[INFO] Updated geometry: Z={Z}, X={X}, H={H}, W={W}")
-    print(f"[INFO] Plot file output set to: {plot_dir}/plt")
+
+    # Debug
+    with open(path, "r") as debug_file:
+        print(f"[DEBUG] Contents of modified {path}:\n{debug_file.read()}", file=sys.stderr)
+
 
 
 # === Run simulation ===
