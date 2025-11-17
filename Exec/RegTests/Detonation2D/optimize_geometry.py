@@ -60,6 +60,10 @@ def generate_valid_lhs_samples(bounds, n_samples=5, max_attempts_per_sample=500)
                            
 # === Modify geometry and plotfile output path in .inp file ===
 def modify_geometry_params(path, Z, X, H, W, plot_dir):
+    """
+    Modify ONLY the geometry parameters in the input file,
+    preserving all other parameters
+    """
     replacements = {
         'geo.Z': f"geo.Z = {Z}",
         'geo.X': f"geo.X = {X}",
@@ -67,32 +71,46 @@ def modify_geometry_params(path, Z, X, H, W, plot_dir):
         'geo.W': f"geo.W = {W}",
         'amr.plot_file': f"amr.plot_file = {plot_dir}/plt"
     }
-
+    
     with open(path, "r") as f:
         lines = f.readlines()
-
+    
     updated_lines = []
     found_keys = set()
-
+    
     for line in lines:
         stripped = line.strip()
         replaced = False
+        
+        # Check if this line starts with any of our replacement keys
         for key in replacements:
             if stripped.startswith(key):
                 updated_lines.append(replacements[key] + "\n")
                 found_keys.add(key)
                 replaced = True
                 break
+        
+        # If not replaced, keep the original line
         if not replaced:
             updated_lines.append(line)
-
-    # Add any missing keys
+    
+    # Add any missing keys at the end
     for key in replacements:
         if key not in found_keys:
             updated_lines.append(replacements[key] + "\n")
-
+    
+    # Write back to file
     with open(path, "w") as f:
         f.writelines(updated_lines)
+    
+    # Debug: verify critical parameters are present
+    with open(path, "r") as f:
+        content = f.read()
+        if "max_step" not in content:
+            print(f"[ERROR] max_step missing from {path}!", file=sys.stderr)
+        if "stop_time" not in content:
+            print(f"[ERROR] stop_time missing from {path}!", file=sys.stderr)
+        print(f"[DEBUG] Modified input file has {len(content.splitlines())} lines", file=sys.stderr)
 
     # Debug print final contents
     with open(path, "r") as f:
