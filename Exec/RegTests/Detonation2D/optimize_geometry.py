@@ -61,68 +61,52 @@ def generate_valid_lhs_samples(bounds, n_samples=5, max_attempts_per_sample=500)
 # === Modify geometry and plotfile output path in .inp file ===
 def modify_geometry_params(path, Z, X, H, W, plot_dir):
     """
-    Modify ONLY the geometry parameters in the input file,
-    preserving ALL other parameters
+    Modify ONLY geometry parameters, preserving ALL other content
+    Uses regex for maximum robustness
     """
-    # Read the entire original file
-    with open(path, "r") as f:
-        lines = f.readlines()
+    import re
     
-    # Parameters to replace
-    replacements = {
-        'geo.Z': f"geo.Z = {Z}",
-        'geo.X': f"geo.X = {X}",
-        'geo.H': f"geo.H = {H}",
-        'geo.W': f"geo.W = {W}",
-        'amr.plot_file': f"amr.plot_file = {plot_dir}/plt"
-    }
-    
-    updated_lines = []
-    found_keys = set()
-    
-    # Process each line
-    for line in lines:
-        stripped = line.strip()
-        line_replaced = False
-        
-        # Check if this line should be replaced
-        for key, replacement in replacements.items():
-            if stripped.startswith(key):
-                updated_lines.append(replacement + "\n")
-                found_keys.add(key)
-                line_replaced = True
-                break
-        
-        # If not replaced, keep the original line
-        if not line_replaced:
-            updated_lines.append(line)
-    
-    # Add any missing parameters at the end
-    for key, replacement in replacements.items():
-        if key not in found_keys:
-            updated_lines.append(replacement + "\n")
-    
-    # Write the modified content back
-    with open(path, "w") as f:
-        f.writelines(updated_lines)
-    
-    # Verification
+    # Read entire file as a single string
     with open(path, "r") as f:
         content = f.read()
-        num_lines = len(content.splitlines())
-        
-        # Check for critical parameters
-        if "max_step" not in content:
-            print(f"[ERROR] max_step missing from {path}!", file=sys.stderr)
-        if "stop_time" not in content:
-            print(f"[ERROR] stop_time missing from {path}!", file=sys.stderr)
-        
-        print(f"[DEBUG] Modified input file has {num_lines} lines", file=sys.stderr)
-        
-        # Only print first 20 lines to avoid clutter
-        print(f"[DEBUG] First 20 lines of {path}:", file=sys.stderr)
-        for i, line in enumerate(content.splitlines()[:20], 1):
-            print(f"  {i}: {line}", file=sys.stderr)
+    
+    # Store original for debugging
+    original_lines = len(content.splitlines())
+    
+    # Check if file has required parameters
+    if "max_step" not in content:
+        raise RuntimeError(f"Original file {path} is missing max_step!")
+    if "stop_time" not in content:
+        raise RuntimeError(f"Original file {path} is missing stop_time!")
+    
+    # Replace parameters using regex (preserves everything else)
+    content = re.sub(r'geo\.Z\s*=\s*[\d.eE+-]+', f'geo.Z = {Z}', content)
+    content = re.sub(r'geo\.X\s*=\s*[\d.eE+-]+', f'geo.X = {X}', content)
+    content = re.sub(r'geo\.H\s*=\s*[\d.eE+-]+', f'geo.H = {H}', content)
+    content = re.sub(r'geo\.W\s*=\s*[\d.eE+-]+', f'geo.W = {W}', content)
+    content = re.sub(r'amr\.plot_file\s*=\s*\S+', f'amr.plot_file = {plot_dir}/plt', content)
+    
+    # Write back
+    with open(path, "w") as f:
+        f.write(content)
+    
+    # Verify the modification worked
+    modified_lines = len(content.splitlines())
+    
+    if modified_lines < 10:
+        raise RuntimeError(f"Modified file only has {modified_lines} lines! Something went wrong.")
+    
+    if "max_step" not in content:
+        raise RuntimeError(f"max_step missing after modification!")
+    if "stop_time" not in content:
+        raise RuntimeError(f"stop_time missing after modification!")
+    
+    print(f"[DEBUG] Modified {path}: {original_lines} -> {modified_lines} lines", file=sys.stderr)
+    
+    # Print first 10 lines for verification
+    print(f"[DEBUG] First 10 lines of modified file:", file=sys.stderr)
+    for i, line in enumerate(content.splitlines()[:10], 1):
+        print(f"  {i}: {line}", file=sys.stderr)
             
 # === Run simulation ===
 def run_simulation(executable, inp_file):
