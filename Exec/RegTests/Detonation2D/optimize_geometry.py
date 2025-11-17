@@ -9,6 +9,7 @@ import subprocess
 import yt
 from glob import glob
 import sys
+import concurrent.futures
 from concurrent.futures import ProcessPoolExecutor
 from unyt import cm
 from scipy.stats.qmc import LatinHypercube
