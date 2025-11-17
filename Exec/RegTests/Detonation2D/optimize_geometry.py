@@ -306,7 +306,7 @@ def log_results(Z, X, H, W, thrust_stats, iteration=None):
 
 # ===    RUN PELEC AND EXTRACT RESULTS == 
 def run_pelec_and_extract_thrust(geo_Z, geo_X, geo_H, geo_W, INP_FILE, SIM_EXECUTABLE, iteration=None):
-     # Create unique output directory for results
+      # Create unique output directory for results
     run_id = f"Z{geo_Z}_X{geo_X}_H{geo_H}_W{geo_W}".replace(".", "p")
     output_dir = os.path.join("outputs", f"run_{run_id}")
     os.makedirs(output_dir, exist_ok=True)
