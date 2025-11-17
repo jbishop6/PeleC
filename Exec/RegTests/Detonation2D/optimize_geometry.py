@@ -12,7 +12,7 @@ import sys
 from unyt import cm
 from scipy.stats.qmc import LatinHypercube
 from sklearn.gaussian_process import GaussianProcessRegressor
-from sklearn.gaussian_process.kernals import Matern
+from sklearn.gaussian_process.kernels import Matern
 from scipy.stats import norm
 
 print("[DEBUG] Python script started", file=sys.stderr)
@@ -51,10 +51,10 @@ def generate_valid_lhs_samples(bounds, n_samples=5, max_attempts_per_sample=500)
 
     if not found_valid:
         raise RuntimeError(f"Failed to find valid sample after {max_attempts_per_sample} attempts.")
-return np.array(valid_samples)
+    return np.array(valid_samples)
                            
 # === Modify geometry and plotfile output path in .inp file ===
-def modify_geometry_params(path, Z, X, H, plot_dir):
+def modify_geometry_params(path, Z, X, H, W, plot_dir):
     with open(path, "r") as f:
         lines = f.readlines()
         updated_lines = []
@@ -280,7 +280,7 @@ def create_thrust_plot(results, output_dir):
 
 
 # === Log results ===
-def log_results(Z, X, H, W, thrust_stats):
+def log_results(Z, X, H, W, thrust_stats, iteration=None):
     """
     Log results to CSV with both average and peak thrust
     """
@@ -288,17 +288,19 @@ def log_results(Z, X, H, W, thrust_stats):
     with open(RESULTS_LOG, "a", newline="") as csvfile:
         writer = csv.writer(csvfile)
         if not file_exists:
-            writer.writerow(["geo.Z", "geo.X", "geo.H", "geo.W",
+            writer.writerow(["iteration","geo.Z", "geo.X", "geo.H", "geo.W",
                         "thrust_avg", "thrust_std", "thrust_max", "thrust_min"])
-        writer.writerow([Z, X, H, W,
-                    thrust_stats['thrust_avg'],
-                    thrust_stats['thrust_std'],
-                    thrust_stats['thrust_max'],
-                    thrust_stats['thrust_min']])
+        writer.writerow([
+            iteration if iteration is not None else "",       
+            Z, X, H, W,
+            thrust_stats['thrust_avg'],
+            thrust_stats['thrust_std'],
+            thrust_stats['thrust_max'],
+            thrust_stats['thrust_min']])
     print(f"[INFO] Logged results to {RESULTS_LOG}")
 
 # ===    RUN PELEC AND EXTRACT RESULTS == 
-def run_pelec_and_extract_thrust(geo_Z, geo_X, geo_H, geo_W, INP_FILE, SIM_EXECUTABLE):
+def run_pelec_and_extract_thrust(geo_Z, geo_X, geo_H, geo_W, INP_FILE, SIM_EXECUTABLE, iteration=None):
     # Create run directory
     run_id = f"Z{geo_Z}_X{geo_X}_H{geo_H}_W{geo_W}".replace(".", "p")
     output_dir = os.path.join("outputs", f"run_{run_id}")
@@ -319,7 +321,7 @@ def run_pelec_and_extract_thrust(geo_Z, geo_X, geo_H, geo_W, INP_FILE, SIM_EXECU
     thrust_stats = analyze_thrust_timeseries(plotfiles, output_dir)
     
     # Log results
-    log_results(geo_Z, geo_X, geo_H, geo_W, thrust_stats)
+    log_results(geo_Z, geo_X, geo_H, geo_W, thrust_stats, iterations=iteration)
     
     print(f"\n{'='*60}")
     print("RUN COMPLETE")
@@ -358,29 +360,10 @@ X_init = generate_valid_lhs_samples(bounds, n_samples=init_samp_num)
 Y_init = []
 for x in X_init:
     geo_Z, geo_X, geo_H, geo_W = x
-    thrust_stats - run_pelec_and_extract_thrust(geo_Z, geo_X, geo_H, geo_W, INP_FILE, SIM_EXECUTABLE)
+    thrust_stats = run_pelec_and_extract_thrust(geo_Z, geo_X, geo_H, geo_W, INP_FILE, SIM_EXECUTABLE)
     Y_init.append(thrust_stats['thrust_max'])
     
-# Now need to train a surrogate model using Gaussian Process
 
-# Define kernel for smoothness of the surrogate
-# Matern function has two inputs length_scale and nu
-# length_scale controls how fast the function can change with input (smaller values = more wiggly, larger values = smoother)
-# nu controls the smoothness of the function (nu = 1.5 once-differentiable and nu = 2.5 twice-differentiable
-# nu = 2.5 is a good choice for many real-world physical systems
-kernel = Matern(nu=2.5)
-
-#Create the GP regressor
-gp = GaussianProcessRegressor(
-    kernel = kernel, # so that it uses the custom kernal/covariance found
-    alpha = 1e-6, # noise term, super small because function is deterministic
-    normalize_y = True # normalize thrust values before fitting, then unnormalizes it for prediction
-)
-
-# Fit GP on current known data
-gp.fit(X_init, Y_init) # This trains the GP using the Matern kernel, builds a smooth function that maps inputs to predict thrust with uncertainty
-
-# Now that we have trained the data now we can predict 
 
 # Generate 1,000 different possible candidates for the system
 def generate_valid_candidates(bounds, n_candidates=1000):
@@ -391,8 +374,7 @@ def generate_valid_candidates(bounds, n_candidates=1000):
             candidates.append(x)
     return np.array(candidates)
 
-# Now predict mean and uncertainty for the thrust of each candidate
-mu, sigma = gp.predict(X_candidates, return_std=True)
+
 
 # Computing the expected improvement
 def expected_improvement(X, gp, Y_best, xi=0.01):
@@ -400,34 +382,72 @@ def expected_improvement(X, gp, Y_best, xi=0.01):
     sigma = sigma.reshape(-1, 1)
     mu = mu.reshape(-1, 1)
 
-    with np.errstate(divide='warn'
+    with np.errstate(divide='warn'):
         imp = mu - Y_best - xi
         Z = imp / sigma
         ei = imp * norm.cdf(Z) + sigma * norm.pdf(Z)
         ei[sigma == 0.0] = 0.0
-return ei.ravel()
+    return ei.ravel()
 
-Y_best = max(Y_init)
-ei = expected_improvement(X_candidates, gp, Y_best)
-
-# Pick the best candidate
-best_index = np.argmax(ei)
-x_next = X_candidates[best_index]
-
-
+X_data = X_init.copy()
+Y_data = Y_init.copy()
 
 max_iters = 15 # Starting at 15 since computationally expensive
 tol = 1e-2 # For early stage of testing
-prev_best = 0
 
-for i in range(max_iters):
-    
-    
-    # Bayesian Optimization
-    curr_best = thrust_max
-    impovement = abs(curr_best - prev_best)
-    if improvement < TOL:
+# Bayesian Optimization Loop
+for iteration in range(max_iters):
+    print(f"\n-- Iteration {iteration + 1} --")
+
+    # Step 1: Fit GP on current data
+    # Now need to train a surrogate model using Gaussian Process
+
+    # Define kernel for smoothness of the surrogate
+    # Matern function has two inputs length_scale and nu
+    # length_scale controls how fast the function can change with input (smaller values = more wiggly, larger values = smoother)
+    # nu controls the smoothness of the function (nu = 1.5 once-differentiable and nu = 2.5 twice-differentiable
+    # nu = 2.5 is a good choice for many real-world physical systems
+    kernel = Matern(nu=2.5)
+
+    #Create the GP regressor
+    gp = GaussianProcessRegressor(
+        kernel = kernel, # so that it uses the custom kernal/covariance found
+        alpha = 1e-6, # noise term, super small because function is deterministic
+        normalize_y = True # normalize thrust values before fitting, then unnormalizes it for prediction
+    )
+    # Fit GP on current known data
+    gp.fit(X_data, Y_data) # This trains the GP using the Matern kernel, builds a smooth function that maps inputs to predict thrust with uncertainty
+
+    # Now that we have trained the data now we can predict 
+    # Step 2: Generate valid candidate geometries
+    # Now predict mean and uncertainty for the thrust of each candidate
+    X_candidates = generate_valid_candidates(bounds, n_candidates=1000)
+
+    # Step 3: Compute expected improvement with candidates
+    Y_best = max(Y_data)
+    ei = expected_improvement(X_candidates, gp, Y_best)
+
+    # Step 4: Pick the best candidate based on expected improvement
+    best_index = np.argmax(ei)
+    x_next = X_candidates[best_index]
+
+    # Step 5: Run PeleC simulation on the new candidate
+    geo_Z, geo_X, geo_H, geo_W = x_next
+    thrust_stats = run_pelec_and_extract_thrust(geo_Z, geo_X, geo_H, geo_W, INP_FILE, SIM_EXECUTABLE, iteration=iteration+1)
+    y_next = thrust_stats['thrust_max']
+
+    # Step 6: Append new result to dataset
+    X_data = np.vstack((X_data, x_next))
+    Y_data.append(y_next)
+
+    # Step 7: Check for convergence
+    improvement = abs(y_next - Y_best)
+    print(f"[INFO] Improvement: {improvement:.6f} N")
+
+    if improvement < tol:
+        print("[INFO] Optimization has converged.")
         break
-
-
-    prev_best = curr_best # Resetting for next loop
+    
+print("\n=== Optimization complete ===")
+print(f"Best thrust achieved: {max(Y_data):.3f} N")
+print(f"Number of simulations run: {len(Y_data)}")
