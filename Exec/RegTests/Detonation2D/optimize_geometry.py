@@ -75,10 +75,10 @@ def modify_geometry_params(path, Z, X, H, W, plot_dir):
     found_keys = set()
 
     for line in lines:
-        line_stripped = line.strip()
+        stripped = line.strip()
         replaced = False
         for key in replacements:
-            if line_stripped.startswith(key):
+            if stripped.startswith(key):
                 updated_lines.append(replacements[key] + "\n")
                 found_keys.add(key)
                 replaced = True
@@ -86,7 +86,7 @@ def modify_geometry_params(path, Z, X, H, W, plot_dir):
         if not replaced:
             updated_lines.append(line)
 
-    # If any keys weren't in the original file, add them at the end
+    # Add any missing keys
     for key in replacements:
         if key not in found_keys:
             updated_lines.append(replacements[key] + "\n")
@@ -94,9 +94,9 @@ def modify_geometry_params(path, Z, X, H, W, plot_dir):
     with open(path, "w") as f:
         f.writelines(updated_lines)
 
-    # Debug dump
-    with open(path, "r") as debug_file:
-        print(f"[DEBUG] Contents of modified {path}:\n{debug_file.read()}", file=sys.stderr)
+    # Debug print final contents
+    with open(path, "r") as f:
+        print(f"[DEBUG] Contents of modified {path}:\n{f.read()}", file=sys.stderr)
 
 
 # === Run simulation ===
