@@ -9,6 +9,7 @@ import subprocess
 import yt
 from glob import glob
 import sys
+import concurrent.futures
 from unyt import cm
 from scipy.stats.qmc import LatinHypercube
 from sklearn.gaussian_process import GaussianProcessRegressor
@@ -321,7 +322,7 @@ def run_pelec_and_extract_thrust(geo_Z, geo_X, geo_H, geo_W, INP_FILE, SIM_EXECU
     thrust_stats = analyze_thrust_timeseries(plotfiles, output_dir)
     
     # Log results
-    log_results(geo_Z, geo_X, geo_H, geo_W, thrust_stats, iterations=iteration)
+    log_results(geo_Z, geo_X, geo_H, geo_W, thrust_stats, iteration=iteration)
     
     print(f"\n{'='*60}")
     print("RUN COMPLETE")
@@ -357,11 +358,30 @@ init_samp_num = 5 # Initial number of samples
 X_init = generate_valid_lhs_samples(bounds, n_samples=init_samp_num)
 
 # Evaluate PeleC for each
-Y_init = []
-for x in X_init:
+def run_single_lhs_sample(x):
     geo_Z, geo_X, geo_H, geo_W = x
-    thrust_stats = run_pelec_and_extract_thrust(geo_Z, geo_X, geo_H, geo_W, INP_FILE, SIM_EXECUTABLE)
-    Y_init.append(thrust_stats['thrust_max'])
+    return run_pelec_and_extract_thrust(geo_Z, geo_X, geo_H, geo_W, INP_FILE, SIM_EXECUTABLE)
+
+Y_init = []
+with concurrent.futures.ProcessPoolExecutor(max_workers=50) as executor:
+    # Submit all runs
+    future_to_x = {executor.submit(run_single_lhs_sample,x): x for x in X_init}
+
+    for future in concurrent.future.as_completed(future_to_x):
+        x = future_to_x[future]
+        try:
+            result = future.result()
+            Y_init.append(result['thrust_max'])
+        except Exception as exc:
+            print(f"[ERROR] Simulation for {x} generated an exception: {exc}")
+
+
+
+
+#for x in X_init:
+  #  geo_Z, geo_X, geo_H, geo_W = x
+   # thrust_stats = run_pelec_and_extract_thrust(geo_Z, geo_X, geo_H, geo_W, INP_FILE, SIM_EXECUTABLE)
+   # Y_init.append(thrust_stats['thrust_max'])
     
 
 
