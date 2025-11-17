@@ -375,7 +375,7 @@ with concurrent.futures.ProcessPoolExecutor(max_workers=os.cpu_count()) as execu
     future_to_x = {executor.submit(run_single_lhs_sample,x): x for x in X_init}
 
     for future in concurrent.futures.as_completed(future_to_x):
-    x = future_to_x[future]
+        x = future_to_x[future]
     try:
         result = future.result()
         if result:
