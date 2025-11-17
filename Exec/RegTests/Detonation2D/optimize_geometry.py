@@ -306,7 +306,7 @@ def log_results(Z, X, H, W, thrust_stats, iteration=None):
 
 # ===    RUN PELEC AND EXTRACT RESULTS == 
 def run_pelec_and_extract_thrust(geo_Z, geo_X, geo_H, geo_W, INP_FILE, SIM_EXECUTABLE, iteration=None):
-    # Create run directory (where plots and outputs will be saved)
+     # Create unique output directory for results
     run_id = f"Z{geo_Z}_X{geo_X}_H{geo_H}_W{geo_W}".replace(".", "p")
     output_dir = os.path.join("outputs", f"run_{run_id}")
     os.makedirs(output_dir, exist_ok=True)
@@ -315,34 +315,31 @@ def run_pelec_and_extract_thrust(geo_Z, geo_X, geo_H, geo_W, INP_FILE, SIM_EXECU
     print(f"RDE OPTIMIZATION RUN: {run_id}")
     print(f"{'='*60}\n")
 
-    # === Create a temporary working directory for simulation
+    # === CREATE TEMP WORKING DIRECTORY
     temp_work_dir = tempfile.mkdtemp(prefix="pelec_run_")
 
-    # === Create unique input file inside temp dir
+    # === COPY input file to a temp version
     unique_suffix = uuid.uuid4().hex[:8]
     temp_inp_file = os.path.join(temp_work_dir, f"temp_input_{unique_suffix}.inp")
     shutil.copy(INP_FILE, temp_inp_file)
 
+    # === COPY executable into temp dir
+    executable_name = os.path.basename(SIM_EXECUTABLE)
+    temp_exec_path = os.path.join(temp_work_dir, executable_name)
+    shutil.copy(SIM_EXECUTABLE, temp_exec_path)
+
     try:
-        # Modify the input file for this run
+        # Modify input file to update geometry
         modify_geometry_params(temp_inp_file, geo_Z, geo_X, geo_H, geo_W, output_dir)
 
-        # Run simulation inside the temp directory
-        print(f"[INFO] Running simulation in: {temp_work_dir}")
-        result = subprocess.run([SIM_EXECUTABLE, temp_inp_file],
-                                cwd=temp_work_dir,
-                                capture_output=True, text=True)
+        # Run simulation in the temp working directory
+        subprocess.run([f"./{executable_name}", temp_inp_file], cwd=temp_work_dir, check=True)
 
-        if result.returncode != 0:
-            print("[ERROR] Simulation failed:")
-            print(result.stderr)
-            raise RuntimeError("Simulation run failed")
-
-        print("[INFO] Simulation completed successfully")
-
-        # Analyze results
+        # Analyze the output results
         plotfiles = get_all_plotfiles(output_dir)
         thrust_stats = analyze_thrust_timeseries(plotfiles, output_dir)
+
+        # Log the results
         log_results(geo_Z, geo_X, geo_H, geo_W, thrust_stats, iteration=iteration)
 
         print(f"\n{'='*60}")
@@ -356,9 +353,9 @@ def run_pelec_and_extract_thrust(geo_Z, geo_X, geo_H, geo_W, INP_FILE, SIM_EXECU
         return thrust_stats
 
     finally:
-        # Clean up temp working directory and input file
+        # Clean up: Remove temp working dir and its contents
         shutil.rmtree(temp_work_dir)
-
+        
 # === MAIN WORKFLOW ===
 
 # Parameters to optimize
