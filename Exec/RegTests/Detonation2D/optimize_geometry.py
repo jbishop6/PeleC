@@ -7,9 +7,11 @@ import numpy as np
 import csv
 import subprocess
 import yt
-from glob import glob
 import sys
 import concurrent.futures
+import uuid
+import shutil
+from glob import glob
 from concurrent.futures import ProcessPoolExecutor
 from unyt import cm
 from scipy.stats.qmc import LatinHypercube
@@ -307,31 +309,40 @@ def run_pelec_and_extract_thrust(geo_Z, geo_X, geo_H, geo_W, INP_FILE, SIM_EXECU
     run_id = f"Z{geo_Z}_X{geo_X}_H{geo_H}_W{geo_W}".replace(".", "p")
     output_dir = os.path.join("outputs", f"run_{run_id}")
     os.makedirs(output_dir, exist_ok=True)
-    
+
     print(f"\n{'='*60}")
     print(f"RDE OPTIMIZATION RUN: {run_id}")
     print(f"{'='*60}\n")
-    
-    # Modify input file and run simulation
-    modify_geometry_params(INP_FILE, geo_Z, geo_X, geo_H, geo_W, output_dir)
-    run_simulation(SIM_EXECUTABLE, INP_FILE)
-    
-    # Get all plotfiles
-    plotfiles = get_all_plotfiles(output_dir)
-    
-    # Analyze thrust over all timesteps
-    thrust_stats = analyze_thrust_timeseries(plotfiles, output_dir)
-    
-    # Log results
-    log_results(geo_Z, geo_X, geo_H, geo_W, thrust_stats, iteration=iteration)
-    
-    print(f"\n{'='*60}")
-    print("RUN COMPLETE")
-    print(f"{'='*60}")
-    print(f"Average thrust: {thrust_stats['thrust_avg']:.3f} N")
-    print(f"Peak thrust:    {thrust_stats['thrust_max']:.3f} N")
-    print(f"Results saved to: {output_dir}")
-    print(f"{'='*60}\n")
+
+    # === COPY the input file to a temporary version
+    unique_suffix = uuid.uuid4().hex[:8]
+    temp_inp_file = f"temp_input_{unique_suffix}.inp"
+    shutil.copy(INP_FILE, temp_inp_file)
+
+    try:
+        # Modify the input file and run the simulation using the temp copy
+        modify_geometry_params(temp_inp_file, geo_Z, geo_X, geo_H, geo_W, output_dir)
+        run_simulation(SIM_EXECUTABLE, temp_inp_file)
+
+        # Continue as normal
+        plotfiles = get_all_plotfiles(output_dir)
+        thrust_stats = analyze_thrust_timeseries(plotfiles, output_dir)
+        log_results(geo_Z, geo_X, geo_H, geo_W, thrust_stats, iteration=iteration)
+
+        print(f"\n{'='*60}")
+        print("RUN COMPLETE")
+        print(f"{'='*60}")
+        print(f"Average thrust: {thrust_stats['thrust_avg']:.3f} N")
+        print(f"Peak thrust:    {thrust_stats['thrust_max']:.3f} N")
+        print(f"Results saved to: {output_dir}")
+        print(f"{'='*60}\n")
+
+        return thrust_stats
+
+    finally:
+        # Clean up temp input file
+        if os.path.exists(temp_inp_file):
+            os.remove(temp_inp_file)
 
 # === MAIN WORKFLOW ===
 
