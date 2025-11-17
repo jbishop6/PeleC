@@ -62,8 +62,13 @@ def generate_valid_lhs_samples(bounds, n_samples=5, max_attempts_per_sample=500)
 def modify_geometry_params(path, Z, X, H, W, plot_dir):
     """
     Modify ONLY the geometry parameters in the input file,
-    preserving all other parameters
+    preserving ALL other parameters
     """
+    # Read the entire original file
+    with open(path, "r") as f:
+        lines = f.readlines()
+    
+    # Parameters to replace
     replacements = {
         'geo.Z': f"geo.Z = {Z}",
         'geo.X': f"geo.X = {X}",
@@ -72,51 +77,53 @@ def modify_geometry_params(path, Z, X, H, W, plot_dir):
         'amr.plot_file': f"amr.plot_file = {plot_dir}/plt"
     }
     
-    with open(path, "r") as f:
-        lines = f.readlines()
-    
     updated_lines = []
     found_keys = set()
     
+    # Process each line
     for line in lines:
         stripped = line.strip()
-        replaced = False
+        line_replaced = False
         
-        # Check if this line starts with any of our replacement keys
-        for key in replacements:
+        # Check if this line should be replaced
+        for key, replacement in replacements.items():
             if stripped.startswith(key):
-                updated_lines.append(replacements[key] + "\n")
+                updated_lines.append(replacement + "\n")
                 found_keys.add(key)
-                replaced = True
+                line_replaced = True
                 break
         
         # If not replaced, keep the original line
-        if not replaced:
+        if not line_replaced:
             updated_lines.append(line)
     
-    # Add any missing keys at the end
-    for key in replacements:
+    # Add any missing parameters at the end
+    for key, replacement in replacements.items():
         if key not in found_keys:
-            updated_lines.append(replacements[key] + "\n")
+            updated_lines.append(replacement + "\n")
     
-    # Write back to file
+    # Write the modified content back
     with open(path, "w") as f:
         f.writelines(updated_lines)
     
-    # Debug: verify critical parameters are present
+    # Verification
     with open(path, "r") as f:
         content = f.read()
+        num_lines = len(content.splitlines())
+        
+        # Check for critical parameters
         if "max_step" not in content:
             print(f"[ERROR] max_step missing from {path}!", file=sys.stderr)
         if "stop_time" not in content:
             print(f"[ERROR] stop_time missing from {path}!", file=sys.stderr)
-        print(f"[DEBUG] Modified input file has {len(content.splitlines())} lines", file=sys.stderr)
-
-    # Debug print final contents
-    with open(path, "r") as f:
-        print(f"[DEBUG] Contents of modified {path}:\n{f.read()}", file=sys.stderr)
-
-
+        
+        print(f"[DEBUG] Modified input file has {num_lines} lines", file=sys.stderr)
+        
+        # Only print first 20 lines to avoid clutter
+        print(f"[DEBUG] First 20 lines of {path}:", file=sys.stderr)
+        for i, line in enumerate(content.splitlines()[:20], 1):
+            print(f"  {i}: {line}", file=sys.stderr)
+            
 # === Run simulation ===
 def run_simulation(executable, inp_file):
     print(f"[INFO] Running: {executable} {inp_file}")
