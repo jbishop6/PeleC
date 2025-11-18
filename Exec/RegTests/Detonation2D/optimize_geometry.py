@@ -30,6 +30,11 @@ INP_FILE = "inputs.detonation.threebranch.inp"
 SIM_EXECUTABLE = "./PeleC2d.gnu.ex"
 RESULTS_LOG = "results_log.csv"
 
+# Create empty results_log.csv with headers (if not already there)
+if not os.path.exists("results_log.csv"):
+    with open("results_log.csv", "w") as f:
+        f.write("iteration,geo.Z,geo.X,geo.H,geo.W,thrust_avg,thrust_std,thrust_max,thrust_min\n")
+
 # Defining functions for LHS
 # Ensuring they are a valid combination of inputs so PeleC doesn't crash
 def is_valid_input(x):
@@ -430,7 +435,6 @@ if __name__ == "__main__":
     job_ids = []
     X_init = generate_valid_lhs_samples(bounds, n_samples=init_samp_num)
 
-    Y_init = []
     # Submit each LHS sample as a separate SLURM job
     for i, x in enumerate(X_init):
         sample_file = f"lhs_samples/sample_{i}.txt"
@@ -449,16 +453,17 @@ if __name__ == "__main__":
     wait_for_jobs_to_finish(job_ids)
 
     # Read results from CSV
-    Y_init = []
-    with open("results_log.csv") as f:
-        for line in f:
-            if "thrust_max" in line:
-                continue
-            *_, thrust_max = line.strip().split(",")
-            Y_init.append(float(thrust_max))
+results_log_path = "results_log.csv"
+Y_init = []
+    with open(results_log_path) as f:
+    for line in f:
+        if "thrust_max" in line:
+            continue
+        *_, thrust_max = line.strip().split(",")
+        Y_init.append(float(thrust_max))
 
-    if len(Y_init) == 0:
-        raise RuntimeError("All initial simulations failed. Cannot train GP.")
+if len(Y_init) == 0:
+    raise RuntimeError("❌ ERROR: All initial simulations failed. Cannot train GP.")
 
     # Generate 1,000 different possible candidates for the system
     def generate_valid_candidates(bounds, n_candidates=1000):
