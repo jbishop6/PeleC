@@ -12,6 +12,7 @@ import concurrent.futures
 import uuid
 import shutil
 import tempfile
+import time
 from glob import glob
 from concurrent.futures import ProcessPoolExecutor
 from unyt import cm
@@ -374,7 +375,33 @@ def run_pelec_and_extract_thrust(geo_Z, geo_X, geo_H, geo_W, INP_FILE, SIM_EXECU
     finally:
         # Clean up: Remove temp working dir and its contents
         shutil.rmtree(temp_work_dir)
-        
+
+def wait_for_jobs_to_finish(job_ids, check_interval=30):
+    """
+    Wait until all given SLURM jobs are completed
+    """
+    while True:
+        # Check job status using squeue
+        result = subprocess.run(['squeue', '-u', os.getenv("USER")], stdout=subprocess.PIPE, text=True)
+        running_jobs = result.stdout
+
+        still_running = [job_id for job_id in job_ids if job_id in running_jobs]
+        if not still_running:
+            break
+
+        print(f"[INFO] Waiting for {len(still_running)} jobs to finish...")
+        time.sleep(check_interval)
+# Evaluate PeleC for each
+def run_single_lhs_sample(x):
+    geo_Z, geo_X, geo_H, geo_W = x
+    print(f"[DEBUG] Starting LHS simulation for Z={geo_Z}, X={geo_X}, H={geo_H}, W={geo_W}", file=sys.stderr)
+    try:
+        result = run_pelec_and_extract_thrust(geo_Z, geo_X, geo_H, geo_W, INP_FILE, SIM_EXECUTABLE)
+        return result
+    except Exception as e:
+        print(f"[ERROR] Failed LHS run for {x} — Exception: {e}", file=sys.stderr)
+        return None
+
 # === MAIN WORKFLOW ===
 
 # Parameters to optimize
@@ -398,34 +425,35 @@ bounds = np.array([
 init_samp_num = 5 # Initial number of samples 
 
 # Generate valid LHS samples
+job_ids = []
 X_init = generate_valid_lhs_samples(bounds, n_samples=init_samp_num)
 
-# Evaluate PeleC for each
-def run_single_lhs_sample(x):
-    geo_Z, geo_X, geo_H, geo_W = x
-    print(f"[DEBUG] Starting LHS simulation for Z={geo_Z}, X={geo_X}, H={geo_H}, W={geo_W}", file=sys.stderr)
-    try:
-        result = run_pelec_and_extract_thrust(geo_Z, geo_X, geo_H, geo_W, INP_FILE, SIM_EXECUTABLE)
-        return result
-    except Exception as e:
-        print(f"[ERROR] Failed LHS run for {x} — Exception: {e}", file=sys.stderr)
-        return None
-
 Y_init = []
-with concurrent.futures.ProcessPoolExecutor(max_workers=os.cpu_count()) as executor:
-    # Submit all runs
-    future_to_x = {executor.submit(run_single_lhs_sample,x): x for x in X_init}
+# Submit each LHS sample as a separate SLURM job
+for i, x in enumerate(X_init):
+    sample_file = f"lhs_samples/sample_{i}.txt"
+    np.savetxt(sample_file, x)
 
-    for future in concurrent.futures.as_completed(future_to_x):
-        x = future_to_x[future]
-    try:
-        result = future.result()
-        if result:
-            Y_init.append(result['thrust_max'])
-        else:
-            print(f"[WARN] No result for {x}", file=sys.stderr)
-    except Exception as exc:
-        print(f"[ERROR] Future failed for {x} — Exception: {exc}", file=sys.stderr)
+    # Submit SLURM job using sbatch
+    result = subprocess.run(["sbatch", "run_sample.sh", sample_file], capture_output=True, text=True)
+    print(result.stdout.strip())
+
+    # Extract job ID
+    match = re.search(r'Submitted batch job (\d+)', result.stdout)
+    if match:
+        job_ids.append(match.group(1))
+
+# Wait for all LHS jobs to finish
+wait_for_jobs_to_finish(job_ids)
+
+# Read results from CSV
+Y_init = []
+with open("results_log.csv") as f:
+    for line in f:
+        if "thrust_max" in line:
+            continue
+        *_, thrust_max = line.strip().split(",")
+        Y_init.append(float(thrust_max))
 
 if len(Y_init) == 0:
     raise RuntimeError("All initial simulations failed. Cannot train GP.")
