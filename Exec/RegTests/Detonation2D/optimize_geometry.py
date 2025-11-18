@@ -38,7 +38,7 @@ if not os.path.exists("results_log.csv"):
 # Defining functions for LHS
 # Ensuring they are a valid combination of inputs so PeleC doesn't crash
 def is_valid_input(x):
-    geo_X, geo_H, geo_Z, geo_W = x
+    geo_Z, geo_X, geo_H, geo_W = x
     return (geo_X + geo_W <= 1.0) and (geo_H + geo_Z <= 2.0)
     
 def generate_valid_lhs_samples(bounds, n_samples=5, max_attempts_per_sample=500):
