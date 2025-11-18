@@ -410,8 +410,7 @@ def run_single_lhs_sample(x):
         return None
 
 # === MAIN WORKFLOW ===
-
-if __name__ == "__main__":
+def main():
     # Parameters to optimize
     # geo_Z = 0.1
     # geo_X = 0.4
@@ -453,17 +452,17 @@ if __name__ == "__main__":
     wait_for_jobs_to_finish(job_ids)
 
     # Read results from CSV
-results_log_path = "results_log.csv"
-Y_init = []
-with open(results_log_path) as f:
-    for line in f:
-        if "thrust_max" in line:
-            continue
-        *_, thrust_max = line.strip().split(",")
-        Y_init.append(float(thrust_max))
+    results_log_path = "results_log.csv"
+    Y_init = []
+    with open(results_log_path) as f:
+        for line in f:
+            if "thrust_max" in line:
+                continue
+            *_, thrust_max = line.strip().split(",")
+            Y_init.append(float(thrust_max))
 
-if len(Y_init) == 0:
-    raise RuntimeError("❌ ERROR: All initial simulations failed. Cannot train GP.")
+    if len(Y_init) == 0:
+        raise RuntimeError("❌ ERROR: All initial simulations failed. Cannot train GP.")
 
     # Generate 1,000 different possible candidates for the system
     def generate_valid_candidates(bounds, n_candidates=1000):
@@ -541,3 +540,6 @@ if len(Y_init) == 0:
     print("\n=== Optimization complete ===")
     print(f"Best thrust achieved: {max(Y_data):.3f} N")
     print(f"Number of simulations run: {len(Y_data)}")
+
+if __name__ == "__main__":
+    main()
