@@ -389,10 +389,10 @@ def run_pelec_and_extract_thrust(geo_Z, geo_X, geo_H, geo_W, INP_FILE, SIM_EXECU
 
 # Setting bounds based on physical constraints in PeleC
 bounds = np.array([
-    [0.05, 1.0], # Z parameter
-    [0.05, 0.8], # X parameter
-    [0.05, 1.5], # H parameter
-    [0.05, 0.5] # W parameter
+    [0.05, 0.5],   # Z parameter (third branch length)
+    [0.15, 0.6],   # X parameter (channel circumference)
+    [0.1, 0.6],    # H parameter (separator height) - CRITICAL FIX!
+    [0.05, 0.25]   # W parameter (third branch thickness)
 ])
 
 init_samp_num = 5 # Initial number of samples 
