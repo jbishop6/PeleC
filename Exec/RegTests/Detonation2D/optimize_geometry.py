@@ -455,7 +455,7 @@ if __name__ == "__main__":
     # Read results from CSV
 results_log_path = "results_log.csv"
 Y_init = []
-    with open(results_log_path) as f:
+with open(results_log_path) as f:
     for line in f:
         if "thrust_max" in line:
             continue
