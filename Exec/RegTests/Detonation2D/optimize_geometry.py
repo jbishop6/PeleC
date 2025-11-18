@@ -1,4 +1,6 @@
 import os
+os.makedirs("lhs_samples", exist_ok=True)
+os.makedirs("logs", exist_ok=True)  # If needed
 import re
 import matplotlib
 matplotlib.use('Agg')  # Headless backend for HPC
