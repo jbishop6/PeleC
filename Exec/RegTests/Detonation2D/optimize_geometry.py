@@ -461,6 +461,21 @@ def main():
             *_, thrust_max = line.strip().split(",")
             Y_init.append(float(thrust_max))
 
+    # === Fallback if no jobs succeeded ===
+    if len(Y_init) == 0:
+        print("[WARNING] SLURM jobs failed or produced no results. Falling back to sequential execution.", file=sys.stderr)
+
+        for i, x in enumerate(X_init):
+            try:
+                thrust_stats = run_pelec_and_extract_thrust(
+                    x[0], x[1], x[2], x[3],
+                    INP_FILE, SIM_EXECUTABLE,
+                    iteration=i
+                )
+                Y_init.append(thrust_stats['thrust_max'])
+            except Exception as e:
+                print(f"[ERROR] Sequential fallback failed for sample {i}: {e}", file=sys.stderr)
+
     if len(Y_init) == 0:
         raise RuntimeError("❌ ERROR: All initial simulations failed. Cannot train GP.")
 
