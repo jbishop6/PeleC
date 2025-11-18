@@ -406,153 +406,133 @@ def run_single_lhs_sample(x):
 
 # === MAIN WORKFLOW ===
 
-# Parameters to optimize
-# geo_Z = 0.1
-# geo_X = 0.4
-# geo_H = 0.1
+if __name__ == "__main__":
+    # Parameters to optimize
+    # geo_Z = 0.1
+    # geo_X = 0.4
+    # geo_H = 0.1
 
+    # Creating initial samples for Bayesian Optimization
+    # In this case there are no prior data points and thus need to generate some
+    # This will be done by using Latin Hypercube Sampling (so random guesses are made within bounds)
 
-# Creating initial samples for Bayesian Optimization
-# In this case there are no prior data points and thus need to generate some
-# This will be done by using Latin Hypercube Sampling (so random guesses are made within bounds)
+    # Setting bounds based on physical constraints in PeleC
+    bounds = np.array([
+        [0.05, 0.5],   # Z parameter (third branch length)
+        [0.15, 0.6],   # X parameter (channel circumference)
+        [0.1, 0.6],    # H parameter (separator height)
+        [0.05, 0.25]   # W parameter (third branch thickness)
+    ])
 
-# Setting bounds based on physical constraints in PeleC
-bounds = np.array([
-    [0.05, 0.5],   # Z parameter (third branch length)
-    [0.15, 0.6],   # X parameter (channel circumference)
-    [0.1, 0.6],    # H parameter (separator height) - CRITICAL FIX!
-    [0.05, 0.25]   # W parameter (third branch thickness)
-])
+    init_samp_num = 5  # Initial number of samples
 
-init_samp_num = 5 # Initial number of samples 
+    # Generate valid LHS samples
+    job_ids = []
+    X_init = generate_valid_lhs_samples(bounds, n_samples=init_samp_num)
 
-# Generate valid LHS samples
-job_ids = []
-X_init = generate_valid_lhs_samples(bounds, n_samples=init_samp_num)
+    Y_init = []
+    # Submit each LHS sample as a separate SLURM job
+    for i, x in enumerate(X_init):
+        sample_file = f"lhs_samples/sample_{i}.txt"
+        np.savetxt(sample_file, x)
 
-Y_init = []
-# Submit each LHS sample as a separate SLURM job
-for i, x in enumerate(X_init):
-    sample_file = f"lhs_samples/sample_{i}.txt"
-    np.savetxt(sample_file, x)
+        # Submit SLURM job using sbatch
+        result = subprocess.run(["sbatch", "run_sample.sh", sample_file], capture_output=True, text=True)
+        print(result.stdout.strip())
 
-    # Submit SLURM job using sbatch
-    result = subprocess.run(["sbatch", "run_sample.sh", sample_file], capture_output=True, text=True)
-    print(result.stdout.strip())
+        # Extract job ID
+        match = re.search(r'Submitted batch job (\d+)', result.stdout)
+        if match:
+            job_ids.append(match.group(1))
 
-    # Extract job ID
-    match = re.search(r'Submitted batch job (\d+)', result.stdout)
-    if match:
-        job_ids.append(match.group(1))
+    # Wait for all LHS jobs to finish
+    wait_for_jobs_to_finish(job_ids)
 
-# Wait for all LHS jobs to finish
-wait_for_jobs_to_finish(job_ids)
+    # Read results from CSV
+    Y_init = []
+    with open("results_log.csv") as f:
+        for line in f:
+            if "thrust_max" in line:
+                continue
+            *_, thrust_max = line.strip().split(",")
+            Y_init.append(float(thrust_max))
 
-# Read results from CSV
-Y_init = []
-with open("results_log.csv") as f:
-    for line in f:
-        if "thrust_max" in line:
-            continue
-        *_, thrust_max = line.strip().split(",")
-        Y_init.append(float(thrust_max))
+    if len(Y_init) == 0:
+        raise RuntimeError("All initial simulations failed. Cannot train GP.")
 
-if len(Y_init) == 0:
-    raise RuntimeError("All initial simulations failed. Cannot train GP.")
+    # Generate 1,000 different possible candidates for the system
+    def generate_valid_candidates(bounds, n_candidates=1000):
+        candidates = []
+        while len(candidates) < n_candidates:
+            x = np.random.uniform(bounds[:, 0], bounds[:, 1])
+            if is_valid_input(x):
+                candidates.append(x)
+        return np.array(candidates)
 
+    # Computing the expected improvement
+    def expected_improvement(X, gp, Y_best, xi=0.01):
+        mu, sigma = gp.predict(X, return_std=True)
+        sigma = sigma.reshape(-1, 1)
+        mu = mu.reshape(-1, 1)
 
+        with np.errstate(divide='warn'):
+            imp = mu - Y_best - xi
+            Z = imp / sigma
+            ei = imp * norm.cdf(Z) + sigma * norm.pdf(Z)
+            ei[sigma == 0.0] = 0.0
+        return ei.ravel()
 
+    X_data = X_init.copy()
+    Y_data = Y_init.copy()
 
-#for x in X_init:
-  #  geo_Z, geo_X, geo_H, geo_W = x
-   # thrust_stats = run_pelec_and_extract_thrust(geo_Z, geo_X, geo_H, geo_W, INP_FILE, SIM_EXECUTABLE)
-   # Y_init.append(thrust_stats['thrust_max'])
-    
+    max_iters = 15  # Starting at 15 since computationally expensive
+    tol = 1e-2  # For early stage of testing
 
+    # Bayesian Optimization Loop
+    for iteration in range(max_iters):
+        print(f"\n-- Iteration {iteration + 1} --")
 
-# Generate 1,000 different possible candidates for the system
-def generate_valid_candidates(bounds, n_candidates=1000):
-    candidates = []
-    while len(candidates) < n_candidates:
-        x = np.random.uniform(bounds[:, 0], bounds[:,1])
-        if is_valid_input(x):
-            candidates.append(x)
-    return np.array(candidates)
+        # Step 1: Fit GP on current data
+        kernel = Matern(nu=2.5)
+        gp = GaussianProcessRegressor(
+            kernel=kernel,
+            alpha=1e-6,
+            normalize_y=True
+        )
+        gp.fit(X_data, Y_data)
 
+        # Step 2: Generate valid candidate geometries
+        X_candidates = generate_valid_candidates(bounds, n_candidates=1000)
 
+        # Step 3: Compute expected improvement with candidates
+        Y_best = max(Y_data)
+        ei = expected_improvement(X_candidates, gp, Y_best)
 
-# Computing the expected improvement
-def expected_improvement(X, gp, Y_best, xi=0.01):
-    mu, sigma = gp.predict(X, return_std=True)
-    sigma = sigma.reshape(-1, 1)
-    mu = mu.reshape(-1, 1)
+        # Step 4: Pick the best candidate based on expected improvement
+        best_index = np.argmax(ei)
+        x_next = X_candidates[best_index]
 
-    with np.errstate(divide='warn'):
-        imp = mu - Y_best - xi
-        Z = imp / sigma
-        ei = imp * norm.cdf(Z) + sigma * norm.pdf(Z)
-        ei[sigma == 0.0] = 0.0
-    return ei.ravel()
+        # Step 5: Run PeleC simulation on the new candidate
+        geo_Z, geo_X, geo_H, geo_W = x_next
+        thrust_stats = run_pelec_and_extract_thrust(
+            geo_Z, geo_X, geo_H, geo_W,
+            INP_FILE, SIM_EXECUTABLE,
+            iteration=iteration + 1
+        )
+        y_next = thrust_stats['thrust_max']
 
-X_data = X_init.copy()
-Y_data = Y_init.copy()
+        # Step 6: Append new result to dataset
+        X_data = np.vstack((X_data, x_next))
+        Y_data.append(y_next)
 
-max_iters = 15 # Starting at 15 since computationally expensive
-tol = 1e-2 # For early stage of testing
+        # Step 7: Check for convergence
+        improvement = abs(y_next - Y_best)
+        print(f"[INFO] Improvement: {improvement:.6f} N")
 
-# Bayesian Optimization Loop
-for iteration in range(max_iters):
-    print(f"\n-- Iteration {iteration + 1} --")
+        if improvement < tol:
+            print("[INFO] Optimization has converged.")
+            break
 
-    # Step 1: Fit GP on current data
-    # Now need to train a surrogate model using Gaussian Process
-
-    # Define kernel for smoothness of the surrogate
-    # Matern function has two inputs length_scale and nu
-    # length_scale controls how fast the function can change with input (smaller values = more wiggly, larger values = smoother)
-    # nu controls the smoothness of the function (nu = 1.5 once-differentiable and nu = 2.5 twice-differentiable
-    # nu = 2.5 is a good choice for many real-world physical systems
-    kernel = Matern(nu=2.5)
-
-    #Create the GP regressor
-    gp = GaussianProcessRegressor(
-        kernel = kernel, # so that it uses the custom kernal/covariance found
-        alpha = 1e-6, # noise term, super small because function is deterministic
-        normalize_y = True # normalize thrust values before fitting, then unnormalizes it for prediction
-    )
-    # Fit GP on current known data
-    gp.fit(X_data, Y_data) # This trains the GP using the Matern kernel, builds a smooth function that maps inputs to predict thrust with uncertainty
-
-    # Now that we have trained the data now we can predict 
-    # Step 2: Generate valid candidate geometries
-    # Now predict mean and uncertainty for the thrust of each candidate
-    X_candidates = generate_valid_candidates(bounds, n_candidates=1000)
-
-    # Step 3: Compute expected improvement with candidates
-    Y_best = max(Y_data)
-    ei = expected_improvement(X_candidates, gp, Y_best)
-
-    # Step 4: Pick the best candidate based on expected improvement
-    best_index = np.argmax(ei)
-    x_next = X_candidates[best_index]
-
-    # Step 5: Run PeleC simulation on the new candidate
-    geo_Z, geo_X, geo_H, geo_W = x_next
-    thrust_stats = run_pelec_and_extract_thrust(geo_Z, geo_X, geo_H, geo_W, INP_FILE, SIM_EXECUTABLE, iteration=iteration+1)
-    y_next = thrust_stats['thrust_max']
-
-    # Step 6: Append new result to dataset
-    X_data = np.vstack((X_data, x_next))
-    Y_data.append(y_next)
-
-    # Step 7: Check for convergence
-    improvement = abs(y_next - Y_best)
-    print(f"[INFO] Improvement: {improvement:.6f} N")
-
-    if improvement < tol:
-        print("[INFO] Optimization has converged.")
-        break
-    
-print("\n=== Optimization complete ===")
-print(f"Best thrust achieved: {max(Y_data):.3f} N")
-print(f"Number of simulations run: {len(Y_data)}")
+    print("\n=== Optimization complete ===")
+    print(f"Best thrust achieved: {max(Y_data):.3f} N")
+    print(f"Number of simulations run: {len(Y_data)}")
