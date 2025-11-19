@@ -422,11 +422,12 @@ def main():
 
     # Setting bounds based on physical constraints in PeleC
     bounds = np.array([
-        [0.05, 0.5],   # Z parameter (third branch length)
-        [0.15, 0.6],   # X parameter (channel circumference)
-        [0.1, 0.6],    # H parameter (separator height)
-        [0.05, 0.25]   # W parameter (third branch thickness)
+        [0.15, 0.35],   # Z (not too short)
+        [0.25, 0.5],    # X (mid-range circumference)
+        [0.2, 0.5],     # H (avoid small values)
+        [0.08, 0.18]    # W (avoid super thin third branches)
     ])
+
 
     init_samp_num = 5  # Initial number of samples
 
