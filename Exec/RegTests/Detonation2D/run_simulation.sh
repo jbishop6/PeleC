@@ -18,9 +18,12 @@ conda activate pelecopt
 # === Change to working directory ===
 cd "$SLURM_SUBMIT_DIR"
 
-# === Run your script ===
+# === Step 1: Run LHS sampling ===
+echo "[INFO] Running Latin Hypercube Sampling..."
+python run_lhs_sampling.py
+
+# === Step 2: Run optimization based on LHS results ===
+echo "[INFO] Starting Bayesian Optimization..."
 python optimize_geometry.py
 
 echo "Job finished at $(date)"
-
-echo "echo '✅ Job $SLURM_JOB_ID finished on $(hostname) at $(date)'" >> $HOME/.bashrc
