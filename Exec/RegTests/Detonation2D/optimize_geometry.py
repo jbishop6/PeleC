@@ -15,6 +15,7 @@ import uuid
 import shutil
 import tempfile
 import time
+import pandas as pd
 from glob import glob
 from concurrent.futures import ProcessPoolExecutor
 from unyt import cm
@@ -421,35 +422,18 @@ def run_single_lhs_sample(x):
 
    # === MAIN WORKFLOW ===
 def main():
-    # Setting bounds based on physical constraints in PeleC
-    bounds = np.array([
-        [0.05, 0.5],   # Z parameter (third branch length)
-        [0.15, 0.6],   # X parameter (channel circumference)
-        [0.1, 0.6],    # H parameter (separator height)
-        [0.05, 0.25]   # W parameter (third branch thickness)
-    ])
+    lhs_file = "lhs_results.csv"
+    if not os.path.exists(lhs_file):
+        raise RuntimeError("LHS results file not found. Run `run_lhs_sampling.py` first.")
 
-    init_samp_num = 5  # Initial number of samples
+    df = pd.read_csv(lhs_file)
 
-    # Generate valid LHS samples
-    X_init = generate_valid_lhs_samples(bounds, n_samples=init_samp_num)
-
-    # === RUN INITIAL SAMPLES SEQUENTIALLY ===
-    Y_init = []
-    for x in X_init:
-        geo_Z, geo_X, geo_H, geo_W = x
-        print(f"[INFO] Running initial LHS sample: Z={geo_Z}, X={geo_X}, H={geo_H}, W={geo_W}")
-        try:
-            thrust_stats = run_pelec_and_extract_thrust(
-                geo_Z, geo_X, geo_H, geo_W,
-                INP_FILE, SIM_EXECUTABLE
-            )
-            Y_init.append(thrust_stats['thrust_max'])
-        except Exception as e:
-            print(f"[WARN] LHS sample failed: {e}")
+    X_init = df[["geo.Z", "geo.X", "geo.H", "geo.W"]].values
+    Y_init = df["thrust_max"].values
 
     if len(Y_init) == 0:
-        raise RuntimeError("❌ ERROR: All initial simulations failed. Cannot train GP.")
+        raise RuntimeError("❌ ERROR: LHS file is empty or contains no valid thrust data.")
+
 
     # === Bayesian Optimization Loop ===
     def generate_valid_candidates(bounds, n_candidates=1000):
