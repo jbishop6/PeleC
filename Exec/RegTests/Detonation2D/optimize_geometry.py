@@ -38,7 +38,7 @@ if not os.path.exists("results_log.csv"):
 # Defining functions for LHS
 # Ensuring they are a valid combination of inputs so PeleC doesn't crash
 def is_valid_input(x):
-    geo_Z, geo_X, geo_H, geo_W = x
+    geo_X, geo_H, geo_Z, geo_W = x
     return (geo_X + geo_W <= 1.0) and (geo_H + geo_Z <= 2.0)
     
 def generate_valid_lhs_samples(bounds, n_samples=5, max_attempts_per_sample=500):
@@ -422,12 +422,11 @@ def main():
 
     # Setting bounds based on physical constraints in PeleC
     bounds = np.array([
-        [0.15, 0.35],   # Z (not too short)
-        [0.25, 0.5],    # X (mid-range circumference)
-        [0.2, 0.5],     # H (avoid small values)
-        [0.08, 0.18]    # W (avoid super thin third branches)
+        [0.05, 0.5],   # Z parameter (third branch length)
+        [0.15, 0.6],   # X parameter (channel circumference)
+        [0.1, 0.6],    # H parameter (separator height)
+        [0.05, 0.25]   # W parameter (third branch thickness)
     ])
-
 
     init_samp_num = 5  # Initial number of samples
 
@@ -461,21 +460,6 @@ def main():
                 continue
             *_, thrust_max = line.strip().split(",")
             Y_init.append(float(thrust_max))
-
-    # === Fallback if no jobs succeeded ===
-    if len(Y_init) == 0:
-        print("[WARNING] SLURM jobs failed or produced no results. Falling back to sequential execution.", file=sys.stderr)
-
-        for i, x in enumerate(X_init):
-            try:
-                thrust_stats = run_pelec_and_extract_thrust(
-                    x[0], x[1], x[2], x[3],
-                    INP_FILE, SIM_EXECUTABLE,
-                    iteration=i
-                )
-                Y_init.append(thrust_stats['thrust_max'])
-            except Exception as e:
-                print(f"[ERROR] Sequential fallback failed for sample {i}: {e}", file=sys.stderr)
 
     if len(Y_init) == 0:
         raise RuntimeError("❌ ERROR: All initial simulations failed. Cannot train GP.")
