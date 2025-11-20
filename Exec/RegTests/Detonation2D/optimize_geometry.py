@@ -410,7 +410,6 @@ def run_single_lhs_sample(x):
         return None
 
 # === MAIN WORKFLOW ===
-def main():
     # Parameters to optimize
     # geo_Z = 0.1
     # geo_X = 0.4
@@ -420,6 +419,8 @@ def main():
     # In this case there are no prior data points and thus need to generate some
     # This will be done by using Latin Hypercube Sampling (so random guesses are made within bounds)
 
+   # === MAIN WORKFLOW ===
+def main():
     # Setting bounds based on physical constraints in PeleC
     bounds = np.array([
         [0.05, 0.5],   # Z parameter (third branch length)
@@ -431,40 +432,26 @@ def main():
     init_samp_num = 5  # Initial number of samples
 
     # Generate valid LHS samples
-    job_ids = []
     X_init = generate_valid_lhs_samples(bounds, n_samples=init_samp_num)
 
-    # Submit each LHS sample as a separate SLURM job
-    for i, x in enumerate(X_init):
-        sample_file = f"lhs_samples/sample_{i}.txt"
-        np.savetxt(sample_file, x)
-
-        # Submit SLURM job using sbatch
-        result = subprocess.run(["sbatch", "run_sample.sh", sample_file], capture_output=True, text=True)
-        print(result.stdout.strip())
-
-        # Extract job ID
-        match = re.search(r'Submitted batch job (\d+)', result.stdout)
-        if match:
-            job_ids.append(match.group(1))
-
-    # Wait for all LHS jobs to finish
-    wait_for_jobs_to_finish(job_ids)
-
-    # Read results from CSV
-    results_log_path = "results_log.csv"
+    # === RUN INITIAL SAMPLES SEQUENTIALLY ===
     Y_init = []
-    with open(results_log_path) as f:
-        for line in f:
-            if "thrust_max" in line:
-                continue
-            *_, thrust_max = line.strip().split(",")
-            Y_init.append(float(thrust_max))
+    for x in X_init:
+        geo_Z, geo_X, geo_H, geo_W = x
+        print(f"[INFO] Running initial LHS sample: Z={geo_Z}, X={geo_X}, H={geo_H}, W={geo_W}")
+        try:
+            thrust_stats = run_pelec_and_extract_thrust(
+                geo_Z, geo_X, geo_H, geo_W,
+                INP_FILE, SIM_EXECUTABLE
+            )
+            Y_init.append(thrust_stats['thrust_max'])
+        except Exception as e:
+            print(f"[WARN] LHS sample failed: {e}")
 
     if len(Y_init) == 0:
         raise RuntimeError("❌ ERROR: All initial simulations failed. Cannot train GP.")
 
-    # Generate 1,000 different possible candidates for the system
+    # === Bayesian Optimization Loop ===
     def generate_valid_candidates(bounds, n_candidates=1000):
         candidates = []
         while len(candidates) < n_candidates:
@@ -473,7 +460,6 @@ def main():
                 candidates.append(x)
         return np.array(candidates)
 
-    # Computing the expected improvement
     def expected_improvement(X, gp, Y_best, xi=0.01):
         mu, sigma = gp.predict(X, return_std=True)
         sigma = sigma.reshape(-1, 1)
@@ -489,14 +475,12 @@ def main():
     X_data = X_init.copy()
     Y_data = Y_init.copy()
 
-    max_iters = 15  # Starting at 15 since computationally expensive
-    tol = 1e-2  # For early stage of testing
+    max_iters = 15
+    tol = 1e-2
 
-    # Bayesian Optimization Loop
     for iteration in range(max_iters):
         print(f"\n-- Iteration {iteration + 1} --")
 
-        # Step 1: Fit GP on current data
         kernel = Matern(nu=2.5)
         gp = GaussianProcessRegressor(
             kernel=kernel,
@@ -505,37 +489,35 @@ def main():
         )
         gp.fit(X_data, Y_data)
 
-        # Step 2: Generate valid candidate geometries
         X_candidates = generate_valid_candidates(bounds, n_candidates=1000)
-
-        # Step 3: Compute expected improvement with candidates
         Y_best = max(Y_data)
         ei = expected_improvement(X_candidates, gp, Y_best)
 
-        # Step 4: Pick the best candidate based on expected improvement
         best_index = np.argmax(ei)
         x_next = X_candidates[best_index]
-
-        # Step 5: Run PeleC simulation on the new candidate
         geo_Z, geo_X, geo_H, geo_W = x_next
-        thrust_stats = run_pelec_and_extract_thrust(
-            geo_Z, geo_X, geo_H, geo_W,
-            INP_FILE, SIM_EXECUTABLE,
-            iteration=iteration + 1
-        )
-        y_next = thrust_stats['thrust_max']
 
-        # Step 6: Append new result to dataset
-        X_data = np.vstack((X_data, x_next))
-        Y_data.append(y_next)
+        print(f"[INFO] Running BO sample: Z={geo_Z}, X={geo_X}, H={geo_H}, W={geo_W}")
 
-        # Step 7: Check for convergence
-        improvement = abs(y_next - Y_best)
-        print(f"[INFO] Improvement: {improvement:.6f} N")
+        try:
+            thrust_stats = run_pelec_and_extract_thrust(
+                geo_Z, geo_X, geo_H, geo_W,
+                INP_FILE, SIM_EXECUTABLE,
+                iteration=iteration + 1
+            )
+            y_next = thrust_stats['thrust_max']
 
-        if improvement < tol:
-            print("[INFO] Optimization has converged.")
-            break
+            X_data = np.vstack((X_data, x_next))
+            Y_data.append(y_next)
+
+            improvement = abs(y_next - Y_best)
+            print(f"[INFO] Improvement: {improvement:.6f} N")
+
+            if improvement < tol:
+                print("[INFO] Optimization has converged.")
+                break
+        except Exception as e:
+            print(f"[WARN] BO sample failed: {e}")
 
     print("\n=== Optimization complete ===")
     print(f"Best thrust achieved: {max(Y_data):.3f} N")
@@ -543,3 +525,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
