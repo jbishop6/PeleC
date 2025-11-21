@@ -12,11 +12,12 @@ os.makedirs("lhs_samples", exist_ok=True)
 
 # === Bounds ===
 bounds = np.array([
-    [0.05, 0.5],   # Z
-    [0.15, 0.6],   # X
-    [0.1, 0.6],    # H
-    [0.05, 0.25]   # W
+    [0.1, 0.3],    # Z (was 0.05 - 0.5)
+    [0.2, 0.4],    # X (was 0.15 - 0.6)
+    [0.2, 0.5],    # H (was 0.1 - 0.6)
+    [0.08, 0.18]   # W (was 0.05 - 0.25)
 ])
+
 n_samples_desired = 5
 max_total_attempts = 30
 
