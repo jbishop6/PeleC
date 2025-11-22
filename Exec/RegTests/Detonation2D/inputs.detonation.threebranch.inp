@@ -11,6 +11,7 @@ geometry.is_periodic = 0 0
 geometry.coord_sys   = 0
 geometry.prob_lo     = 0.0  0.0
 geometry.prob_hi     = 1.0  2.0   #0.125
+geometry.use_h = 0
 amr.n_cell           = 512  1024 #64
 
 # ------------------ BOUNDARY CONDITIONS -------------------
