@@ -4,6 +4,7 @@ stop_time = 2.7e-6
 cvode.dt_min = 1e-18
 ode.rtol = 1e-5
 ode.atol = 1e-4
+pelec.fixed_dt = 1e-10
 
 # ------------------ GEOMETRY (2D) -------------------
 geometry.is_periodic = 0 0
