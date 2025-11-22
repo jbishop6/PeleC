@@ -2,7 +2,8 @@
 max_step = 100000000
 stop_time = 2.7e-6
 cvode.dt_min = 1e-18
-#cvode.max_steps = 100000
+ode.rtol = 1e-5
+ode.atol = 1e-4
 
 # ------------------ GEOMETRY (2D) -------------------
 geometry.is_periodic = 0 0
