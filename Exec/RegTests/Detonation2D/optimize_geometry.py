@@ -1,4 +1,5 @@
 import os
+SCRATCH_BASE = "/mmfs1/scratch/jbishop6/PeleC/Exec/RegTests/Detonation2D/outputs"
 os.makedirs("lhs_samples", exist_ok=True)
 os.makedirs("logs", exist_ok=True)  # If needed
 import re
@@ -29,7 +30,7 @@ print("[DEBUG] Python script started", file=sys.stderr)
 # Setup paths
 INP_FILE = "inputs.detonation.threebranch.inp"
 SIM_EXECUTABLE = "./PeleC2d.gnu.ex"
-RESULTS_LOG = "results_log.csv"
+RESULTS_LOG = os.path.join(SCRATCH_BASE, "results_log.csv")
 
 # Create empty results_log.csv with headers (if not already there)
 if not os.path.exists("results_log.csv"):
@@ -336,7 +337,7 @@ def log_results(Z, X, H, W, thrust_stats, iteration=None):
 def run_pelec_and_extract_thrust(geo_Z, geo_X, geo_H, geo_W, INP_FILE, SIM_EXECUTABLE, iteration=None):
       # Create unique output directory for results
     run_id = f"Z{geo_Z}_X{geo_X}_H{geo_H}_W{geo_W}".replace(".", "p")
-    output_dir = os.path.join("outputs", f"run_{run_id}")
+    output_dir = os.path.join(SCRATCH_BASE, f"run_{run_id}")
     os.makedirs(output_dir, exist_ok=True)
 
     print(f"\n{'='*60}")
@@ -422,7 +423,7 @@ def run_single_lhs_sample(x):
 
    # === MAIN WORKFLOW ===
 def main():
-    lhs_file = "lhs_results.csv"
+    lhs_file = os.path.join(SCRATCH_BASE, "lhs_results.csv")
     if not os.path.exists(lhs_file):
         raise RuntimeError("LHS results file not found. Run `run_lhs_sampling.py` first.")
 
