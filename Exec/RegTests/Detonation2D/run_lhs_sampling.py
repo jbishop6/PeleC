@@ -1,5 +1,6 @@
 import numpy as np
 import os
+SCRATCH_BASE = "/mmfs1/scratch/jbishop6/PeleC/Exec/RegTests/Detonation2D/outputs"
 from optimize_geometry import run_pelec_and_extract_thrust, is_valid_input
 import csv
 from scipy.stats.qmc import LatinHypercube
@@ -7,7 +8,7 @@ from scipy.stats.qmc import LatinHypercube
 # === Setup ===
 INP_FILE = "inputs.detonation.threebranch.inp"
 SIM_EXECUTABLE = "./PeleC2d.gnu.ex"
-RESULTS_FILE = "lhs_results.csv"
+RESULTS_FILE = os.path.join(SCRATCH_BASE, "lhs_results.csv")
 os.makedirs("lhs_samples", exist_ok=True)
 
 # === Bounds ===
