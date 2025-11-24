@@ -5,20 +5,28 @@
 #SBATCH --array=0-4
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
-#SBATCH --time=24:00:00
 #SBATCH --partition=compute
 
+# === Environment Setup ===
 source ~/miniconda3/etc/profile.d/conda.sh
 conda activate pelecopt
-cd $SLURM_SUBMIT_DIR
+cd "$SLURM_SUBMIT_DIR"
 
-# Read the sample line based on array task ID
-line=$(sed -n "$((SLURM_ARRAY_TASK_ID + 1))p" /mmfs1/scratch/jbishop6/PeleC/Exec/RegTests/Detonation2D/outputs/lhs_samples/lhs_input.csv)
+# === File and Line Parsing ===
+LHS_INPUT="/mmfs1/scratch/jbishop6/PeleC/Exec/RegTests/Detonation2D/outputs/lhs_samples/lhs_input.csv"
+line=$(tail -n +2 "$LHS_INPUT" | sed -n "$((SLURM_ARRAY_TASK_ID + 1))p")
 
-Z=$(echo $line | cut -d',' -f1)
-X=$(echo $line | cut -d',' -f2)
-H=$(echo $line | cut -d',' -f3)
-W=$(echo $line | cut -d',' -f4)
+if [[ -z "$line" ]]; then
+  echo "[ERROR] No valid line found for task ID $SLURM_ARRAY_TASK_ID"
+  exit 1
+fi
 
-# Run the simulation
-python run_lhs_sample.py $Z $X $H $W
+Z=$(echo "$line" | cut -d',' -f1)
+X=$(echo "$line" | cut -d',' -f2)
+H=$(echo "$line" | cut -d',' -f3)
+W=$(echo "$line" | cut -d',' -f4)
+
+echo "[INFO] Task $SLURM_ARRAY_TASK_ID — Running with Z=$Z, X=$X, H=$H, W=$W"
+
+# === Run the Simulation ===
+python run_lhs_sample.py "$Z" "$X" "$H" "$W"
