@@ -29,7 +29,7 @@ print("[DEBUG] Python script started", file=sys.stderr)
 
 # Setup paths
 INP_FILE = "inputs.detonation.threebranch.inp"
-SIM_EXECUTABLE = "./PeleC2d.gnu.ex"
+SIM_EXECUTABLE = "/home/jbishop6/PeleC/Exec/RegTests/Detonation2D/PeleC2d.gnu.ex"
 RESULTS_LOG = os.path.join(SCRATCH_BASE, "results_log.csv")
 
 # Create empty results_log.csv with headers (if not already there)
