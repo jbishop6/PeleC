@@ -426,17 +426,28 @@ def run_single_lhs_sample(x):
    # === MAIN WORKFLOW ===
 def main():
     lhs_file = os.path.join(SCRATCH_BASE, "lhs_results.csv")
-    if not os.path.exists(lhs_file):
-        raise RuntimeError("LHS results file not found. Run `run_lhs_sampling.py` first.")
 
-    df = pd.read_csv(lhs_file)
+    # === Wait until at least 5 LHS samples are ready ===
+    print("[INFO] Waiting for at least 5 LHS samples to begin optimization...")
+    while True:
+        if os.path.exists(lhs_file):
+            df = pd.read_csv(lhs_file)
+            if len(df) >= 5:
+                print(f"[INFO] Found {len(df)} LHS samples. Proceeding with optimization.")
+                break
+        time.sleep(60)  # Wait 1 minute before checking again
 
+    # === Fix: Load the first 5 samples only ===
+    df = df.iloc[:5]  # Only use first 5 rows
     X_init = df[["geo.Z", "geo.X", "geo.H", "geo.W"]].values
     Y_init = df["thrust_max"].values
 
-    if len(Y_init) == 0:
-        raise RuntimeError("❌ ERROR: LHS file is empty or contains no valid thrust data.")
+    if len(Y_init) < 5:
+        raise RuntimeError("❌ ERROR: Still less than 5 usable LHS samples. Aborting.")
 
+    # === Freeze data here ===
+    X_data = X_init.copy()
+    Y_data = list(Y_init.copy())  # Ensure it's mutable
 
     # === Bayesian Optimization Loop ===
     def generate_valid_candidates(bounds, n_candidates=1000):
@@ -451,7 +462,6 @@ def main():
         mu, sigma = gp.predict(X, return_std=True)
         sigma = sigma.reshape(-1, 1)
         mu = mu.reshape(-1, 1)
-
         with np.errstate(divide='warn'):
             imp = mu - Y_best - xi
             Z = imp / sigma
@@ -459,21 +469,20 @@ def main():
             ei[sigma == 0.0] = 0.0
         return ei.ravel()
 
-    X_data = X_init.copy()
-    Y_data = Y_init.copy()
-
     max_iters = 15
     tol = 1e-2
+    bounds = np.array([
+        [0.08, 0.15],   # Z
+        [0.30, 0.50],   # X
+        [0.10, 0.20],   # H
+        [0.08, 0.15]    # W
+    ])
 
     for iteration in range(max_iters):
         print(f"\n-- Iteration {iteration + 1} --")
 
         kernel = Matern(nu=2.5)
-        gp = GaussianProcessRegressor(
-            kernel=kernel,
-            alpha=1e-6,
-            normalize_y=True
-        )
+        gp = GaussianProcessRegressor(kernel=kernel, alpha=1e-6, normalize_y=True)
         gp.fit(X_data, Y_data)
 
         X_candidates = generate_valid_candidates(bounds, n_candidates=1000)
@@ -509,7 +518,4 @@ def main():
     print("\n=== Optimization complete ===")
     print(f"Best thrust achieved: {max(Y_data):.3f} N")
     print(f"Number of simulations run: {len(Y_data)}")
-
-if __name__ == "__main__":
-    main()
 
