@@ -14,19 +14,19 @@ cd "$SLURM_SUBMIT_DIR"
 
 # === File and Line Parsing ===
 LHS_INPUT="/mmfs1/scratch/jbishop6/PeleC/Exec/RegTests/Detonation2D/outputs/lhs_samples/lhs_input.csv"
-line=$(tail -n +2 "$LHS_INPUT" | sed -n "$((SLURM_ARRAY_TASK_ID + 1))p")
+# Read the sample line based on array task ID
+line=$(tail -n +2 /mmfs1/scratch/jbishop6/PeleC/Exec/RegTests/Detonation2D/outputs/lhs_samples/lhs_input.csv | sed -n "$((SLURM_ARRAY_TASK_ID + 1))p")
 
-if [[ -z "$line" ]]; then
-  echo "[ERROR] No valid line found for task ID $SLURM_ARRAY_TASK_ID"
-  exit 1
+# Exit if line is empty
+if [ -z "$line" ]; then
+    echo "[ERROR] No valid line found for task ID $SLURM_ARRAY_TASK_ID"
+    exit 1
 fi
 
-Z=$(echo "$line" | cut -d',' -f1)
-X=$(echo "$line" | cut -d',' -f2)
-H=$(echo "$line" | cut -d',' -f3)
-W=$(echo "$line" | cut -d',' -f4)
-
-echo "[INFO] Task $SLURM_ARRAY_TASK_ID — Running with Z=$Z, X=$X, H=$H, W=$W"
+Z=$(echo $line | cut -d',' -f1)
+X=$(echo $line | cut -d',' -f2)
+H=$(echo $line | cut -d',' -f3)
+W=$(echo $line | cut -d',' -f4)
 
 # === Run the Simulation ===
 python run_lhs_sample.py "$Z" "$X" "$H" "$W"
