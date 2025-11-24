@@ -437,8 +437,7 @@ def main():
                 break
         time.sleep(60)  # Wait 1 minute before checking again
 
-    # === Fix: Load the first 5 samples only ===
-    df = df.iloc[:5]  # Only use first 5 rows
+    # ✅ Now use *all* available data
     X_init = df[["geo.Z", "geo.X", "geo.H", "geo.W"]].values
     Y_init = df["thrust_max"].values
 
