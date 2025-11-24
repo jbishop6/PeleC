@@ -338,6 +338,7 @@ def run_pelec_and_extract_thrust(geo_Z, geo_X, geo_H, geo_W, INP_FILE, SIM_EXECU
       # Create unique output directory for results
     run_id = f"Z{geo_Z}_X{geo_X}_H{geo_H}_W{geo_W}".replace(".", "p")
     output_dir = os.path.join(SCRATCH_BASE, f"run_{run_id}")
+    output_dir = os.path.abspath(output_dir)
     os.makedirs(output_dir, exist_ok=True)
 
     print(f"\n{'='*60}")
