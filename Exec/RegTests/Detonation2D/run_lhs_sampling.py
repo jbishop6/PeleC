@@ -1,17 +1,13 @@
+# run_lhs_sampling.py (new version)
 import numpy as np
 import os
-SCRATCH_BASE = "/mmfs1/scratch/jbishop6/PeleC/Exec/RegTests/Detonation2D/outputs"
-from optimize_geometry import run_pelec_and_extract_thrust, is_valid_input
-import csv
 from scipy.stats.qmc import LatinHypercube
+from optimize_geometry import is_valid_input
 
-# === Setup ===
-INP_FILE = "inputs.detonation.threebranch.inp"
-SIM_EXECUTABLE = "./PeleC2d.gnu.ex"
-RESULTS_FILE = os.path.join(SCRATCH_BASE, "lhs_results.csv")
-os.makedirs("lhs_samples", exist_ok=True)
+# === Parameters ===
+SCRATCH_BASE = "/mmfs1/scratch/jbishop6/PeleC/Exec/RegTests/Detonation2D/outputs"
+os.makedirs(os.path.join(SCRATCH_BASE, "lhs_samples"), exist_ok=True)
 
-# === Bounds ===
 bounds = np.array([
     [0.08, 0.15],   # Z
     [0.30, 0.50],   # X
@@ -19,56 +15,25 @@ bounds = np.array([
     [0.08, 0.15]    # W
 ])
 
-
 n_samples_desired = 5
-max_total_attempts = 30
+max_attempts = 100
 
-# === Write header if not present ===
-if not os.path.exists(RESULTS_FILE):
-    with open(RESULTS_FILE, "w", newline="") as f:
-        writer = csv.writer(f)
-        writer.writerow(["geo.Z", "geo.X", "geo.H", "geo.W", "thrust_avg", "thrust_std", "thrust_max", "thrust_min"])
+# === Generate valid LHS samples ===
+sampler = LatinHypercube(d=bounds.shape[0])
+samples = []
+attempts = 0
 
-# === Generate and Run Valid Samples ===
-dim = bounds.shape[0]
-sampler = LatinHypercube(d=dim)
-n_collected = 0
-n_attempted = 0
+while len(samples) < n_samples_desired and attempts < max_attempts:
+    x = bounds[:, 0] + sampler.random()[0] * (bounds[:, 1] - bounds[:, 0])
+    if is_valid_input(x):
+        samples.append(x)
+    attempts += 1
 
-while n_collected < n_samples_desired and n_attempted < max_total_attempts:
-    candidate = bounds[:, 0] + sampler.random()[0] * (bounds[:, 1] - bounds[:, 0])
-    n_attempted += 1
+if len(samples) < n_samples_desired:
+    raise RuntimeError("❌ Not enough valid LHS samples.")
 
-    if not is_valid_input(candidate):
-        print(f"[SKIP] Sample {n_attempted}: Invalid geometry {candidate}")
-        continue
+# === Save to CSV ===
+lhs_path = os.path.join(SCRATCH_BASE, "lhs_samples", "lhs_input.csv")
+np.savetxt(lhs_path, samples, delimiter=",")
 
-    geo_Z, geo_X, geo_H, geo_W = candidate
-    print(f"[INFO] Running LHS sample {n_collected + 1}...")
-
-    try:
-        thrust_stats = run_pelec_and_extract_thrust(
-            geo_Z, geo_X, geo_H, geo_W,
-            INP_FILE, SIM_EXECUTABLE,
-            iteration=None
-        )
-
-        with open(RESULTS_FILE, "a", newline="") as f:
-            writer = csv.writer(f)
-            writer.writerow([
-                geo_Z, geo_X, geo_H, geo_W,
-                thrust_stats['thrust_avg'],
-                thrust_stats['thrust_std'],
-                thrust_stats['thrust_max'],
-                thrust_stats['thrust_min']
-            ])
-        n_collected += 1
-
-    except Exception as e:
-        print(f"[WARN] Sample failed: {candidate} — {e}")
-        continue
-
-if n_collected == 0:
-    raise RuntimeError("❌ All LHS samples failed. No data was collected.")
-else:
-    print(f"[INFO] Successfully collected {n_collected} LHS samples out of {n_attempted} attempts.")
+print(f"[INFO] Wrote {len(samples)} samples to {lhs_path}")
