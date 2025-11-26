@@ -32,8 +32,12 @@ while len(samples) < n_samples_desired and attempts < max_attempts:
 if len(samples) < n_samples_desired:
     raise RuntimeError("❌ Not enough valid LHS samples.")
 
-# === Save to CSV ===
+# === Save to CSV with header ===
 lhs_path = os.path.join(SCRATCH_BASE, "lhs_samples", "lhs_input.csv")
-np.savetxt(lhs_path, samples, delimiter=",")
+with open(lhs_path, "w") as f:
+    f.write("geo.Z,geo.X,geo.H,geo.W\n")
+    for sample in samples:
+        f.write(",".join(map(str, sample)) + "\n")
 
 print(f"[INFO] Wrote {len(samples)} samples to {lhs_path}")
+
