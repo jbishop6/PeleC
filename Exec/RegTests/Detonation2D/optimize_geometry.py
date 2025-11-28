@@ -412,6 +412,19 @@ def run_single_lhs_sample(x):
     except Exception as e:
         print(f"[ERROR] Failed LHS run for {x} — Exception: {e}", file=sys.stderr)
         return None
+        
+def extract_thrust_from_existing_output(Z, X, H, W, run_directory):
+    try:
+        plotfiles = get_all_plotfiles(run_directory)
+        thrust_stats = analyze_thrust_timeseries(plotfiles, run_directory)
+
+        log_results(Z, X, H, W, thrust_stats, iteration=None)
+
+        return thrust_stats
+    except Exception as e:
+        print(f"[ERROR] Failed to extract thrust from {run_directory}: {e}")
+        return None
+
 
 # === MAIN WORKFLOW ===
     # Parameters to optimize
