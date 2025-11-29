@@ -17,6 +17,6 @@ conda activate pelecopt
 cd "$SLURM_SUBMIT_DIR"
 
 # Call a script that walks through all output dirs and extracts thrust
-python process_existing.py
+python collect_lhs_results.py
 
 echo "Extraction job complete."
