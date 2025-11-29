@@ -438,24 +438,74 @@ def extract_thrust_from_existing_output(Z, X, H, W, run_directory):
 
    # === MAIN WORKFLOW ===
 def main():
-    lhs_file = os.path.join(SCRATCH_BASE, "lhs_results.csv")
+    lhs_input_csv = os.path.join(SCRATCH_BASE, "lhs_samples", "lhs_input.csv")
+    lhs_results_csv = os.path.join(SCRATCH_BASE, "lhs_results.csv")
 
-    # === Wait until at least 5 LHS samples are ready ===
-    print("[INFO] Waiting for at least 5 LHS samples to begin optimization...")
-    while True:
-        if os.path.exists(lhs_file):
-            df = pd.read_csv(lhs_file)
-            if len(df) >= 5:
-                print(f"[INFO] Found {len(df)} LHS samples. Proceeding with optimization.")
-                break
-        time.sleep(60)  # Wait 1 minute before checking again
+    # Step 0: Create lhs_input.csv if it doesn't exist
+    if not os.path.exists(lhs_input_csv):
+        print("[INFO] lhs_input.csv not found — generating LHS samples...")
+        subprocess.run(["python", "run_lhs_sampling.py"], check=True)
 
-    # ✅ Now use *all* available data
+    # Step 1: Parse how many input samples exist
+    with open(lhs_input_csv) as f:
+        input_lines = [line.strip() for line in f if line.strip()]
+        n_input_samples = len(input_lines)
+
+    print(f"[INFO] Found {n_input_samples - 1} samples in lhs_input.csv")
+
+    # Step 2: Check how many results have been processed
+    existing_results = set()
+    if os.path.exists(lhs_results_csv):
+        df_results = pd.read_csv(lhs_results_csv)
+        for _, row in df_results.iterrows():
+            key = tuple(round(row[c], 8) for c in ["geo.Z", "geo.X", "geo.H", "geo.W"])
+            existing_results.add(key)
+    else:
+        df_results = pd.DataFrame()
+
+    # Step 3: Search output folders for runs not yet in lhs_results.csv
+    all_run_dirs = [
+        d for d in os.listdir(SCRATCH_BASE)
+        if d.startswith("run_Z") and os.path.isdir(os.path.join(SCRATCH_BASE, d))
+    ]
+
+    new_results_added = 0
+    for run_dir in all_run_dirs:
+        match = re.search(r"Z([\d]+p[\d]+)_X([\d]+p[\d]+)_H([\d]+p[\d]+)_W([\d]+p[\d]+)", run_dir)
+        if not match:
+            continue
+        geo_vals = [float(s.replace("p", ".")) for s in match.groups()]
+        key = tuple(round(x, 8) for x in geo_vals)
+        if key in existing_results:
+            continue
+
+        full_path = os.path.join(SCRATCH_BASE, run_dir)
+        try:
+            thrust_stats = analyze_thrust_timeseries(get_all_plotfiles(full_path), full_path)
+            log_results(*geo_vals, thrust_stats)
+            new_results_added += 1
+        except Exception as e:
+            print(f"[WARN] Skipping {run_dir}: {e}")
+
+    total_results = len(existing_results) + new_results_added
+    print(f"[INFO] Total LHS results available: {total_results}")
+
+    if total_results < 5:
+        print(f"[INFO] Not enough LHS results ({total_results}/5). Launching additional sampling...")
+        subprocess.run(["python", "run_lhs_sampling.py"], check=True)
+        subprocess.run(["sbatch", "run_sample.sh"], check=True)
+        print("[INFO] LHS job array submitted. Please rerun this script after jobs complete.")
+        return  #  Exit early
+
+    #  Reload updated results file
+    df = pd.read_csv(lhs_results_csv)
+
+    #  Now use *all* available data
     X_init = df[["geo.Z", "geo.X", "geo.H", "geo.W"]].values
     Y_init = df["thrust_max"].values
 
     if len(Y_init) < 5:
-        raise RuntimeError("❌ ERROR: Still less than 5 usable LHS samples. Aborting.")
+        raise RuntimeError(" ERROR: Still less than 5 usable LHS samples. Aborting.")
 
     # === Freeze data here ===
     X_data = X_init.copy()
