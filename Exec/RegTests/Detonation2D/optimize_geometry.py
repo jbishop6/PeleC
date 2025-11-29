@@ -33,8 +33,8 @@ SIM_EXECUTABLE = "/home/jbishop6/PeleC/Exec/RegTests/Detonation2D/PeleC2d.gnu.ex
 RESULTS_LOG = os.path.join(SCRATCH_BASE, "results_log.csv")
 
 # Create empty results_log.csv with headers (if not already there)
-if not os.path.exists("results_log.csv"):
-    with open("results_log.csv", "w") as f:
+if not os.path.exists(RESULTS_LOG):
+    with open(RESULTS_LOG, "w") as f:
         f.write("iteration,geo.Z,geo.X,geo.H,geo.W,thrust_avg,thrust_std,thrust_max,thrust_min\n")
 
 # Defining functions for LHS
@@ -187,7 +187,7 @@ def extract_thrust_from_plotfile(plotfile_dir, outlet_x=0.95, tolerance=0.10):
 
 
 # === Analyze thrust over all timesteps ===
-def analyze_thrust_timeseries(plotfiles, output_dir):
+def analyze_thrust_timeseries(plotfiles, output_dir, geo_Z=None, geo_X=None, geo_H=None, geo_W=None):
     """
     Analyze thrust from all plotfiles and compute statistics
     """
@@ -266,7 +266,7 @@ def analyze_thrust_timeseries(plotfiles, output_dir):
     print(f"[INFO] Summary saved to: {summary_txt}")
     
     # Create thrust evolution plot
-    create_thrust_plot(results, output_dir)
+    create_thrust_plot(results, output_dir, geo_Z, geo_X, geo_H)
     
     return {
         'thrust_avg': thrust_avg,
@@ -278,7 +278,7 @@ def analyze_thrust_timeseries(plotfiles, output_dir):
 
 
 # === Create thrust evolution plot ===
-def create_thrust_plot(results, output_dir):
+def create_thrust_plot(results, output_dir, geo_Z=None, geo_X=None, geo_H=None):
     """
     Create plot showing thrust evolution over time
     """
@@ -291,16 +291,22 @@ def create_thrust_plot(results, output_dir):
     fig, ax = plt.subplots(figsize=(10, 6))
     
     ax.plot(times, thrust, 'b-', linewidth=2, marker='o', 
-        markersize=4, label='Instantaneous Thrust')
+            markersize=4, label='Instantaneous Thrust')
     ax.axhline(thrust_avg, color='r', linestyle='--', 
-        linewidth=2, label=f'Average: {thrust_avg:.2f} N')
-    ax.fill_between(times, thrust_avg-thrust_std, thrust_avg+thrust_std,
-        alpha=0.2, color='r', label=f'±1σ: {thrust_std:.2f} N')
+               linewidth=2, label=f'Average: {thrust_avg:.2f} N')
+    ax.fill_between(times, thrust_avg - thrust_std, thrust_avg + thrust_std,
+                    alpha=0.2, color='r', label=f'±1σ: {thrust_std:.2f} N')
     
     ax.set_xlabel('Time (μs)', fontsize=12, fontweight='bold')
     ax.set_ylabel('Thrust (N)', fontsize=12, fontweight='bold')
-    ax.set_title(f'Thrust Evolution (Z={geo_Z}, X={geo_X}, H={geo_H})', 
-                fontsize=14, fontweight='bold')
+
+    # Safe title formatting
+    if geo_Z is not None and geo_X is not None and geo_H is not None:
+        title = f'Thrust Evolution (Z={geo_Z:.3f}, X={geo_X:.3f}, H={geo_H:.3f})'
+    else:
+        title = "Thrust Evolution"
+    
+    ax.set_title(title, fontsize=14, fontweight='bold')
     ax.grid(True, alpha=0.3)
     ax.legend(fontsize=10)
     
@@ -311,6 +317,7 @@ def create_thrust_plot(results, output_dir):
     plt.close()
     
     print(f"[INFO] Thrust plot saved to: {plot_path}")
+
 
 
 # === Log results ===
