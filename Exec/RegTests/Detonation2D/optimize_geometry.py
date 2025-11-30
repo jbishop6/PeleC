@@ -547,42 +547,62 @@ def main():
         [0.08, 0.15]    # W
     ])
 
-    for iteration in range(max_iters):
-        print(f"\n-- Iteration {iteration + 1} --")
+       try:
+        for iteration in range(max_iters):
+            print(f"\n-- Iteration {iteration + 1} --")
 
-        kernel = Matern(nu=2.5)
-        gp = GaussianProcessRegressor(kernel=kernel, alpha=1e-6, normalize_y=True)
-        gp.fit(X_data, Y_data)
+            # Debug shapes
+            print(f"[DEBUG] X_data shape: {X_data.shape}")
+            print(f"[DEBUG] Y_data shape: {len(Y_data)}")
 
-        X_candidates = generate_valid_candidates(bounds, n_candidates=1000)
-        Y_best = max(Y_data)
-        ei = expected_improvement(X_candidates, gp, Y_best)
+            # Sanity check
+            if np.isnan(X_data).any() or np.isnan(Y_data).any():
+                raise ValueError("NaNs found in X_data or Y_data!")
+            if X_data.shape[0] != len(Y_data):
+                raise ValueError("Mismatch between number of samples in X and Y")
 
-        best_index = np.argmax(ei)
-        x_next = X_candidates[best_index]
-        geo_Z, geo_X, geo_H, geo_W = x_next
+            kernel = Matern(nu=2.5)
+            gp = GaussianProcessRegressor(kernel=kernel, alpha=1e-6, normalize_y=True)
 
-        print(f"[INFO] Running BO sample: Z={geo_Z}, X={geo_X}, H={geo_H}, W={geo_W}")
+            print("[DEBUG] Fitting GP model...")
+            gp.fit(X_data, Y_data)
+            print("[DEBUG] GP fit complete.")
 
-        try:
-            thrust_stats = run_pelec_and_extract_thrust(
-                geo_Z, geo_X, geo_H, geo_W,
-                INP_FILE, SIM_EXECUTABLE,
-                iteration=iteration + 1
-            )
-            y_next = thrust_stats['thrust_max']
+            X_candidates = generate_valid_candidates(bounds, n_candidates=1000)
+            Y_best = max(Y_data)
+            ei = expected_improvement(X_candidates, gp, Y_best)
 
-            X_data = np.vstack((X_data, x_next))
-            Y_data.append(y_next)
+            best_index = np.argmax(ei)
+            x_next = X_candidates[best_index]
+            geo_Z, geo_X, geo_H, geo_W = x_next
 
-            improvement = abs(y_next - Y_best)
-            print(f"[INFO] Improvement: {improvement:.6f} N")
+            print(f"[INFO] Running BO sample: Z={geo_Z}, X={geo_X}, H={geo_H}, W={geo_W}")
 
-            if improvement < tol:
-                print("[INFO] Optimization has converged.")
-                break
-        except Exception as e:
-            print(f"[WARN] BO sample failed: {e}")
+            try:
+                thrust_stats = run_pelec_and_extract_thrust(
+                    geo_Z, geo_X, geo_H, geo_W,
+                    INP_FILE, SIM_EXECUTABLE,
+                    iteration=iteration + 1
+                )
+                y_next = thrust_stats['thrust_max']
+
+                X_data = np.vstack((X_data, x_next))
+                Y_data.append(y_next)
+
+                improvement = abs(y_next - Y_best)
+                print(f"[INFO] Improvement: {improvement:.6f} N")
+
+                if improvement < tol:
+                    print("[INFO] Optimization has converged.")
+                    break
+            except Exception as e:
+                print(f"[WARN] BO sample failed: {e}")
+
+    except Exception as fatal:
+        print(f"[FATAL] Optimization crashed: {fatal}", file=sys.stderr)
+        import traceback
+        traceback.print_exc()
+
 
     print("\n=== Optimization complete ===")
     print(f"Best thrust achieved: {max(Y_data):.3f} N")
