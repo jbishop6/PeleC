@@ -547,7 +547,7 @@ def main():
         [0.08, 0.15]    # W
     ])
 
-       try:
+    try:
         for iteration in range(max_iters):
             print(f"\n-- Iteration {iteration + 1} --")
 
@@ -602,6 +602,11 @@ def main():
         print(f"[FATAL] Optimization crashed: {fatal}", file=sys.stderr)
         import traceback
         traceback.print_exc()
+
+    print("\n=== Optimization complete ===")
+    print(f"Best thrust achieved: {max(Y_data):.3f} N")
+    print(f"Number of simulations run: {len(Y_data)}")
+
 
 
     print("\n=== Optimization complete ===")
