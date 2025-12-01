@@ -5,8 +5,6 @@
 #SBATCH --partition=bigmem-long
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=5
-#SBATCH --mem-per-cpu=2000  # Requests 10 GB total
 
 
 
