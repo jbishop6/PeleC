@@ -608,8 +608,5 @@ def main():
     print(f"Number of simulations run: {len(Y_data)}")
 
 
-
-    print("\n=== Optimization complete ===")
-    print(f"Best thrust achieved: {max(Y_data):.3f} N")
-    print(f"Number of simulations run: {len(Y_data)}")
-
+if __name__ == "__main__":
+    main()
