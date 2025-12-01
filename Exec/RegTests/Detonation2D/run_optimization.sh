@@ -6,7 +6,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=5
-#SBATCH --mem=64G     # <-- add this line
+
 
 echo "================================================="
 echo " Job $SLURM_JOB_ID started on $(hostname) at $(date)"
