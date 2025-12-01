@@ -2,7 +2,7 @@
 #SBATCH --job-name=opt_geo
 #SBATCH --output=slurm_output_%j.log
 #SBATCH --error=slurm_error_%j.log
-#SBATCH --partition=compute-long
+#SBATCH --partition=bigmem-long
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=5
