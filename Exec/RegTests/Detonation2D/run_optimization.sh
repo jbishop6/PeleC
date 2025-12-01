@@ -6,6 +6,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=5
+#SBATCH --mem=64G     # <-- add this line
 
 echo "================================================="
 echo " Job $SLURM_JOB_ID started on $(hostname) at $(date)"
@@ -16,11 +17,6 @@ source ~/miniconda3/etc/profile.d/conda.sh
 conda activate pelecopt
 cd "$SLURM_SUBMIT_DIR"
 
-LHS_DIR="/mmfs1/scratch/jbishop6/PeleC/Exec/RegTests/Detonation2D/outputs/lhs_samples"
-LHS_RESULTS="/mmfs1/scratch/jbishop6/PeleC/Exec/RegTests/Detonation2D/outputs/lhs_results.csv"
-
-
-# === Step 3: Start Bayesian Optimization ===
 echo "[INFO] Starting Bayesian Optimization..."
 python optimize_geometry.py
 
