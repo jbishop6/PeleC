@@ -549,11 +549,17 @@ def main():
 
     try:
         for iteration in range(max_iters):
-            print(f"\n-- Iteration {iteration + 1} --")
+            print("\n" + "="*60)
+            print(f"[ITERATION {iteration + 1}/{max_iters}] Starting Bayesian Optimization step")
+            print("="*60)
 
             # Debug shapes
             print(f"[DEBUG] X_data shape: {X_data.shape}")
             print(f"[DEBUG] Y_data shape: {len(Y_data)}")
+
+            # Print current best
+            print(f"[INFO] Current best thrust: {max(Y_data):.4f} N")
+
 
             # Sanity check
             if np.isnan(X_data).any() or np.isnan(Y_data).any():
