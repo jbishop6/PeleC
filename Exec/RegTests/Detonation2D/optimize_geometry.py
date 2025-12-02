@@ -39,12 +39,12 @@ from scipy.stats import norm
 
 # Shared across all optimization runs
 # Shared input and result files — read-only
-SHARED_BASE = "/mmfs1/scratch/jbishop6/PeleC/Exec/RegTests/Detonation2D/outputs"
+SHARED_BASE = "~PeleC/Exec/RegTests/Detonation2D/outputs"
 LHS_INPUT_CSV = os.path.join(SHARED_BASE, "lhs_samples", "lhs_input.csv")
 LHS_RESULTS_CSV = os.path.join(SHARED_BASE, "results_log.csv")   # <- This is important
 
 # New job-specific scratch output dir
-SCRATCH_BASE = "/mmfs1/scratch/jbishop6/PeleC/Exec/RegTests/Detonation2D/outputs_run2"
+SCRATCH_BASE = "~PeleC/Exec/RegTests/Detonation2D/outputs_run2"
 os.makedirs(SCRATCH_BASE, exist_ok=True)
 
 #os.makedirs(os.path.join(output_base, "lhs_samples"), exist_ok=True)
