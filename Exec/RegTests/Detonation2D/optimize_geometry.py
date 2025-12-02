@@ -44,6 +44,7 @@ LHS_RESULTS_CSV = "/mmfs1/scratch/jbishop6/PeleC/Exec/RegTests/Detonation2D/outp
 SCRATCH_BASE = "/mmfs1/scratch/jbishop6/PeleC/Exec/RegTests/Detonation2D/outputs_run2"
 
 os.makedirs(SCRATCH_BASE, exist_ok=True)
+os.makedirs(os.path.join(output_base, "lhs_samples"), exist_ok=True)
 
 
 
