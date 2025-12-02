@@ -43,6 +43,8 @@ LHS_RESULTS_CSV = "/mmfs1/scratch/jbishop6/PeleC/Exec/RegTests/Detonation2D/outp
 # Unique to this job — you change this per job submission
 SCRATCH_BASE = "/mmfs1/scratch/jbishop6/PeleC/Exec/RegTests/Detonation2D/outputs_run2"
 
+os.makedirs(SCRATCH_BASE, exist_ok=True)
+
 
 
 
