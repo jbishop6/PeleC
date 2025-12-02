@@ -1,7 +1,7 @@
 import os
-SCRATCH_BASE = "/mmfs1/scratch/jbishop6/PeleC/Exec/RegTests/Detonation2D/outputs"
-os.makedirs("lhs_samples", exist_ok=True)
-os.makedirs("logs", exist_ok=True)  # If needed
+#SCRATCH_BASE = "/mmfs1/scratch/jbishop6/PeleC/Exec/RegTests/Detonation2D/outputs"
+#os.makedirs("lhs_samples", exist_ok=True)
+#os.makedirs("logs", exist_ok=True)  # If needed
 import re
 import matplotlib
 matplotlib.use('Agg')  # Headless backend for HPC
@@ -24,6 +24,28 @@ from scipy.stats.qmc import LatinHypercube
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern
 from scipy.stats import norm
+
+# Allow custom output directory via CLI
+#if len(sys.argv) > 1:
+#    SCRATCH_BASE = sys.argv[1]
+#else:
+  #  SCRATCH_BASE = "/mmfs1/scratch/jbishop6/PeleC/Exec/RegTests/Detonation2D/outputs"
+
+# Ensure the base directory exists
+#os.makedirs(SCRATCH_BASE, exist_ok=True)
+
+#os.makedirs("lhs_samples", exist_ok=True)
+#os.makedirs("logs", exist_ok=True)  # If needed
+
+# Shared across all optimization runs
+LHS_INPUT_CSV = "/mmfs1/scratch/jbishop6/PeleC/Exec/RegTests/Detonation2D/outputs/lhs_samples/lhs_input.csv"
+LHS_RESULTS_CSV = "/mmfs1/scratch/jbishop6/PeleC/Exec/RegTests/Detonation2D/outputs/lhs_results.csv"
+# Unique to this job — you change this per job submission
+SCRATCH_BASE = "/mmfs1/scratch/jbishop6/PeleC/Exec/RegTests/Detonation2D/outputs_run2"
+
+
+
+
 
 print("[DEBUG] Python script started", file=sys.stderr)
 
@@ -445,8 +467,8 @@ def extract_thrust_from_existing_output(Z, X, H, W, run_directory):
 
    # === MAIN WORKFLOW ===
 def main():
-    lhs_input_csv = os.path.join(SCRATCH_BASE, "lhs_samples", "lhs_input.csv")
-    lhs_results_csv = os.path.join(SCRATCH_BASE, "lhs_results.csv")
+    lhs_input_csv = LHS_INPUT_CSV
+    lhs_results_csv = LHS_RESULTS_CSV
 
     # Step 0: Create lhs_input.csv if it doesn't exist
     if not os.path.exists(lhs_input_csv):
@@ -471,31 +493,33 @@ def main():
         df_results = pd.DataFrame()
 
     # Step 3: Search output folders for runs not yet in lhs_results.csv
-    all_run_dirs = [
-        d for d in os.listdir(SCRATCH_BASE)
-        if d.startswith("run_Z") and os.path.isdir(os.path.join(SCRATCH_BASE, d))
-    ]
+    #all_run_dirs = [
+        #d for d in os.listdir(SCRATCH_BASE)
+        #if d.startswith("run_Z") and os.path.isdir(os.path.join(SCRATCH_BASE, d))
+    #]
 
-    new_results_added = 0
-    for run_dir in all_run_dirs:
-        match = re.search(r"Z([\d]+p[\d]+)_X([\d]+p[\d]+)_H([\d]+p[\d]+)_W([\d]+p[\d]+)", run_dir)
-        if not match:
-            continue
-        geo_vals = [float(s.replace("p", ".")) for s in match.groups()]
-        key = tuple(round(x, 8) for x in geo_vals)
-        if key in existing_results:
-            continue
+    #new_results_added = 0
+    #for run_dir in all_run_dirs:
+        #match = re.search(r"Z([\d]+p[\d]+)_X([\d]+p[\d]+)_H([\d]+p[\d]+)_W([\d]+p[\d]+)", run_dir)
+        #if not match:
+           # continue
+        #geo_vals = [float(s.replace("p", ".")) for s in match.groups()]
+        #key = tuple(round(x, 8) for x in geo_vals)
+        #if key in existing_results:
+            #continue
 
-        full_path = os.path.join(SCRATCH_BASE, run_dir)
-        try:
-            thrust_stats = analyze_thrust_timeseries(get_all_plotfiles(full_path), full_path)
-            log_results(*geo_vals, thrust_stats)
-            new_results_added += 1
-        except Exception as e:
-            print(f"[WARN] Skipping {run_dir}: {e}")
+        #full_path = os.path.join(SCRATCH_BASE, run_dir)
+        #try:
+            #thrust_stats = analyze_thrust_timeseries(get_all_plotfiles(full_path), full_path)
+            #log_results(*geo_vals, thrust_stats)
+            #new_results_added += 1
+        #except Exception as e:
+            #print(f"[WARN] Skipping {run_dir}: {e}")
 
-    total_results = len(existing_results) + new_results_added
-    print(f"[INFO] Total LHS results available: {total_results}")
+    #total_results = len(existing_results) + new_results_added
+    #print(f"[INFO] Total LHS results available: {total_results}")
+
+    total_results = len(existing_results)
 
     if total_results < 5:
         print(f"[INFO] Not enough LHS results ({total_results}/5). Launching additional sampling...")
