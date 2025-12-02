@@ -41,7 +41,7 @@ from scipy.stats import norm
 # Shared input and result files — read-only
 SHARED_BASE = "/mmfs1/scratch/jbishop6/PeleC/Exec/RegTests/Detonation2D/outputs"
 LHS_INPUT_CSV = os.path.join(SHARED_BASE, "lhs_samples", "lhs_input.csv")
-LHS_RESULTS_CSV = os.path.join(SHARED_BASE, "lhs_results.csv")   # <- This is important
+LHS_RESULTS_CSV = os.path.join(SHARED_BASE, "results_log.csv")   # <- This is important
 
 # New job-specific scratch output dir
 SCRATCH_BASE = "/mmfs1/scratch/jbishop6/PeleC/Exec/RegTests/Detonation2D/outputs_run2"
