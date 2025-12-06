@@ -5,9 +5,8 @@
 #SBATCH --partition=compute-long
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=8
-#SBATCH --time=02:00:00
-#SBATCH --mem=32G
+#SBATCH --cpus-per-task=5
+
 
 echo "================================================="
 echo " Job $SLURM_JOB_ID started on $(hostname) at $(date)"
