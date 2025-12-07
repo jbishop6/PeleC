@@ -359,87 +359,99 @@ RotatedBox::build(const amrex::Geometry& geom, const int max_coarsening_level)
     gshop, geom, max_coarsening_level, max_coarsening_level, 4, false);
 }
 
-void TwoBranch::build (const amrex::Geometry& geom,
-                       const int max_coarsening_level)
+void TwoBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
 {
   using namespace amrex;
   using namespace amrex::EB2;
 
   ParmParse pp("geo");
-  Real W=0.04, H=0.04, L=0.04, xs=0.30, xr=0.70;
-  Real mid = 0.02;                 // center-wall thickness
-  Real cL  = 0.00;                 // NEW: left connector length (retract from xs)
-  Real cR  = 0.00;                 // NEW: right connector length (retract from xr)
-  pp.query("W",W);  pp.query("H",H);  pp.query("L",L);
-  pp.query("xs",xs); pp.query("xr",xr);
-  pp.query("mid",mid);
-  pp.query("cL",cL);
-  pp.query("cR",cR);
 
-  const amrex::RealBox& rb = geom.ProbDomain();
-  const amrex::Real xlo = rb.lo(0), xhi = rb.hi(0);
-  const amrex::Real ylo = rb.lo(1), yhi = rb.hi(1);
-  const amrex::Real ymid = 0.5*(ylo+yhi);
+  // Adjustable geometry parameters (now similar to ThreeBranch)
+  Real W   = 0.04;  // thickness of central duct
+  Real H   = 0.1;   // total vertical domain size
+  Real X   = 1.0;   // total horizontal domain length
+  Real mid = 0.02;  // thickness of mid-wall
+  Real cL  = 0.00;  // left retract
+  Real cR  = 0.00;  // right retract
 
-  const amrex::Real dx = geom.CellSize(0);
-  const amrex::Real dy = geom.CellSize(1);
-  const amrex::Real h  = std::max(dx,dy);
+  pp.query("W", W);
+  pp.query("H", H);
+  pp.query("X", X);
+  pp.query("mid", mid);
+  pp.query("cL", cL);
+  pp.query("cR", cR);
 
-  // sanity / resolvability
-  xs  = std::min(std::max(xs, xlo+2*h),    xhi-2*h);
-  xr  = std::min(std::max(xr, xs+6*h),     xhi-2*h);
-  mid = std::min(std::max(mid, 4*h), std::max(W-4*h, 4*h+1e-12));
+  // Placement of the ducts
+  Real xs = 0.25 * X;
+  Real xr = 0.75 * X;
+  pp.query("xs", xs);
+  pp.query("xr", xr);
 
-  // clamp connector lengths so wall still has positive span
-  const amrex::Real max_pad = std::max(0.0, 0.5*(xr - xs) - 3*h);
+  const Real xlo = 0.0, xhi = X;
+  const Real ylo = 0.0, yhi = H;
+  const Real ymid = 0.5 * H;
+
+  const Real dx = geom.CellSize(0);
+  const Real dy = geom.CellSize(1);
+  const Real h  = std::max(dx, dy);
+
+  // Sanity check
+  xs  = std::min(std::max(xs, xlo + 2*h),    xhi - 2*h);
+  xr  = std::min(std::max(xr, xs + 6*h),     xhi - 2*h);
+  mid = std::min(std::max(mid, 4*h), std::max(W - 4*h, 4*h + 1e-12));
+
+  const Real max_pad = std::max(0.0, 0.5 * (xr - xs) - 3*h);
   cL = std::min(std::max(cL, 0.0), max_pad);
   cR = std::min(std::max(cR, 0.0), max_pad);
 
   auto boxS = [] (Real x0, Real y0, Real x1, Real y1) {
-    Array<Real,AMREX_SPACEDIM> lo{AMREX_D_DECL(std::min(x0,x1), std::min(y0,y1), 0.0)};
-    Array<Real,AMREX_SPACEDIM> hi{AMREX_D_DECL(std::max(x0,x1), std::max(y0,y1), 0.0)};
-    return BoxIF(lo, hi, /*has_fluid_inside=*/false); // SOLID
+    Array<Real, AMREX_SPACEDIM> lo{AMREX_D_DECL(std::min(x0, x1), std::min(y0, y1), 0.0)};
+    Array<Real, AMREX_SPACEDIM> hi{AMREX_D_DECL(std::max(x0, x1), std::max(y0, y1), 0.0)};
+    return BoxIF(lo, hi, false); // solid
   };
 
-  // bands
-  const amrex::Real y_base_lo  = ymid - 0.5*W;
-  const amrex::Real y_base_hi  = ymid + 0.5*W;
-  const amrex::Real y_upper_lo = y_base_hi;
-  const amrex::Real y_upper_hi = y_base_hi + H;
-  const amrex::Real y_lower_lo = y_base_lo - L;
-  const amrex::Real y_lower_hi = y_base_lo;
+  // Channel split layout (like ThreeBranch)
+  const Real y_base_lo  = ymid - 0.5 * W;
+  const Real y_base_hi  = ymid + 0.5 * W;
+  const Real y_upper_lo = y_base_hi;
+  const Real y_upper_hi = yhi;
+  const Real y_lower_lo = ylo;
+  const Real y_lower_hi = y_base_lo;
 
-  // domain caps & outside-of-duct solids (unchanged)
-  auto s_top    = boxS(xlo, y_upper_hi, xhi, yhi);
-  auto s_bottom = boxS(xlo, ylo,       xhi, y_lower_lo);
-  auto s_left_upper  = boxS(xlo, y_base_hi,  xs,  y_upper_hi);
-  auto s_left_lower  = boxS(xlo, y_lower_lo, xs,  y_base_lo);
-  auto s_right_upper = boxS(xr,  y_base_hi,  xhi, y_upper_hi);
+  const Real y_mid_lo = ymid - 0.5 * mid;
+  const Real y_mid_hi = ymid + 0.5 * mid;
+  const Real mw_x0 = xs + cL;
+  const Real mw_x1 = xr - cR;
+
+  // Boundary and wall solids
+  auto s_top         = boxS(xlo, y_upper_hi, xhi, yhi);
+  auto s_bottom      = boxS(xlo, ylo, xhi, y_lower_lo);
+  auto s_left_upper  = boxS(xlo, y_base_hi, xs, y_upper_hi);
+  auto s_left_lower  = boxS(xlo, y_lower_lo, xs, y_base_lo);
+  auto s_right_upper = boxS(xr,  y_base_hi, xhi, y_upper_hi);
   auto s_right_lower = boxS(xr,  y_lower_lo, xhi, y_base_lo);
+  auto s_mid_between = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
 
-  // mid-wall **retracted** by cL (left) and cR (right)
-  const amrex::Real y_mid_lo = ymid - 0.5*mid;
-  const amrex::Real y_mid_hi = ymid + 0.5*mid;
-  const amrex::Real mw_x0 = xs + cL;
-  const amrex::Real mw_x1 = xr - cR;
-  auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
+  // Union all walls
+  auto u1    = makeUnion(s_top, s_bottom);
+  auto u2    = makeUnion(u1, s_left_upper);
+  auto u3    = makeUnion(u2, s_left_lower);
+  auto u4    = makeUnion(u3, s_right_upper);
+  auto u5    = makeUnion(u4, s_right_lower);
+  auto walls = makeUnion(u5, s_mid_between);
 
-  // union
-  auto u1    = EB2::makeUnion(s_top, s_bottom);
-  auto u2    = EB2::makeUnion(u1, s_left_upper);
-  auto u3    = EB2::makeUnion(u2, s_left_lower);
-  auto u4    = EB2::makeUnion(u3, s_right_upper);
-  auto u5    = EB2::makeUnion(u4, s_right_lower);
-  auto walls = EB2::makeUnion(u5, s_mid_between);
+  // Output for debugging
+  Print() << "\n=== TWO-BRANCH GEOMETRY ===\n";
+  Print() << "X = " << X << ", H = " << H << ", W = " << W << "\n";
+  Print() << "xs = " << xs << ", xr = " << xr << ", mid = " << mid << "\n";
+  Print() << "cL = " << cL << ", cR = " << cR << "\n";
+  Print() << "Mid-wall span: x=[" << mw_x0 << ", " << mw_x1 << "], y=[" << y_mid_lo << ", " << y_mid_hi << "]\n";
+  Print() << "===========================\n\n";
 
-  amrex::Print() << "[EB] TwoBranch connect: "
-                 << "xs="<<xs<<" xr="<<xr<<" mid="<<mid
-                 << " cL="<<cL<<" cR="<<cR
-                 << " dx="<<dx<<" dy="<<dy << "\n";
-
-  auto gshop = EB2::makeShop(walls);
-  EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
+  auto gshop = makeShop(walls);
+  Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
 }
+
 
 void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
 {
