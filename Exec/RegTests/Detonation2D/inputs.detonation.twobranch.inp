@@ -20,15 +20,19 @@ pelec.diffuse_temp = 0
 pelec.diffuse_spec = 0
 
 # --- Enable Detonation Chemistry ---
-pelec.do_react = 1
-pelec.chem_integrator = "ReactorCvode"
-pelec.use_typ_vals_chem = 1
-cvode.solve_type = "denseAJ_direct"
-ode.rtol = 1.0e-6
-ode.atol = 1.0e-5
-pelec.fixed_dt = 1e-10
+#pelec.do_react = 1
+#pelec.chem_integrator = "ReactorCvode"
+#pelec.use_typ_vals_chem = 1
+#cvode.solve_type = "denseAJ_direct"
+#ode.rtol = 1.0e-6
+#ode.atol = 1.0e-5
+#pelec.fixed_dt = 1e-10
 
-
+# Disable reactions entirely
+chem_integrator = none
+do_react = 0
+# Optional but recommended to ensure no chemistry source terms
+use_reactions = false
 
 # ------------------ TIME STEP CONTROL -------------------
 pelec.cfl         = 0.9
