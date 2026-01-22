@@ -97,7 +97,7 @@ eb2.box_rotation_axe = 2
 
 # Two-branch geometry knobs (domain units; tweak as you like)
 geo.W  = 0.041015625
-geo.H  = 0.1505557776449048
+geo.H  = 0.3
 geo.L  = 0.0390625
 geo.xs = 0.30
 geo.xr = 0.44889148040857642
