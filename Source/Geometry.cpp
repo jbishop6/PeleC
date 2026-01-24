@@ -393,6 +393,11 @@ TwoBranch::build (const amrex::Geometry& geom,
   const Real xlo = rb.lo(0), xhi = rb.hi(0);
   const Real ylo = rb.lo(1), yhi = rb.hi(1);
 
+  amrex::Print() << "[TwoBranch] Domain: x = [" << xlo << ", " << xhi
+                 << "], y = [" << ylo << ", " << yhi
+                 << "], height = " << (yhi - ylo) << "\n";
+
+
   // Center of the whole system in y, with an optional offset
   const Real ymid = 0.5 * (ylo + yhi) + y_offset;
 
