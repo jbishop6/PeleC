@@ -363,6 +363,9 @@ void
 TwoBranch::build (const amrex::Geometry& geom,
                   const int max_coarsening_level)
 {
+  amrex::Print() << ">>> DEBUG: Entering TwoBranch::build\n";
+  amrex::Abort(">>> DEBUG ABORT from TwoBranch::build\n");
+
   using namespace amrex;
   using namespace amrex::EB2;
 
