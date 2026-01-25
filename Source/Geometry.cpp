@@ -362,6 +362,8 @@ RotatedBox::build(const amrex::Geometry& geom, const int max_coarsening_level)
 void
 TwoBranch::build (const amrex::Geometry& geom,
                   const int max_coarsening_level)
+static_assert(false, "IF YOU SEE THIS, Geometry.cpp::TwoBranch IS BEING COMPILED");
+
 {
   using namespace amrex;
   using namespace amrex::EB2;
