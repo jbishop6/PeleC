@@ -368,75 +368,67 @@ TwoBranch::build (const amrex::Geometry& geom,
 
   ParmParse pp("geo");
 
-  // Parameter semantics:
+  // Parameter semantics for TWO-BRANCH:
   //   H  = channel height (upper and lower, each = H)
   //   L  = center wall thickness
-  //   X  = distance between branch junctions (xs -> xr)
-  //   xs = x-position of the left junction
-  //   cL, cR = trims that remove wall near the left / right junction
+  //   X  = VISIBLE length of the mid-wall (this is what you put in the input!)
+  //   xs = x-position of the LEFT end of the mid-wall
+  //   y_offset = optional vertical shift of the whole system
   //
-  // NOTE:
-  //   - If cL = cR = 0, then the visible center wall length = X.
-  //   - If cL, cR > 0, visible wall length = X - (cL + cR),
-  //     but branch span (xs -> xr) is still exactly X.
+  //   There is NO trimming applied here:
+  //     mid-wall is ALWAYS [xs, xs + X]
+  //
+  //   So if you set:
+  //     geo.xs = 0.30
+  //     geo.X  = 0.30
+  //   you get a mid-wall from x = 0.30 to x = 0.60. Period.
 
-  Real W  = 0.04;   // not used geometrically here, kept for consistency
-  Real H  = 0.04;   // channel height
-  Real L  = 0.02;   // center wall thickness
-  Real X  = 0.40;   // distance between branch junctions (your "X")
-  Real xs = 0.30;   // x-position of left junction
-  Real cL = 0.0;    // trim length at left end of wall
-  Real cR = 0.0;    // trim length at right end of wall
-  Real y_offset = 0.0; // optional vertical offset
+  Real W        = 0.04;   // unused, kept for consistency with ThreeBranch
+  Real H        = 0.04;   // channel height
+  Real L        = 0.02;   // center wall thickness
+  Real X        = 0.40;   // VISIBLE mid-wall length
+  Real xs       = 0.30;   // LEFT end of the mid-wall
+  Real y_offset = 0.0;    // optional vertical offset
 
-  pp.query("W",  W);
-  pp.query("H",  H);    // channel height
-  pp.query("L",  L);    // center wall thickness
-  pp.query("X",  X);    // distance between junctions
-  pp.query("xs", xs);   // left junction position
-  pp.query("cL", cL);
-  pp.query("cR", cR);
+  pp.query("W",        W);
+  pp.query("H",        H);        // channel height
+  pp.query("L",        L);        // wall thickness
+  pp.query("X",        X);        // VISIBLE wall length
+  pp.query("xs",       xs);       // left end of wall
   pp.query("y_offset", y_offset);
 
   const RealBox& rb = geom.ProbDomain();
   const Real xlo = rb.lo(0), xhi = rb.hi(0);
   const Real ylo = rb.lo(1), yhi = rb.hi(1);
 
-  // Center of the whole system in y, with an optional offset
-  const Real ymid = 0.5 * (ylo + yhi) + y_offset;
-
   const Real dx = geom.CellSize(0);
   const Real dy = geom.CellSize(1);
   const Real h  = std::max(dx, dy);
 
-  // Enforce minimal geometric thicknesses (so EB is at least a few cells thick)
-  H = std::max(H, 4.0*h);  // channel height
-  L = std::max(L, 4.0*h);  // center wall thickness
+  // Center in y, plus optional offset
+  const Real ymid = 0.5 * (ylo + yhi) + y_offset;
 
-  // Keep xs away from domain edges a bit
+  // Enforce minimum thicknesses so EB is at least a few cells thick
+  H = std::max(H, 4.0*h);
+  L = std::max(L, 4.0*h);
+
+  // Clamp xs to stay a bit inside the domain
   xs = std::min(std::max(xs, xlo + 2.0*h), xhi - 2.0*h);
 
-  // Right junction based on X
-  Real xr = xs + X;
+  // Clamp X so that the wall stays inside the domain as well
+  Real max_X = (xhi - 2.0*h) - xs;
+  if (X > max_X) {
+    Print() << "[TwoBranch] WARNING: requested X=" << X
+            << " is too large for domain; clamping to " << max_X << "\n";
+    X = max_X;
+  }
 
-  // Clamp xr inside the domain a bit too
-  xr = std::min(std::max(xr, xlo + 2.0*h), xhi - 2.0*h);
+  // Mid-wall extents (THIS is what you see as the branch separator)
+  const Real mw_x0 = xs;
+  const Real mw_x1 = xs + X;   // so mw_x1 - mw_x0 = X EXACTLY
 
-  // If clamping changed xr, recompute the effective X
-  X = xr - xs;
-
-  // Connector trims: don't let them eat the wall entirely
-  const Real max_pad = std::max(0.0, 0.5*X - 3.0*h);
-  cL = std::min(std::max(cL, 0.0), max_pad);
-  cR = std::min(std::max(cR, 0.0), max_pad);
-
-  auto boxS = [] (Real x0, Real y0, Real x1, Real y1) {
-    Array<Real,AMREX_SPACEDIM> lo{
-      AMREX_D_DECL(std::min(x0,x1), std::min(y0,y1), 0.0)};
-    Array<Real,AMREX_SPACEDIM> hi{
-      AMREX_D_DECL(std::max(x0,x1), std::max(y0,y1), 0.0)};
-    return BoxIF(lo, hi, false); // solid
-  };
+  // Define right junction as the right end of the wall
+  const Real xr = mw_x1;
 
   // Vertical layout:
   //
@@ -447,8 +439,8 @@ TwoBranch::build (const amrex::Geometry& geom,
   //       y_lower_hi = y_base_lo           (lower channel top)
   //       y_lower_lo = y_base_lo - H       (lower channel bottom)
   //
-  const Real y_base_lo  = ymid - 0.5 * L;  // bottom of center wall
-  const Real y_base_hi  = ymid + 0.5 * L;  // top of center wall
+  const Real y_base_lo  = ymid - 0.5 * L;
+  const Real y_base_hi  = ymid + 0.5 * L;
 
   const Real y_upper_lo = y_base_hi;
   const Real y_upper_hi = y_upper_lo + H;
@@ -456,23 +448,30 @@ TwoBranch::build (const amrex::Geometry& geom,
   const Real y_lower_hi = y_base_lo;
   const Real y_lower_lo = y_lower_hi - H;
 
-  // Mid-wall x-extent with trims (this is the visible wall)
-  const Real mw_x0 = xs + cL;
-  const Real mw_x1 = xr - cR;
-  const Real visible_wall_len = mw_x1 - mw_x0;
+  auto boxS = [] (Real x0, Real y0, Real x1, Real y1) {
+    Array<Real,AMREX_SPACEDIM> lo{
+      AMREX_D_DECL(std::min(x0,x1), std::min(y0,y1), 0.0)};
+    Array<Real,AMREX_SPACEDIM> hi{
+      AMREX_D_DECL(std::max(x0,x1), std::max(y0,y1), 0.0)};
+    return BoxIF(lo, hi, false); // solid
+  };
 
   // Top / bottom domain walls
   auto s_top    = boxS(xlo, y_upper_hi, xhi, yhi);
   auto s_bottom = boxS(xlo, ylo,       xhi, y_lower_lo);
 
-  // Side walls for the two channels
-  auto s_left_upper  = boxS(xlo, y_base_hi,  xs,  y_upper_hi);
-  auto s_right_upper = boxS(xr,  y_base_hi,  xhi, y_upper_hi);
+  // Side walls for the two channels:
+  //
+  //   left channel:  from x=xlo to x=mw_x0
+  //   right channel: from x=mw_x1 to x=xhi
+  //
+  auto s_left_upper  = boxS(xlo, y_base_hi,  mw_x0,  y_upper_hi);
+  auto s_right_upper = boxS(mw_x1, y_base_hi, xhi,   y_upper_hi);
 
-  auto s_left_lower  = boxS(xlo, y_lower_lo, xs,  y_base_lo);
-  auto s_right_lower = boxS(xr,  y_lower_lo, xhi, y_base_lo);
+  auto s_left_lower  = boxS(xlo, y_lower_lo, mw_x0,  y_base_lo);
+  auto s_right_lower = boxS(mw_x1, y_lower_lo, xhi,  y_base_lo);
 
-  // Center separating wall (between upper and lower branch)
+  // Center separating wall (the actual mid-wall)
   auto s_mid_wall    = boxS(mw_x0, y_base_lo, mw_x1, y_base_hi);
 
   auto walls = makeUnion(
@@ -482,24 +481,25 @@ TwoBranch::build (const amrex::Geometry& geom,
     s_mid_wall
   );
 
-  Print() << "\n=== TWO-BRANCH GEOMETRY ===\n";
-  Print() << "H (channel height)        = " << H << "\n";
-  Print() << "L (center wall thick.)    = " << L << "\n";
-  Print() << "Domain y-range            = [" << ylo << ", " << yhi << "]\n";
-  Print() << "Total system height (2H+L)= " << (2.0*H + L) << "\n\n";
+  Print() << "\n=== TWO-BRANCH GEOMETRY (X = visible wall length) ===\n";
+  Print() << "Domain x-range          = [" << xlo << ", " << xhi << "]\n";
+  Print() << "Domain y-range          = [" << ylo << ", " << yhi << "]\n";
+  Print() << "H (channel height)      = " << H << "\n";
+  Print() << "L (center wall thick.)  = " << L << "\n";
+  Print() << "Total system height     = " << (2.0*H + L) << "\n\n";
 
-  Print() << "Input X (junction span)   = " << X << "\n";
-  Print() << "xs (left junction)        = " << xs << "\n";
-  Print() << "xr (right junction)       = " << xr << "\n";
-  Print() << "cL, cR                    = " << cL << ", " << cR << "\n";
-  Print() << "Mid-wall x-range          = [" << mw_x0 << ", " << mw_x1 << "]\n";
-  Print() << "Visible wall length       = " << visible_wall_len << "\n";
-  Print() << "NOTE: if cL = cR = 0, visible wall length = X\n";
-  Print() << "=============================\n\n";
+  Print() << "Input xs (left wall)    = " << xs << "\n";
+  Print() << "Input X (wall length)   = " << X << "\n";
+  Print() << "Computed xr (junction)  = " << xr << "\n";
+  Print() << "Mid-wall x-range        = [" << mw_x0 << ", " << mw_x1 << "]\n";
+  Print() << "Mid-wall length         = " << (mw_x1 - mw_x0) << "\n";
+  Print() << "NOTE: mid-wall length == X by construction.\n";
+  Print() << "=====================================================\n\n";
 
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
 }
+
 
 void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
 {
