@@ -98,11 +98,13 @@ eb2.box_rotation_axe = 2
 # Two-branch geometry knobs (domain units; tweak as you like)
 geo.W  = 0.041015625
 geo.H  = 0.3
-geo.L  = 0.0390625
 geo.xs = 0.30    
 geo.X = 0.3
 # geo.xr = 0.44889148040857642
 geo.mid = 0.02
 geo.cL = 0.05
 geo.cR = 0.05
+geo.L = 0.04     # keep wall thick (for timing/physics)
+geo.B = 0.08     # make those circled openings tall so flow can get through
+
 
