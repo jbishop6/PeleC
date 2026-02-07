@@ -28,13 +28,13 @@ mkdir -p "$OUTDIR"
 mv plt* "$OUTDIR"
 
 # === Run thrust analysis on results ===
-python -c "
-from optimize_geometry import analyze_thrust_timeseries, get_all_plotfiles
-import os
-plot_dir = os.path.abspath('$OUTDIR')
-plotfiles = get_all_plotfiles(plot_dir)
-analyze_thrust_timeseries(plotfiles, plot_dir)
-"
+# python -c "
+# from optimize_geometry import analyze_thrust_timeseries, get_all_plotfiles
+# import os
+# plot_dir = os.path.abspath('$OUTDIR')
+# plotfiles = get_all_plotfiles(plot_dir)
+# analyze_thrust_timeseries(plotfiles, plot_dir)
+#"
 
 echo "================================================="
 echo " Job $SLURM_JOB_ID finished at $(date)"
