@@ -96,6 +96,9 @@ eb2.box_rotation = 0
 eb2.box_rotation_axe = 2
 
 # Two-branch geometry knobs (domain units; tweak as you like)
+geo.Htot    = 0.20      # <-- total height of the two-branch stack
+geo.mid_frac = 0.20   
+
 geo.W  = 0.041015625
 geo.H  = 0.3
 geo.xs = 0.30    
