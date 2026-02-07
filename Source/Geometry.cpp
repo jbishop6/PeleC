@@ -368,44 +368,64 @@ TwoBranch::build (const amrex::Geometry& geom,
 
   ParmParse pp("geo");
 
-  // H = channel height (upper & lower)
-  // L = center-wall thickness
-  Real W  = 0.04;   // not used here, but kept for consistency
-  Real H  = 0.04;   // channel height
-  Real L  = 0.02;   // center wall thickness
-  Real X  = 0.40;   // length of center wall (this is your "X" from the paper)
-  Real xs = 0.30;   // starting x-position of center wall
-  Real cL = 0.0;    // left trim of center wall
-  Real cR = 0.0;    // right trim of center wall
-  Real y_offset = 0.0;
+  // New "macro" control: total height of the two-branch stack
+  Real Htot     = 0.10;  // default total height (you'll override in inputs)
+  Real mid_frac = 0.25;  // fraction of Htot that is center wall
 
-  pp.query("W",  W);
-  pp.query("H",  H);
-  pp.query("L",  L);
-  pp.query("X",  X);
-  pp.query("xs", xs);
-  pp.query("cL", cL);
-  pp.query("cR", cR);
-  pp.query("y_offset", y_offset);
+  // Legacy-ish params (still allowed, but can be overridden by Htot logic)
+  Real W  = 0.04;   // not used geometrically, kept for consistency
+  Real H  = 0.04;   // channel height  (will be recomputed if Htot given)
+  Real L  = 0.02;   // center wall thickness (will be recomputed if Htot given)
+  Real X  = 0.40;   // length of center wall
+  Real xs = 0.30;   // starting x-position of center wall
+  Real cL = 0.0;    // left trim of center wall (connector)
+  Real cR = 0.0;    // right trim of center wall (connector)
+  Real y_offset = 0.0; // vertical offset, like in ThreeBranch
+
+  // Get user parameters
+  pp.query("W",       W);
+  pp.query("H",       H);        // used only if Htot not provided
+  pp.query("L",       L);        // used only if Htot not provided
+  pp.query("X",       X);
+  pp.query("xs",      xs);
+  pp.query("cL",      cL);
+  pp.query("cR",      cR);
+  pp.query("y_offset",y_offset);
+
+  // New: optional macro control
+  pp.query("Htot",    Htot);     // total stack height
+  pp.query("mid_frac",mid_frac); // fraction of Htot used for center wall
 
   const RealBox& rb = geom.ProbDomain();
   const Real xlo = rb.lo(0), xhi = rb.hi(0);
   const Real ylo = rb.lo(1), yhi = rb.hi(1);
 
+  // Center in y with optional offset
   const Real ymid = 0.5 * (ylo + yhi) + y_offset;
 
   const Real dx = geom.CellSize(0);
   const Real dy = geom.CellSize(1);
   const Real h  = std::max(dx, dy);
 
-  // keep xs away from edges
+  // Keep xs away from domain edges
   xs = std::min(std::max(xs, xlo + 2*h), xhi - 2*h);
-  Real xr = xs + X;   // this is the right end of your center section
+  Real xr = xs + X;
 
-  // minimum thicknesses
-  H = std::max(H, 4*h);
-  L = std::max(L, 4*h);
+  // Clamp mid_frac to something reasonable (e.g. 5%–90%)
+  mid_frac = std::min(std::max(mid_frac, 0.05), 0.9);
 
+  // Use Htot + mid_frac as the canonical definition
+  Real L_from_tot = mid_frac * Htot;
+  Real H_from_tot = 0.5 * (Htot - L_from_tot);
+
+  // Enforce minimal geometric thicknesses in terms of cell size
+  L = std::max(L_from_tot, 4*h);         // center wall
+  H = std::max(H_from_tot, 4*h);         // each channel
+
+  // If the enforced minimums broke Htot too badly, recompute Htot just for info
+  Real Htot_eff = 2.0*H + L;
+
+  // Connector trims: don't let them eat the wall entirely
   const Real max_pad = std::max(0.0, 0.5*(xr - xs) - 3*h);
   cL = std::min(std::max(cL, 0.0), max_pad);
   cR = std::min(std::max(cR, 0.0), max_pad);
@@ -418,33 +438,32 @@ TwoBranch::build (const amrex::Geometry& geom,
     return BoxIF(lo, hi, false); // solid
   };
 
-  // center wall
-  const Real y_base_lo  = ymid - 0.5 * L;
-  const Real y_base_hi  = ymid + 0.5 * L;
+  // Vertical layout using L (center wall) and H (each channel):
+  const Real y_base_lo  = ymid - 0.5 * L;  // bottom of center wall
+  const Real y_base_hi  = ymid + 0.5 * L;  // top of center wall
 
-  // channel bounds
   const Real y_upper_lo = y_base_hi;
   const Real y_upper_hi = y_upper_lo + H;
 
   const Real y_lower_hi = y_base_lo;
   const Real y_lower_lo = y_lower_hi - H;
 
-  // mid-wall x-extent
+  // Mid-wall x-extent with trims
   const Real mw_x0 = xs + cL;
   const Real mw_x1 = xr - cR;
 
-  // outer walls
+  // Top / bottom walls of the DOMAIN outside the two-branch stack
   auto s_top    = boxS(xlo, y_upper_hi, xhi, yhi);
   auto s_bottom = boxS(xlo, ylo,       xhi, y_lower_lo);
 
-  // side walls
+  // Side walls for the two channels
   auto s_left_upper  = boxS(xlo, y_base_hi,  xs,  y_upper_hi);
   auto s_right_upper = boxS(xr,  y_base_hi,  xhi, y_upper_hi);
 
   auto s_left_lower  = boxS(xlo, y_lower_lo, xs,  y_base_lo);
   auto s_right_lower = boxS(xr,  y_lower_lo, xhi, y_base_lo);
 
-  // center separating wall
+  // Center separating wall
   auto s_mid_wall    = boxS(mw_x0, y_base_lo, mw_x1, y_base_hi);
 
   auto walls = makeUnion(
@@ -455,10 +474,12 @@ TwoBranch::build (const amrex::Geometry& geom,
   );
 
   Print() << "\n=== TWO-BRANCH GEOMETRY ===\n";
-  Print() << "H (channel height)      = " << H << "\n";
-  Print() << "L (center wall thick.)  = " << L << "\n";
-  Print() << "X (length)              = " << X << "\n";
-  Print() << "xs=" << xs << ", xr=" << xr << " (X_eff=" << (xr-xs) << ")\n";
+  Print() << "Requested total height Htot     = " << Htot << "\n";
+  Print() << "mid_frac                       = " << mid_frac << "\n";
+  Print() << "Effective wall thickness L     = " << L << "\n";
+  Print() << "Effective channel height H     = " << H << "\n";
+  Print() << "Resulting total height 2H + L  = " << Htot_eff << "\n";
+  Print() << "xs=" << xs << ", xr=" << xr << ", X=" << X << "\n";
   Print() << "cL=" << cL << ", cR=" << cR << "\n";
   Print() << "Mid-wall x=[" << mw_x0 << ", " << mw_x1 << "]\n";
   Print() << "Upper channel y=[" << y_upper_lo << ", " << y_upper_hi << "]\n";
@@ -468,8 +489,6 @@ TwoBranch::build (const amrex::Geometry& geom,
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
 }
-
-
 
 void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
 {
