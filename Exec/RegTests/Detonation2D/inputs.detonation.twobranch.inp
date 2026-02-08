@@ -84,30 +84,21 @@ prob.right_gas = O2
 pelec.eb_in_domain = 1
 
 # Use your new factory-registered geometry: TwoBranch::identifier() == "twobranch"
-eb2.build_type = all
-eb2.max_coarsening_level = 0
-eb2.geom_type = twobranch
+eb2.build_type            = all
+eb2.max_coarsening_level  = 0
+eb2.geom_type             = twobranch
 
-# same params the rotated_box uses (your TwoBranch currently clones that)
-eb2.box_lo = 0.40 0.03
-eb2.box_hi = 0.60 0.09
-eb2.box_has_fluid_inside = 0
-eb2.box_rotation = 0
-eb2.box_rotation_axe = 2
+# ---- Two-branch geometry knobs (domain units) ----
+# L = channel height (upper & lower branches)  <-- controls inlet/outlet thickness
+# H = center wall thickness
+# X = horizontal length of the two-branch region
+# xs = x-position of the left edge of the two-branch region
+# cL, cR = how much of the mid-wall you "trim" on the left/right to open the channels
 
-# Two-branch geometry knobs (domain units; tweak as you like)
-geo.Htot    = 0.20      # <-- total height of the two-branch stack
-geo.mid_frac = 0.20   
-
-geo.W  = 0.041015625
-geo.H  = 0.3
-geo.xs = 0.30    
-geo.X = 0.3
-# geo.xr = 0.44889148040857642
-geo.mid = 0.02
-geo.cL = 0.05
-geo.cR = 0.05
-geo.L = 0.04     # keep wall thick (for timing/physics)
-geo.B = 0.08     # make those circled openings tall so flow can get through
-
-
+geo.L        = 0.0390625   # channel height (match this to your 3-branch geo.L)
+geo.H        = 0.02        # center wall thickness (pick what you want)
+geo.X        = 0.30        # total length of the two-branch block
+geo.xs       = 0.30        # x-location of the left edge
+geo.cL       = 0.05        # left connector opening
+geo.cR       = 0.05        # right connector opening
+geo.y_offset = 0.0         # vertical shift of the whole stack (optional)
