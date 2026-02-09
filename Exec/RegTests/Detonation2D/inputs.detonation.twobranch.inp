@@ -95,7 +95,7 @@ eb2.geom_type             = twobranch
 # xs = x-position of the left edge of the two-branch region
 # cL, cR = how much of the mid-wall you "trim" on the left/right to open the channels
 
-# geo.L        = 0.0390625   # channel height (match this to your 3-branch geo.L)
+geo.L        = 0.0390625   # channel height (match this to your 3-branch geo.L)
 geo.H        = 0.188092301        # center wall thickness (pick what you want)
 geo.X        = 0.326962268        # total length of the two-branch block
 geo.xs       = 0.30        # x-location of the left edge
