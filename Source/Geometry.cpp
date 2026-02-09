@@ -368,24 +368,24 @@ TwoBranch::build (const amrex::Geometry& geom,
 
   ParmParse pp("geo");
 
-  // Geometric knobs (independent!)
-  // L = channel height (upper & lower)
-  // H = center wall thickness
-  Real W        = 0.04;   // not used right now, kept for symmetry
-  Real L        = 0.04;   // channel height
-  Real H        = 0.02;   // center wall thickness
-  Real X        = 0.40;   // total length of the two-branch region
+  // Use the SAME knobs as ThreeBranch so the formats match.
+  // H = separator thickness, L = channel height
+  Real W        = 0.04;   // not used, but read so inputs can match ThreeBranch
+  Real H        = 0.04;   // separator thickness
+  Real L        = 0.04;   // channel height (upper & lower)
   Real xs       = 0.30;   // left x of the two-branch region
-  Real cL       = 0.0;    // left connector trim (opens channel)
+  Real X        = 0.40;   // total length of the two-branch region
+  Real mid      = 0.02;   // inner mid-block thickness
+  Real cL       = 0.0;    // left connector trim
   Real cR       = 0.0;    // right connector trim
   Real y_offset = 0.0;    // vertical shift of the whole stack
 
-  // Read from inputs (independent controls)
-  pp.query("W",        W);
+  pp.query("W",        W);        // kept for symmetry with ThreeBranch
+  pp.query("H",        H);        // separator thickness
   pp.query("L",        L);        // channel height
-  pp.query("H",        H);        // center wall thickness
-  pp.query("X",        X);
   pp.query("xs",       xs);
+  pp.query("X",        X);
+  pp.query("mid",      mid);
   pp.query("cL",       cL);
   pp.query("cR",       cR);
   pp.query("y_offset", y_offset);
@@ -393,24 +393,26 @@ TwoBranch::build (const amrex::Geometry& geom,
   const RealBox& rb = geom.ProbDomain();
   const Real xlo = rb.lo(0), xhi = rb.hi(0);
   const Real ylo = rb.lo(1), yhi = rb.hi(1);
-
-  // Center in y with optional offset
   const Real ymid = 0.5 * (ylo + yhi) + y_offset;
 
   const Real dx = geom.CellSize(0);
   const Real dy = geom.CellSize(1);
   const Real h  = std::max(dx, dy);
 
-  // Safety: enforce minimum geometric thicknesses
-  L = std::max(L, 4*h);   // channels at least a few cells thick
-  H = std::max(H, 4*h);   // center wall at least a few cells thick
-
-  // Make sure xs isn't right at the domain boundary
-  xs = std::min(std::max(xs, xlo + 2*h), xhi - 2*h);
+  // Keep xs inside the domain
+  xs = std::min(std::max(xs, xlo + 2.0*h), xhi - 2.0*h);
   Real xr = xs + X;
 
-  // Connector trims: don't let them delete the wall
-  const Real max_pad = std::max(0.0, 0.5*(xr - xs) - 3*h);
+  // Enforce minimum thicknesses
+  L = std::max(L, 4.0*h);
+  H = std::max(H, 4.0*h);
+
+  // Mid-block thickness must live inside the separator
+  mid = std::min(std::max(mid, 4.0*h),
+                 std::max(H - 4.0*h, 4.0*h + 1e-12));
+
+  // Connector trims: don't let them eat the entire mid-wall
+  const Real max_pad = std::max(0.0, 0.5*(xr - xs) - 3.0*h);
   cL = std::min(std::max(cL, 0.0), max_pad);
   cR = std::min(std::max(cR, 0.0), max_pad);
 
@@ -419,63 +421,67 @@ TwoBranch::build (const amrex::Geometry& geom,
       AMREX_D_DECL(std::min(x0,x1), std::min(y0,y1), 0.0)};
     Array<Real,AMREX_SPACEDIM> hi{
       AMREX_D_DECL(std::max(x0,x1), std::max(y0,y1), 0.0)};
-    return BoxIF(lo, hi, false); // solid
+    return BoxIF(lo, hi, false);  // solid
   };
 
-  // Vertical layout (matches ThreeBranch convention):
-  //  - center wall has thickness H, centered at ymid
-  //  - each channel has height L, stacked above/below
-  const Real y_base_lo  = ymid - 0.5 * H;  // bottom of center wall
-  const Real y_base_hi  = ymid + 0.5 * H;  // top of center wall
+  // *** Vertical layout: IDENTICAL convention to ThreeBranch ***
+  // Separator:
+  const Real y_base_lo  = ymid - 0.5 * H;  // bottom of separator
+  const Real y_base_hi  = ymid + 0.5 * H;  // top of separator
 
+  // Upper channel (height = L):
   const Real y_upper_lo = y_base_hi;
-  const Real y_upper_hi = y_upper_lo + L;  // upper channel height = L
+  const Real y_upper_hi = y_upper_lo + L;
 
+  // Lower channel (height = L):
   const Real y_lower_hi = y_base_lo;
-  const Real y_lower_lo = y_lower_hi - L;  // lower channel height = L
+  const Real y_lower_lo = y_lower_hi - L;
 
-  // Derived total stack height, for info only
-  const Real Htot_eff = 2.0*L + H;
+  // Mid-block inside the separator (same "mid" meaning as ThreeBranch)
+  const Real y_mid_lo = ymid - 0.5 * mid;
+  const Real y_mid_hi = ymid + 0.5 * mid;
 
-  // Mid-wall x-extent with trims
   const Real mw_x0 = xs + cL;
   const Real mw_x1 = xr - cR;
 
-  // Top / bottom domain walls outside the two-branch stack
+  // Domain walls: continuous bottom (no third branch gap)
   auto s_top    = boxS(xlo, y_upper_hi, xhi, yhi);
   auto s_bottom = boxS(xlo, ylo,       xhi, y_lower_lo);
 
-  // Side walls for upper & lower channels
+  // Two-branch side walls (same vertical ranges as ThreeBranch)
   auto s_left_upper  = boxS(xlo, y_base_hi,  xs,  y_upper_hi);
-  auto s_right_upper = boxS(xr,  y_base_hi,  xhi, y_upper_hi);
-
   auto s_left_lower  = boxS(xlo, y_lower_lo, xs,  y_base_lo);
+  auto s_right_upper = boxS(xr,  y_base_hi,  xhi, y_upper_hi);
   auto s_right_lower = boxS(xr,  y_lower_lo, xhi, y_base_lo);
 
-  // Center separating wall between the two branches
-  auto s_mid_wall    = boxS(mw_x0, y_base_lo, mw_x1, y_base_hi);
+  // Mid-block separator between the branches
+  auto s_mid_between = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
 
-  auto walls = makeUnion(
-    s_top, s_bottom,
-    s_left_upper, s_right_upper,
-    s_left_lower, s_right_lower,
-    s_mid_wall
-  );
+  // Union everything
+  auto u1 = makeUnion(s_top, s_bottom);
+  auto u2 = makeUnion(u1, s_left_upper);
+  auto u3 = makeUnion(u2, s_left_lower);
+  auto u4 = makeUnion(u3, s_right_upper);
+  auto u5 = makeUnion(u4, s_right_lower);
+  auto walls = makeUnion(u5, s_mid_between);
 
-  Print() << "\n=== TWO-BRANCH GEOMETRY (refactored) ===\n";
-  Print() << "Channel height L           = " << L << "\n";
-  Print() << "Center wall thickness H    = " << H << "\n";
-  Print() << "Total stack height 2L + H  = " << Htot_eff << "\n";
+  Print() << "\n=== TWO-BRANCH GEOMETRY (matching ThreeBranch) ===\n";
+  Print() << "H (separator thickness) = " << H << "\n";
+  Print() << "L (channel height)      = " << L << "\n";
+  Print() << "Total stack height      = " << (2.0*L + H) << "\n";
+  Print() << "Upper channel: y=[" << y_upper_lo << ", " << y_upper_hi << "]\n";
+  Print() << "Separator: y=[" << y_base_lo << ", " << y_base_hi << "]\n";
+  Print() << "Lower channel: y=[" << y_lower_lo << ", " << y_lower_hi << "]\n";
   Print() << "xs=" << xs << ", xr=" << xr << ", X=" << X << "\n";
   Print() << "cL=" << cL << ", cR=" << cR << "\n";
-  Print() << "Mid-wall x=[" << mw_x0 << ", " << mw_x1 << "]\n";
-  Print() << "Upper channel y=[" << y_upper_lo << ", " << y_upper_hi << "]\n";
-  Print() << "Lower channel y=[" << y_lower_lo << ", " << y_lower_hi << "]\n";
-  Print() << "========================================\n\n";
+  Print() << "Mid-block: x=[" << mw_x0 << ", " << mw_x1
+          << "], y=[" << y_mid_lo << ", " << y_mid_hi << "]\n";
+  Print() << "=============================================\n\n";
 
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
 }
+
 
 void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
 {
