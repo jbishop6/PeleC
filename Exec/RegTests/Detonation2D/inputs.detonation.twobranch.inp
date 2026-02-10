@@ -95,18 +95,10 @@ eb2.geom_type             = twobranch
 # xs = x-position of the left edge of the two-branch region
 # cL, cR = how much of the mid-wall you "trim" on the left/right to open the channels
 
-#geo.L        = 0.0390625   # channel height (match this to your 3-branch geo.L)
-#geo.H        = 0.188092301        # center wall thickness (pick what you want)
-#geo.X        = 0.326962268        # total length of the two-branch block
-#geo.xs       = 0.30        # x-location of the left edge
-#geo.cL       = 0.05        # left connector opening
-#geo.cR       = 0.05        # right connector opening
-#geo.y_offset = 0.0         # vertical shift of the whole stack (optional)
-
-geo.L        = 0.3      # huge channel height
-geo.H        = 0.05     # thin center wall
-geo.X        = 0.5
-geo.xs       = 0.2
-geo.cL       = 0.0
-geo.cR       = 0.0
-geo.y_offset = 0.3      # shift everything way upward
+geo.L        = 0.0390625   # match three-branch channel height
+geo.H        = 0.10        # match three-branch separator thickness
+geo.X        = 0.40        # match three-branch channel length
+geo.xs       = 0.30        # left edge
+geo.cL       = 0.05        # same trims as three-branch
+geo.cR       = 0.05
+geo.y_offset = 0.0
