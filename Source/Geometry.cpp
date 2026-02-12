@@ -367,23 +367,17 @@ void TwoBranch::build(const amrex::Geometry& geom,
   
   ParmParse pp("geo");
   
-  // Use ThreeBranch semantics exactly
+  // Use ThreeBranch semantics for consistency
   Real L = 0.04;        // Channel height (CONSTANT - controls inlet/outlet)
   Real H = 0.02;        // Separator thickness (VARIABLE)
-  Real X = 0.40;        // Circumference
+  Real X = 0.40;        // Circumference (branch region length)
   Real xs = 0.30;       // Branch start
-  Real mid = 0.02;      // Connector thickness
-  Real cL = 0.0;        // Left connector trim
-  Real cR = 0.0;        // Right connector trim
   Real y_offset = 0.0;  // Vertical offset
   
-  pp.query("L", L);         // Channel height (like ThreeBranch)
-  pp.query("H", H);         // Separator thickness (like ThreeBranch)
+  pp.query("L", L);
+  pp.query("H", H);
   pp.query("X", X);
   pp.query("xs", xs);
-  pp.query("mid", mid);
-  pp.query("cL", cL);
-  pp.query("cR", cR);
   pp.query("y_offset", y_offset);
   
   const RealBox& rb = geom.ProbDomain();
@@ -399,13 +393,8 @@ void TwoBranch::build(const amrex::Geometry& geom,
   xs = std::min(std::max(xs, xlo + 2.0*h), xhi - 2.0*h);
   Real xr = xs + X;
   
-  L = std::max(L, 4.0*h);      // Minimum channel height
-  H = std::max(H, 4.0*h);      // Minimum separator thickness
-  mid = std::max(mid, 4.0*h);  // Minimum connector thickness
-  
-  const Real max_pad = std::max(0.0, 0.5*(xr - xs) - 3.0*h);
-  cL = std::min(std::max(cL, 0.0), max_pad);
-  cR = std::min(std::max(cR, 0.0), max_pad);
+  L = std::max(L, 4.0*h);  // Minimum channel height
+  H = std::max(H, 4.0*h);  // Minimum separator thickness
   
   auto boxS = [] (Real x0, Real y0, Real x1, Real y1) {
     Array<Real,AMREX_SPACEDIM> lo{
@@ -415,7 +404,7 @@ void TwoBranch::build(const amrex::Geometry& geom,
     return BoxIF(lo, hi, false);
   };
   
-  // Build from separator outward (EXACTLY like ThreeBranch)
+  // Build from separator outward (like ThreeBranch)
   const Real y_base_lo = ymid - 0.5 * H;  // Bottom of separator
   const Real y_base_hi = ymid + 0.5 * H;  // Top of separator
   
@@ -425,32 +414,30 @@ void TwoBranch::build(const amrex::Geometry& geom,
   const Real y_lower_hi = y_base_lo;      // Lower channel ends here
   const Real y_lower_lo = y_lower_hi - L; // Lower channel height = L
   
-  const Real y_mid_lo = ymid - 0.5 * mid;
-  const Real y_mid_hi = ymid + 0.5 * mid;
-  
-  const Real mw_x0 = xs + cL;
-  const Real mw_x1 = xr - cR;
-  
-  // Build walls (no third branch)
+  // Build walls - KEY DIFFERENCE: No blue separator in branch region!
   auto s_top = boxS(xlo, y_upper_hi, xhi, yhi);
   auto s_bottom = boxS(xlo, ylo, xhi, y_lower_lo);
   
+  // Left side walls (before branch region)
   auto s_left_upper = boxS(xlo, y_base_hi, xs, y_upper_hi);
   auto s_left_lower = boxS(xlo, y_lower_lo, xs, y_base_lo);
+  auto s_left_separator = boxS(xlo, y_base_lo, xs, y_base_hi);
   
+  // Right side walls (after branch region)
   auto s_right_upper = boxS(xr, y_base_hi, xhi, y_upper_hi);
   auto s_right_lower = boxS(xr, y_lower_lo, xhi, y_base_lo);
+  auto s_right_separator = boxS(xr, y_base_lo, xhi, y_base_hi);
   
-  auto s_mid_between = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
+  // NO s_mid_between! Channels recombine in the branch region.
   
   auto u1 = makeUnion(s_top, s_bottom);
   auto u2 = makeUnion(u1, s_left_upper);
   auto u3 = makeUnion(u2, s_left_lower);
-  auto u4 = makeUnion(u3, s_right_upper);
-  auto u5 = makeUnion(u4, s_right_lower);
-  auto walls = makeUnion(u5, s_mid_between);
+  auto u4 = makeUnion(u3, s_left_separator);
+  auto u5 = makeUnion(u4, s_right_upper);
+  auto u6 = makeUnion(u5, s_right_lower);
+  auto walls = makeUnion(u6, s_right_separator);
   
-  // Match ThreeBranch output format
   Print() << "\n=== TWO-BRANCH GEOMETRY ===\n";
   Print() << "Separator thickness H: " << H << "\n";
   Print() << "Channel height L: " << L << " (constant)\n";
@@ -461,10 +448,8 @@ void TwoBranch::build(const amrex::Geometry& geom,
           << "], thickness=" << H << "\n";
   Print() << "Lower channel: y=[" << y_lower_lo << ", " << y_lower_hi 
           << "], height=" << (y_lower_hi - y_lower_lo) << "\n";
-  Print() << "xs=" << xs << ", xr=" << xr << ", X=" << X << "\n";
-  Print() << "cL=" << cL << ", cR=" << cR << "\n";
-  Print() << "Mid-block: x=[" << mw_x0 << ", " << mw_x1
-          << "], y=[" << y_mid_lo << ", " << y_mid_hi << "]\n";
+  Print() << "Branch region: x=[" << xs << ", " << xr 
+          << "] - channels RECOMBINE here\n";
   Print() << "===========================\n\n";
   
   auto gshop = makeShop(walls);
