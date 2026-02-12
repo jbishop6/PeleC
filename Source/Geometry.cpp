@@ -367,12 +367,11 @@ void TwoBranch::build(const amrex::Geometry& geom,
   
   ParmParse pp("geo");
   
-  // Use ThreeBranch semantics for consistency
-  Real L = 0.04;        // Channel height (CONSTANT - controls inlet/outlet)
-  Real H = 0.02;        // Separator thickness (VARIABLE)
-  Real X = 0.40;        // Circumference (branch region length)
+  Real L = 0.04;        // Channel height
+  Real H = 0.02;        // Separator thickness
+  Real X = 0.40;        // Branch region length
   Real xs = 0.30;       // Branch start
-  Real y_offset = 0.0;  // Vertical offset
+  Real y_offset = 0.0;
   
   pp.query("L", L);
   pp.query("H", H);
@@ -389,12 +388,11 @@ void TwoBranch::build(const amrex::Geometry& geom,
   const Real dy = geom.CellSize(1);
   const Real h = std::max(dx, dy);
   
-  // Enforce minimums
   xs = std::min(std::max(xs, xlo + 2.0*h), xhi - 2.0*h);
   Real xr = xs + X;
   
-  L = std::max(L, 4.0*h);  // Minimum channel height
-  H = std::max(H, 4.0*h);  // Minimum separator thickness
+  L = std::max(L, 4.0*h);
+  H = std::max(H, 4.0*h);
   
   auto boxS = [] (Real x0, Real y0, Real x1, Real y1) {
     Array<Real,AMREX_SPACEDIM> lo{
@@ -404,39 +402,39 @@ void TwoBranch::build(const amrex::Geometry& geom,
     return BoxIF(lo, hi, false);
   };
   
-  // Build from separator outward (like ThreeBranch)
-  const Real y_base_lo = ymid - 0.5 * H;  // Bottom of separator
-  const Real y_base_hi = ymid + 0.5 * H;  // Top of separator
+  // Build from separator outward
+  const Real y_base_lo = ymid - 0.5 * H;
+  const Real y_base_hi = ymid + 0.5 * H;
   
-  const Real y_upper_lo = y_base_hi;      // Upper channel starts here
-  const Real y_upper_hi = y_upper_lo + L; // Upper channel height = L
+  const Real y_upper_lo = y_base_hi;
+  const Real y_upper_hi = y_upper_lo + L;
   
-  const Real y_lower_hi = y_base_lo;      // Lower channel ends here
-  const Real y_lower_lo = y_lower_hi - L; // Lower channel height = L
+  const Real y_lower_hi = y_base_lo;
+  const Real y_lower_lo = y_lower_hi - L;
   
-  // Build walls - KEY DIFFERENCE: No blue separator in branch region!
+  // Build walls
   auto s_top = boxS(xlo, y_upper_hi, xhi, yhi);
   auto s_bottom = boxS(xlo, ylo, xhi, y_lower_lo);
   
-  // Left side walls (before branch region)
+  // Left walls (before branch region) - includes separator
   auto s_left_upper = boxS(xlo, y_base_hi, xs, y_upper_hi);
   auto s_left_lower = boxS(xlo, y_lower_lo, xs, y_base_lo);
-  auto s_left_separator = boxS(xlo, y_base_lo, xs, y_base_hi);
+  auto s_left_sep = boxS(xlo, y_base_lo, xs, y_base_hi);
   
-  // Right side walls (after branch region)
+  // Right walls (after branch region) - includes separator
   auto s_right_upper = boxS(xr, y_base_hi, xhi, y_upper_hi);
   auto s_right_lower = boxS(xr, y_lower_lo, xhi, y_base_lo);
-  auto s_right_separator = boxS(xr, y_base_lo, xhi, y_base_hi);
+  auto s_right_sep = boxS(xr, y_base_lo, xhi, y_base_hi);
   
-  // NO s_mid_between! Channels recombine in the branch region.
+  // NO blue connector in branch region - channels recombine
   
   auto u1 = makeUnion(s_top, s_bottom);
   auto u2 = makeUnion(u1, s_left_upper);
   auto u3 = makeUnion(u2, s_left_lower);
-  auto u4 = makeUnion(u3, s_left_separator);
+  auto u4 = makeUnion(u3, s_left_sep);
   auto u5 = makeUnion(u4, s_right_upper);
   auto u6 = makeUnion(u5, s_right_lower);
-  auto walls = makeUnion(u6, s_right_separator);
+  auto walls = makeUnion(u6, s_right_sep);
   
   Print() << "\n=== TWO-BRANCH GEOMETRY ===\n";
   Print() << "Separator thickness H: " << H << "\n";
@@ -449,13 +447,12 @@ void TwoBranch::build(const amrex::Geometry& geom,
   Print() << "Lower channel: y=[" << y_lower_lo << ", " << y_lower_hi 
           << "], height=" << (y_lower_hi - y_lower_lo) << "\n";
   Print() << "Branch region: x=[" << xs << ", " << xr 
-          << "] - channels RECOMBINE here\n";
+          << "] - channels RECOMBINE\n";
   Print() << "===========================\n\n";
   
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
 }
-
 
 
 
