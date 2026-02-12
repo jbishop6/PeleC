@@ -368,7 +368,7 @@ void TwoBranch::build(const amrex::Geometry& geom,
   ParmParse pp("geo");
   
   Real L = 0.04;        // Channel height
-  Real H = 0.02;        // Separator thickness
+  Real H = 0.02;        // Chamber height
   Real X = 0.40;        // Branch region length
   Real xs = 0.30;       // Branch start
   Real y_offset = 0.0;
