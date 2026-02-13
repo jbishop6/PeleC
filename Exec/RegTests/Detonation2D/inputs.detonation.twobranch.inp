@@ -2,7 +2,6 @@
 max_step = 100000000
 stop_time = 2.7e-6
 
-l
 
 # ------------------ GEOMETRY (2D) -------------------
 geometry.is_periodic = 0 0
