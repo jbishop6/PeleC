@@ -367,14 +367,15 @@ void TwoBranch::build(const amrex::Geometry& geom,
   
   ParmParse pp("geo");
   
-  Real L = 0.04;        // Channel height
-  Real H = 0.02;        // Chamber height
-  Real X = 0.40;        // Branch region length
+  // Parameters matching Fig. 2 definitions
+  Real H = 0.2;         // TOTAL system height (outer wall to outer wall)
+  Real L = 0.04;        // Channel height (inlet/outlet opening)
+  Real X = 0.40;        // Circumference
   Real xs = 0.30;       // Branch start
   Real y_offset = 0.0;
   
-  pp.query("L", L);
-  pp.query("H", H);
+  pp.query("H", H);     // Total system height
+  pp.query("L", L);     // Channel height
   pp.query("X", X);
   pp.query("xs", xs);
   pp.query("y_offset", y_offset);
@@ -392,7 +393,11 @@ void TwoBranch::build(const amrex::Geometry& geom,
   Real xr = xs + X;
   
   L = std::max(L, 4.0*h);
-  H = std::max(H, 4.0*h);
+  H = std::max(H, 8.0*h + 4.0*h);  // At least 2 channels + separator
+  
+  // DERIVE separator thickness from H and L
+  Real separator = H - 2.0*L;
+  separator = std::max(separator, 4.0*h);  // Minimum separator thickness
   
   auto boxS = [] (Real x0, Real y0, Real x1, Real y1) {
     Array<Real,AMREX_SPACEDIM> lo{
@@ -402,31 +407,29 @@ void TwoBranch::build(const amrex::Geometry& geom,
     return BoxIF(lo, hi, false);
   };
   
-  // Build from separator outward
-  const Real y_base_lo = ymid - 0.5 * H;
-  const Real y_base_hi = ymid + 0.5 * H;
+  // Build from center outward using separator thickness
+  const Real y_sep_lo = ymid - 0.5 * separator;
+  const Real y_sep_hi = ymid + 0.5 * separator;
   
-  const Real y_upper_lo = y_base_hi;
+  const Real y_upper_lo = y_sep_hi;
   const Real y_upper_hi = y_upper_lo + L;
   
-  const Real y_lower_hi = y_base_lo;
+  const Real y_lower_hi = y_sep_lo;
   const Real y_lower_lo = y_lower_hi - L;
   
   // Build walls
   auto s_top = boxS(xlo, y_upper_hi, xhi, yhi);
   auto s_bottom = boxS(xlo, ylo, xhi, y_lower_lo);
   
-  // Left walls (before branch region) - includes separator
-  auto s_left_upper = boxS(xlo, y_base_hi, xs, y_upper_hi);
-  auto s_left_lower = boxS(xlo, y_lower_lo, xs, y_base_lo);
-  auto s_left_sep = boxS(xlo, y_base_lo, xs, y_base_hi);
+  // Left walls (before branch region)
+  auto s_left_upper = boxS(xlo, y_sep_hi, xs, y_upper_hi);
+  auto s_left_lower = boxS(xlo, y_lower_lo, xs, y_sep_lo);
+  auto s_left_sep = boxS(xlo, y_sep_lo, xs, y_sep_hi);
   
-  // Right walls (after branch region) - includes separator
-  auto s_right_upper = boxS(xr, y_base_hi, xhi, y_upper_hi);
-  auto s_right_lower = boxS(xr, y_lower_lo, xhi, y_base_lo);
-  auto s_right_sep = boxS(xr, y_base_lo, xhi, y_base_hi);
-  
-  // NO blue connector in branch region - channels recombine
+  // Right walls (after branch region)
+  auto s_right_upper = boxS(xr, y_sep_hi, xhi, y_upper_hi);
+  auto s_right_lower = boxS(xr, y_lower_lo, xhi, y_sep_lo);
+  auto s_right_sep = boxS(xr, y_sep_lo, xhi, y_sep_hi);
   
   auto u1 = makeUnion(s_top, s_bottom);
   auto u2 = makeUnion(u1, s_left_upper);
@@ -437,23 +440,22 @@ void TwoBranch::build(const amrex::Geometry& geom,
   auto walls = makeUnion(u6, s_right_sep);
   
   Print() << "\n=== TWO-BRANCH GEOMETRY ===\n";
-  Print() << "Separator thickness H: " << H << "\n";
-  Print() << "Channel height L: " << L << " (constant)\n";
-  Print() << "Total system height: " << (2*L + H) << "\n";
+  Print() << "Total system height H: " << H << "\n";
+  Print() << "Channel height L: " << L << "\n";
+  Print() << "Separator thickness: " << separator << " (derived from H - 2*L)\n";
   Print() << "Upper channel: y=[" << y_upper_lo << ", " << y_upper_hi 
-          << "], height=" << (y_upper_hi - y_upper_lo) << "\n";
-  Print() << "Separator: y=[" << y_base_lo << ", " << y_base_hi 
-          << "], thickness=" << H << "\n";
+          << "], height=" << L << "\n";
+  Print() << "Separator: y=[" << y_sep_lo << ", " << y_sep_hi 
+          << "], thickness=" << separator << "\n";
   Print() << "Lower channel: y=[" << y_lower_lo << ", " << y_lower_hi 
-          << "], height=" << (y_lower_hi - y_lower_lo) << "\n";
+          << "], height=" << L << "\n";
   Print() << "Branch region: x=[" << xs << ", " << xr 
-          << "] - channels RECOMBINE\n";
+          << "], length X=" << X << "\n";
   Print() << "===========================\n\n";
   
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
 }
-
 
 
 void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
