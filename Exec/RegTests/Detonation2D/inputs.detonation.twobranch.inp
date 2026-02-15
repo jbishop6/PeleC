@@ -96,7 +96,7 @@ eb2.geom_type             = twobranch
 # xs = x-position of the left edge of the two-branch region
 # cL, cR = how much of the mid-wall you "trim" on the left/right to open the channels
 
-geo.H  = 1.0         # Total system height (half the domain)
-geo.L  = 0.2         # Channel height (10% of domain)
-geo.X  = 0.4         # Circumference
+geo.H  = 0.1         # Separator thickness
+geo.L  = 0.04        # Channel height
+geo.X  = 0.3         # Circumference
 geo.xs = 0.30        # Branch start
