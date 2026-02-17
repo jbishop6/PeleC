@@ -367,15 +367,15 @@ void TwoBranch::build(const amrex::Geometry& geom,
   
   ParmParse pp("geo");
   
-  // Match ThreeBranch parameters EXACTLY
-  Real H = 0.04;        // Separator thickness (same as ThreeBranch)
-  Real L = 0.04;        // Channel height (same as ThreeBranch)
+  // Parameters matching Fig. 2 definitions
+  Real H = 0.2;         // TOTAL system height (outer wall to outer wall)
+  Real L = 0.04;        // Channel height (inlet/outlet opening)
   Real X = 0.40;        // Circumference
   Real xs = 0.30;       // Branch start
   Real y_offset = 0.0;
   
-  pp.query("H", H);
-  pp.query("L", L);
+  pp.query("H", H);     // Total system height
+  pp.query("L", L);     // Channel height
   pp.query("X", X);
   pp.query("xs", xs);
   pp.query("y_offset", y_offset);
@@ -393,7 +393,11 @@ void TwoBranch::build(const amrex::Geometry& geom,
   Real xr = xs + X;
   
   L = std::max(L, 4.0*h);
-  H = std::max(H, 4.0*h);
+  H = std::max(H, 8.0*h + 4.0*h);  // At least 2 channels + separator
+  
+  // DERIVE separator thickness from H and L
+  Real separator = H - 2.0*L;
+  separator = std::max(separator, 4.0*h);  // Minimum separator thickness
   
   auto boxS = [] (Real x0, Real y0, Real x1, Real y1) {
     Array<Real,AMREX_SPACEDIM> lo{
@@ -403,40 +407,50 @@ void TwoBranch::build(const amrex::Geometry& geom,
     return BoxIF(lo, hi, false);
   };
   
-  // EXACT SAME coordinate system as ThreeBranch
-  const Real y_base_lo = ymid - 0.5 * H;  // Bottom of separator
-  const Real y_base_hi = ymid + 0.5 * H;  // Top of separator
+  // Build from center outward using separator thickness
+  const Real y_sep_lo = ymid - 0.5 * separator;
+  const Real y_sep_hi = ymid + 0.5 * separator;
   
-  const Real y_upper_lo = y_base_hi;      // Upper channel starts here
-  const Real y_upper_hi = y_upper_lo + L; // Upper channel height = L
+  const Real y_upper_lo = y_sep_hi;
+  const Real y_upper_hi = y_upper_lo + L;
   
-  const Real y_lower_hi = y_base_lo;      // Lower channel ends here
-  const Real y_lower_lo = y_lower_hi - L; // Lower channel height = L
+  const Real y_lower_hi = y_sep_lo;
+  const Real y_lower_lo = y_lower_hi - L;
   
-  // Build walls - matching ThreeBranch structure
+  // Build walls
   auto s_top = boxS(xlo, y_upper_hi, xhi, yhi);
   auto s_bottom = boxS(xlo, ylo, xhi, y_lower_lo);
   
-  // Left separator only (no channel walls)
-  auto s_left_sep = boxS(xlo, y_base_lo, xs, y_base_hi);
+  // Left walls (before branch region)
+  auto s_left_upper = boxS(xlo, y_sep_hi, xs, y_upper_hi);
+  auto s_left_lower = boxS(xlo, y_lower_lo, xs, y_sep_lo);
+  auto s_left_sep = boxS(xlo, y_sep_lo, xs, y_sep_hi);
   
-  // Right separator only (no channel walls)
-  auto s_right_sep = boxS(xr, y_base_lo, xhi, y_base_hi);
+  // Right walls (after branch region)
+  auto s_right_upper = boxS(xr, y_sep_hi, xhi, y_upper_hi);
+  auto s_right_lower = boxS(xr, y_lower_lo, xhi, y_sep_lo);
+  auto s_right_sep = boxS(xr, y_sep_lo, xhi, y_sep_hi);
   
   auto u1 = makeUnion(s_top, s_bottom);
-  auto u2 = makeUnion(u1, s_left_sep);
-  auto walls = makeUnion(u2, s_right_sep);
+  auto u2 = makeUnion(u1, s_left_upper);
+  auto u3 = makeUnion(u2, s_left_lower);
+  auto u4 = makeUnion(u3, s_left_sep);
+  auto u5 = makeUnion(u4, s_right_upper);
+  auto u6 = makeUnion(u5, s_right_lower);
+  auto walls = makeUnion(u6, s_right_sep);
   
   Print() << "\n=== TWO-BRANCH GEOMETRY ===\n";
-  Print() << "Separator thickness H: " << H << "\n";
+  Print() << "Total system height H: " << H << "\n";
   Print() << "Channel height L: " << L << "\n";
-  Print() << "Total chamber height: " << (2*L + H) << " (derived)\n";
+  Print() << "Separator thickness: " << separator << " (derived from H - 2*L)\n";
   Print() << "Upper channel: y=[" << y_upper_lo << ", " << y_upper_hi 
           << "], height=" << L << "\n";
-  Print() << "Separator: y=[" << y_base_lo << ", " << y_base_hi 
-          << "], thickness=" << H << "\n";
+  Print() << "Separator: y=[" << y_sep_lo << ", " << y_sep_hi 
+          << "], thickness=" << separator << "\n";
   Print() << "Lower channel: y=[" << y_lower_lo << ", " << y_lower_hi 
           << "], height=" << L << "\n";
+  Print() << "Branch region: x=[" << xs << ", " << xr 
+          << "], length X=" << X << "\n";
   Print() << "===========================\n\n";
   
   auto gshop = makeShop(walls);
