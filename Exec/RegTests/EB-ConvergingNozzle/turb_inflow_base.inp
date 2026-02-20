@@ -1,5 +1,5 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
-max_step = 200000000
+max_step = 20
 stop_time =  20e-3
 
 # PROBLEM SIZE & GEOMETRY
@@ -57,7 +57,7 @@ amr.check_int       = 50000        # number of timesteps between checkpoints
 # PLOTFILES
 amr.plot_files_output = 1
 amr.plot_file       = plt        # root name of plotfile
-amr.plot_int        = 2000       # number of timesteps between plotfiles
+amr.plot_int        = 10       # number of timesteps between plotfiles
 amr.derive_plot_vars = ALL
 pelec.plot_massfrac = 1
 
@@ -89,11 +89,3 @@ ebd.boundary_grad_stencil_type = 0
 pelec.eb_boundary_T = 300.
 pelec.eb_isothermal = 0
 pelec.eb_noslip = 0
-
-pelec.diagnostics = zPlane
-pelec.zPlane.type = DiagFramePlane
-pelec.zPlane.file = pltzcut
-pelec.zPlane.normal = 2
-pelec.zPlane.center = 0.0
-pelec.zPlane.int = 100
-pelec.zPlane.field_names = density zmom xmom Temp z_velocity y_velocity x_velocity pressure MachNumber magvel viscosity conductivity
