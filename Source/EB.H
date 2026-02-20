@@ -216,7 +216,7 @@ void pc_fill_sv_ebg(
 
 void pc_fill_bndry_grad_stencil_ls(
   const amrex::Box& /*bx*/,
-  const amrex::Real /*dx*/,
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& /*dx*/,
   const int /*unused*/,
   const EBBndryGeom* /*ebg*/,
   const int /*Nsten*/,
@@ -231,7 +231,7 @@ void pc_check_bndry_grad_stencil(
 
 void pc_fill_bndry_grad_stencil_quadratic(
   const amrex::Box& /*bx*/,
-  const amrex::Real /*dx*/,
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& /*dx*/,
   const int /*unused*/,
   const EBBndryGeom* /*ebg*/,
   const int /*Nsten*/,

@@ -36,9 +36,9 @@ pc_initdata(
   amrex::Real x = 0.;
   amrex::Real y = 0.;
   amrex::Real z = 0.;
-  AMREX_D_TERM(x = prob_lo[0] + (i + 0.5) * dx[0];
-               , y = prob_lo[1] + (j + 0.5) * dx[1];
-               , z = prob_lo[2] + (k + 0.5) * dx[2];);
+  AMREX_D_TERM(
+    x = prob_lo[0] + (i + 0.5) * dx[0];, y = prob_lo[1] + (j + 0.5) * dx[1];
+    , z = prob_lo[2] + (k + 0.5) * dx[2];);
   const amrex::Real coef = 2. * M_PI;
 
   // TG functions

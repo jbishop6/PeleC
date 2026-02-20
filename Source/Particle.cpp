@@ -17,8 +17,8 @@ std::unique_ptr<SprayParticleContainer> PeleC::SprayPC = nullptr;
 std::unique_ptr<SprayParticleContainer> PeleC::VirtPC = nullptr;
 std::unique_ptr<SprayParticleContainer> PeleC::GhostPC = nullptr;
 
-// momentum + density + fuel species + energy
-int PeleC::num_spray_src = AMREX_SPACEDIM + 2 + SPRAY_FUEL_NUM;
+// momentum + density + energy + fuel species (added later)
+int PeleC::num_spray_src = AMREX_SPACEDIM + 2;
 
 void
 PeleC::estTimeStepParticles(amrex::Real& est_dt)
@@ -81,6 +81,8 @@ PeleC::defineParticles()
   scomps.specSrcIndx = spraySpecSrcIndx;
   scomps.engSrcIndx = sprayEngSrcIndx;
   SprayParticleContainer::AssignSprayComps(scomps);
+  PeleC::num_spray_src =
+    AMREX_SPACEDIM + 2 + SprayParticleContainer::m_sprayData->N_pc;
 }
 
 int
@@ -158,10 +160,10 @@ PeleC::removeGhostParticles(const int level)
 void
 PeleC::createDataParticles()
 {
-  SprayPC = std::make_unique<SprayParticleContainer>(parent, &phys_bc);
+  SprayPC = std::make_unique<SprayParticleContainer>(parent, phys_bc);
   SprayPC->SetVerbose(particle_verbose);
-  VirtPC = std::make_unique<SprayParticleContainer>(parent, &phys_bc);
-  GhostPC = std::make_unique<SprayParticleContainer>(parent, &phys_bc);
+  VirtPC = std::make_unique<SprayParticleContainer>(parent, phys_bc);
+  GhostPC = std::make_unique<SprayParticleContainer>(parent, phys_bc);
 }
 
 // Initialize the particles on the grid at level 0
@@ -183,7 +185,7 @@ PeleC::initParticles()
 }
 
 void
-PeleC::postRestartParticles()
+PeleC::postRestartParticles(const std::string& restart_file)
 {
   if (level > 0) {
     defineSpraySource(parent->MaxRefRatio(level - 1));
@@ -195,7 +197,7 @@ PeleC::postRestartParticles()
     AMREX_ASSERT(SprayPC == nullptr);
     createDataParticles();
 
-    SprayPC->SprayInitialize();
+    SprayPC->SprayInitialize(restart_file);
     amrex::Gpu::Device::streamSynchronize();
   }
 }

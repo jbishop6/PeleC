@@ -37,7 +37,7 @@ def multiRun(args):
     # Get the PeleC exec
     run_cmd = args.run_cmd
     test_dir = args.test_dir
-    executable = test_dir + "/" + args.pele_exec
+    executable = args.pele_exec
     if executable == "None":
         for f in os.listdir(test_dir):
             if f.startswith("PeleC") and f.endswith(".ex"):
@@ -71,30 +71,31 @@ def multiRun(args):
         first_params += "max_step = {} ".format(iter_2)
         first_params += "amr.check_int = {} ".format(iter_1)
         first_params += "amr.checkpoint_files_output = 1 "
+        first_params += "amr.file_name_digits = 5 "
         first_params += "amr.plot_file = {}/{}_1_plt ".format(test_name, box)
         first_params += "amrex.abort_on_unused_inputs=1 "
         # Run first test to iter_2 and save a checkpoint at iter_1
         assert(os.system(
-            "{}{} {} {} {}".format(
+            "{} {} {} {} {}".format(
                 run_cmd, executable, args.input_file, runtime_params, first_params
             )
         ) == 0)
         second_params = "max_step = {} ".format(iter_2)
-        second_params += "amr.restart = {}/{}_chk000{} ".format(test_name, box, iter_1)
+        second_params += "amr.restart = {}/{}_chk0000{} ".format(test_name, box, iter_1)
         second_params += "amr.checkpoint_files_output = 0 "
         second_params += "amr.plot_file = {}/{}_2_plt ".format(test_name, box)
         # Restart a case from checkpoint at iter_1
         assert(os.system(
-            "{}{} {} {} {}".format(
+            "{} {} {} {} {}".format(
                 run_cmd, executable, args.input_file, runtime_params, second_params
             )
         ) == 0)
         # Now delete the checkpoint files and starting plot files
         print("Deleting unused plot and checkpoint files")
-        os.system("rm -r {}/*plt0000".format(test_name, box))
+        os.system("rm -r {}/*plt00000".format(test_name, box))
         os.system("rm -r {}/{}_chk*".format(test_name, box))
-        pltname1 = "{}_1_plt000{}".format(box, iter_2)
-        pltname2 = "{}_2_plt000{}".format(box, iter_2)
+        pltname1 = "{}_1_plt0000{}".format(box, iter_2)
+        pltname2 = "{}_2_plt0000{}".format(box, iter_2)
         pltfiles.append(pltname1)
         pltfiles.append(pltname2)
     return pltfiles

@@ -77,7 +77,7 @@ def load_pelec_error(fdir, theory_order):
     for k, (res, resdir) in enumerate(zip(resolutions, resdirs)):
 
         fname = os.path.join(resdir, "mmslog")
-        df = pd.read_csv(fname, delim_whitespace=True)
+        df = pd.read_csv(fname, sep="\\s+")
 
         idx = -1
         print(

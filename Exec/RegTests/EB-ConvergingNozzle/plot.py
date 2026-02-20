@@ -37,7 +37,7 @@ nozstart = 4.5
 nozlen = 9
 
 # load results
-results = pd.read_csv("run_01/plt24000.slice", header=2, delim_whitespace=True)
+results = pd.read_csv("run_01/plt24000.slice", header=2, sep="\\s+")
 results.columns = list(results.columns[1:]) + ["N/A"]
 results["Area"] = AofX(results["x"], indiam, outdiam, nozstart, nozstart + nozlen)
 
@@ -75,9 +75,9 @@ plt.savefig("Pressure.png", dpi=150)
 plt.close()
 
 # Compare different boundary conditions
-data_00 = pd.read_csv("run_00/extremalog", delim_whitespace=True)
-data_01 = pd.read_csv("run_01/extremalog", delim_whitespace=True)
-data_10 = pd.read_csv("run_10/extremalog", delim_whitespace=True)
+data_00 = pd.read_csv("run_00/extremalog", sep="\\s+")
+data_01 = pd.read_csv("run_01/extremalog", sep="\\s+")
+data_10 = pd.read_csv("run_10/extremalog", sep="\\s+")
 
 plt.figure("BCCompare", figsize=(5.5, 4.5))
 plt.clf()

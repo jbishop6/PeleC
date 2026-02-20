@@ -16,7 +16,7 @@ on:
 
 jobs:
   Docs:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Clone
         uses: actions/checkout@v4
@@ -37,16 +37,21 @@ jobs:
         working-directory: ${{runner.workspace}}/build-docs
         run:  |
            echo "::add-matcher::.github/problem-matchers/sphinx.json"
-           cmake --build ${{runner.workspace}}/build-docs
-           echo "::remove-matcher owner=sphinx-problem-matcher-loose-no-severity::"
-           echo "::remove-matcher owner=sphinx-problem-matcher-loose::"
-           echo "::remove-matcher owner=sphinx-problem-matcher::"
+           cmake --build ${{runner.workspace}}/build-docs 2>&1 | tee -a build-output.txt
            touch ${{runner.workspace}}/build-docs/sphinx/html/.nojekyll
+      - name: Report
+        working-directory: ${{runner.workspace}}/build-docs
+        run: |
+          echo "::add-matcher::.github/problem-matchers/sphinx.json"
+          egrep "WARNING:|Warning:|ERROR:|Error:" build-output.txt | sort | uniq | \
+            awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > build-output-warnings.txt
+          cat build-output-warnings.txt
+          exit $(tail -n 1 build-output-warnings.txt | awk '{print $2}')
       - name: Deploy
         if: github.event_name == 'push' && github.ref == 'refs/heads/development'
-        uses: JamesIves/github-pages-deploy-action@releases/v3
+        uses: JamesIves/github-pages-deploy-action@releases/v4
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH: gh-pages
-          FOLDER: ${{runner.workspace}}/build-docs/sphinx/html
-          SINGLE_COMMIT: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: gh-pages
+          folder: ${{runner.workspace}}/build-docs/sphinx/html
+          single-commit: true

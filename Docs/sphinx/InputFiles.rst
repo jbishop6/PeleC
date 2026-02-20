@@ -23,53 +23,54 @@ These parameters, once read, are available in the `PeleC` object for use from c+
 
 ::
 
-    # ------------------  INPUTS TO MAIN PROGRAM  -------------------
-    #Stopping criteria: at least one must be specified, simulation
-    #will stop when the first is met.
+    #------------------  INPUTS TO MAIN PROGRAM  -------------------
+    # Stopping criteria: at least one must be specified, simulation
+    # will stop when the first is met.
 
-    #absolute stop time (s) for the simulation
+    # absolute stop time (s) for the simulation
     stop_time = 6
 
-    #maximum number of time steps at base AMR level
+    # maximum number of time steps at base AMR level
     max_step = 30
 
-    #maximum wall time (hr) after which simulation will be stopped
+    # maximum wall time (hr) after which simulation will be stopped
     max_wall_time = 1.0
 
-    # ---------------------------------------------------------------
+    #---------------------------------------------------------------
 
     #------------------------
     # PROBLEM SIZE & GEOMETRY
-    # -----------------------
+    #-----------------------
 
-    #flag for periodicity (here x direction is periodic)
+    # flag for periodicity (here x direction is periodic)
     geometry.is_periodic = 1 0 0
 
-    #0 => cart, 1 => RZ  2=>spherical
+    # 0 => cart, 1 => RZ  2=>spherical
     geometry.coord_sys   = 0
 
-    #coordinates of domain's lower corner
+    # coordinates of domain's lower corner
     geometry.prob_lo     =   -0.3     0.0   0.0
 
-    #coordinates of domain's upper corner
+    # coordinates of domain's upper corner
     geometry.prob_hi     =    0.3     0.3   0.15
 
-    #number of cells along each direction at base level (note: dx=dy=dz)
+    # number of cells along each direction at base level
+    # (dx=dy=dz is required when an embedded boundary is used)
     amr.n_cell           =    128     64    32
-    # ---------------------------------------------------------------
+    #---------------------------------------------------------------
 
-    # ---------------------------------------------------------------
-    PeleC specific inputs
-    # ---------------------------------------------------------------
+    #---------------------------------------------------------------
+    # PeleC specific inputs
+    #---------------------------------------------------------------
 
     # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
     # Interior, UserBC, Symmetry, SlipWall, NoSlipWall
     # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
 
-    #boundary condition at the lower face of each coordinate direction
+    # boundary condition at the lower face of each coordinate direction
     pelec.lo_bc       =  "Interior"  "UserBC"  "SlipWall"
 
-    #boundary condition at the upper face of each coordinate direction
+    # boundary condition at the upper face of each coordinate direction
     pelec.hi_bc       =  "Interior"  "UserBC"  "SlipWall"
 
     #------------------------
@@ -106,11 +107,11 @@ These parameters, once read, are available in the `PeleC` object for use from c+
     pelec.v            = 1        # verbosity in PeleC cpp files
     amr.v              = 1        # verbosity in Amr.cpp
     #amr.grid_log       = grdlog  # name of grid logging file
-    # ---------------------------------------------------------------
+    #---------------------------------------------------------------
 
-    # ---------------------------------------------------------------
-    AMR specific inputs
-    # ---------------------------------------------------------------
+    #---------------------------------------------------------------
+    # AMR specific inputs
+    #---------------------------------------------------------------
 
     #------------------------
     # REFINEMENT / REGRIDDING
@@ -122,7 +123,7 @@ These parameters, once read, are available in the `PeleC` object for use from c+
     amr.blocking_factor = 8       # block factor in grid generation
     amr.max_grid_size   = 64      # maximum number of cells per box along x,y,z
 
-    #specify species name as flame tracer for
+    # specify species name as flame tracer for
     #refinement purposes
     pelec.flame_trac_name = HO2
 
@@ -153,17 +154,17 @@ These parameters, once read, are available in the `PeleC` object for use from c+
     amr.plot_file         = plt     # root name of plotfile
     amr.plot_int          = 100     # number of timesteps between plotfiles
 
-    #pick which all derived variables to plot
+    # pick which all derived variables to plot
     amr.derive_plot_vars  = pressure x_velocity y_velocity
 
     # we can initialize a solution from a plot file
     pelec.init_pltfile = "plt00000"
 
-    # ---------------------------------------------------------------
+    #---------------------------------------------------------------
 
-    # ---------------------------------------------------------------
-    Embedded boundary (EB) inputs
-    # ---------------------------------------------------------------
+    #---------------------------------------------------------------
+    # Embedded boundary (EB) inputs
+    #---------------------------------------------------------------
 
     pelec.eb_isothermal = 1     # isothermal wall at EB
     pelec.eb_boundary_T = 300.  # EB wall temperature
@@ -178,7 +179,7 @@ These parameters, once read, are available in the `PeleC` object for use from c+
     eb2.sphere_center = 0.0 0.15 0.075
     eb2.sphere_has_fluid_inside = 0
 
-    # ---------------------------------------------------------------
+    #---------------------------------------------------------------
 
 
 .. note::
@@ -263,19 +264,23 @@ The verbosity flags `pelec.v` and `amr.v` control the extent of output related t
 
 To aid in the analysis of the diagnostic data, it can also be saved to log files. To do this, set `amr.data_log = datlog extremalog`, which will save the integrated values to `datlog` and the extrema to `extremalog`, if they are being computed based on the values of the flags described above. Additional problem-specific logs can also be created. Gridding information can also be recorded to a file specified with the `amr.grid_log` option.
 
-Analyzing the data *a-posteriori* can become extremely cumbersome when dealing with extreme datasets.
-PeleC offers a set of diagnostics available at runtime and more are under development.
+Analysing the data a-posteriori can become extremely cumbersome when dealing with extreme datasets.
+PeleC offers a set of diagnostics available at runtime (supported through PelePhysics) and more are under development.
 Currently, the list of diagnostic contains:
 
-* `DiagFramePlane` : extract a plane aligned in the 'x','y' or 'z' direction across the AMR hierarchy, writing
+* ``DiagFramePlane`` : extract a plane aligned in the 'x','y' or 'z' direction across the AMR hierarchy, writing
   a 2D plotfile compatible with Amrvis, Paraview or yt. Only available for 3D simulations.
-* `DiagPDF` : extract the PDF of a given variable and write it to an ASCII file.
-* `DiagConditional` : extract statistics (average and standard deviation, integral or sum) of a
+* ``DiagPDF`` : extract the PDF of a given variable and write it to an ASCII file.
+* ``DiagConditional`` : extract statistics (average and standard deviation, integral or sum) of a
   set of variables conditioned on the value of given variable and write it to an ASCII file.
 
 When using `DiagPDF` or `DiagConditional`, it is possible to narrow down the diagnostic to a region of interest
-by specifying a set of filters, defining a range of interest for a variable. Note also the for these two diagnostics,
-fine-covered regions are masked. The following provide examples for each diagnostic:
+by specifying a set of filters, defining a range of interest for a variable. Note also that for these two diagnostics,
+fine-covered regions are masked. An arbitrary number of these diagnostics may be specified in a list by setting
+``pelec.diagnostics`` in the input file and then specifying the diagnostic type and relevant inputs for each
+diagnostic listed. See the
+`PelePhysics Diagnostics documentation <https://amrex-combustion.github.io/PelePhysics/Utility.html#diagnostics>`_ for full
+details on the options that must be specified for each diagnostic type.
 
 ::
 
@@ -284,34 +289,4 @@ fine-covered regions are masked. The following provide examples for each diagnos
     pelec.diagnostics = xnormP condT pdfTest
 
     pelec.xnormP.type = DiagFramePlane                             # Diagnostic type
-    pelec.xnormP.file = xNorm5mm                                   # Output file prefix
-    pelec.xnormP.normal = 0                                        # Plane normal (0, 1 or 2 for x, y or z)
-    pelec.xnormP.center = 0.5                                      # Coordinate in the normal direction
-    pelec.xnormP.int    = 5                                        # Frequency (as step #) for performing the diagnostic
-    pelec.xnormP.interpolation = Linear                            # [OPT, DEF=Linear] Interpolation type : Linear or Quadratic
-    pelec.xnormP.field_names = x_velocity magvort density          # List of variables outputted to the 2D pltfile
-
-    pelec.condT.type = DiagConditional                             # Diagnostic type
-    pelec.condT.file = condTest                                    # Output file prefix
-    pelec.condT.int  = 5                                           # Frequency (as step #) for performing the diagnostic
-    pelec.condT.filters = xHigh stoich                             # [OPT, DEF=None] List of filters
-    pelec.condT.xHigh.field_name = x                               # Filter field
-    pelec.condT.xHigh.value_greater = 0.006                        # Filter definition : value_greater, value_less, value_inrange
-    pelec.condT.stoich.field_name = mixture_fraction               # Filter field
-    pelec.condT.stoich.value_inrange = 0.053 0.055                 # Filter definition : value_greater, value_less, value_inrange
-    pelec.condT.conditional_type = Average                         # Conditional type : Average, Integral or Sum
-    pelec.condT.nBins = 50                                         # Number of bins for the conditioning variable
-    pelec.condT.condition_field_name = temp                        # Conditioning variable name
-    pelec.condT.field_names = heatRelease rho_omega_CH4            # List of variables to be treated
-
-    pelec.pdfTest.type = DiagPDF                                   # Diagnostic type
-    pelec.pdfTest.file = PDFTest                                   # Output file prefix
-    pelec.pdfTest.int  = 5                                         # Frequency (as step #) for performing the diagnostic
-    pelec.pdfTest.filters = innerFlame                             # [OPT, DEF=None] List of filters
-    pelec.pdfTest.innerFlame.field_name = temp                     # Filter field
-    pelec.pdfTest.innerFlame.value_inrange = 450.0 1500.0          # Filter definition : value_greater, value_less, value_inrange
-    pelec.pdfTest.nBins = 50                                       # Number of bins for the PDF
-    pelec.pdfTest.normalized = 1                                   # [OPT, DEF=1] PDF is normalized (i.e. integral is unity) ?
-    pelec.pdfTest.volume_weighted = 1                              # [OPT, DEF=1] Computation of the PDF is volume weighted ?
-    pelec.pdfTest.range = 0.0 2.0                                  # [OPT, DEF=data min/max] Specify the range of the PDF
-    pelec.pdfTest.field_name = x_velocity                          # Variable of interest
+    ...

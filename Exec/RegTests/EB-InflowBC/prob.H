@@ -16,7 +16,7 @@
 #include "Tagging.H"
 #include "ProblemSpecificFunctions.H"
 #include "prob_parm.H"
-#include "Utilities.H"
+#include "PeleCUtilities.H"
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
@@ -91,12 +91,6 @@ struct MyProblemSpecificFunctions : public DefaultProblemSpecificFunctions
       prob_lo[0] + static_cast<amrex::Real>(iv[0] + 0.5) * dx[0],
       prob_lo[1] + static_cast<amrex::Real>(iv[1] + 0.5) * dx[1],
       prob_lo[2] + static_cast<amrex::Real>(iv[2] + 0.5) * dx[2])};
-
-    const int R_RHO = 0;
-    const int R_UN = 1;
-    const int R_UT1 = 2;
-    const int R_UT2 = 3;
-    const int R_P = 4;
 
     const amrex::Real max_r = 0.1;
     const amrex::Real radius =

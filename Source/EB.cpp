@@ -1,5 +1,5 @@
 #include "EB.H"
-#include "Utilities.H"
+#include "PeleCUtilities.H"
 
 void
 pc_fill_sv_ebg(
@@ -32,13 +32,15 @@ pc_fill_sv_ebg(
       }
       const amrex::Real apnorminv = -1.0 / apnorm;
       // pointing to the wall
-      AMREX_D_TERM(ebg[L].eb_normal[0] = (axm - axp) * apnorminv;
-                   , ebg[L].eb_normal[1] = (aym - ayp) * apnorminv;
-                   , ebg[L].eb_normal[2] = (azm - azp) * apnorminv;)
+      AMREX_D_TERM(
+        ebg[L].eb_normal[0] = (axm - axp) * apnorminv;
+        , ebg[L].eb_normal[1] = (aym - ayp) * apnorminv;
+        , ebg[L].eb_normal[2] = (azm - azp) * apnorminv;)
       ebg[L].eb_area = apnorm;
-      AMREX_D_TERM(ebg[L].eb_centroid[0] = bcent(iv, 0);
-                   , ebg[L].eb_centroid[1] = bcent(iv, 1);
-                   , ebg[L].eb_centroid[2] = bcent(iv, 2);)
+      AMREX_D_TERM(
+        ebg[L].eb_centroid[0] = bcent(iv, 0);
+        , ebg[L].eb_centroid[1] = bcent(iv, 1);
+        , ebg[L].eb_centroid[2] = bcent(iv, 2);)
       ebg[L].eb_vfrac = vfrac(iv);
     }
   });
@@ -64,14 +66,24 @@ pc_fill_sv_ebg(
 void
 pc_fill_bndry_grad_stencil_quadratic(
   const amrex::Box& bx,
-  const amrex::Real dx,
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& dx,
   const int /*Nebg*/,
   const EBBndryGeom* ebg,
   const int Nsten,
   EBBndrySten* grad_stencil)
 {
-  const amrex::Real area = std::pow(dx, AMREX_SPACEDIM - 1);
-  const amrex::Real fac = area / dx;
+  const amrex::Real small = 1.e-13;
+  const bool unequal_dx =
+    amrex::max<amrex::Real>(AMREX_D_DECL(
+      static_cast<amrex::Real>(0.0),
+      static_cast<amrex::Real>(std::abs(dx[0] - dx[1])),
+      static_cast<amrex::Real>(std::abs(dx[0] - dx[2])))) > small * dx[0];
+  if (unequal_dx) {
+    amrex::Abort(
+      "dx != dy != dz not supported with pc_fill_bndry_grad_stencil_quadratic");
+  }
+  const amrex::Real area = std::pow(dx[0], AMREX_SPACEDIM - 1);
+  const amrex::Real fac = area / dx[0];
 
   amrex::ParallelFor(Nsten, [=] AMREX_GPU_DEVICE(int L) {
     if (bx.contains(ebg[L].iv)) {
@@ -181,9 +193,10 @@ pc_fill_bndry_grad_stencil_quadratic(
 #if AMREX_SPACEDIM > 2
           for (int kk = 0; kk < 3; kk++) {
 #endif
-            AMREX_D_TERM(ivl[c[0]] = ii * s[0] + ivs[c[0]] - baseiv[c[0]];
-                         , ivl[c[1]] = jj * s[1] + ivs[c[1]] - baseiv[c[1]];
-                         , ivl[c[2]] = kk * s[2] + ivs[c[2]] - baseiv[c[2]];)
+            AMREX_D_TERM(
+              ivl[c[0]] = ii * s[0] + ivs[c[0]] - baseiv[c[0]];
+              , ivl[c[1]] = jj * s[1] + ivs[c[1]] - baseiv[c[1]];
+              , ivl[c[2]] = kk * s[2] + ivs[c[2]] - baseiv[c[2]];)
             tsten AMREX_D_TERM([ivl[0]], [ivl[1]], [ivl[2]]) =
               sten AMREX_D_TERM([ii], [jj], [kk]);
 #if AMREX_SPACEDIM > 2
@@ -250,7 +263,7 @@ pc_fill_bndry_grad_stencil_quadratic(
 void
 pc_fill_bndry_grad_stencil_ls(
   const amrex::Box& bx,
-  const amrex::Real dx,
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& dx,
   const int /*Nebg*/,
   const EBBndryGeom* ebg,
   const int Nsten,
@@ -260,8 +273,8 @@ pc_fill_bndry_grad_stencil_ls(
 
   AMREX_ASSERT(AMREX_SPACEDIM > 1);
 
-  const amrex::Real area = std::pow(dx, AMREX_SPACEDIM - 1);
-  const amrex::Real fac = area / dx;
+  const amrex::Real area = std::pow(dx[0], AMREX_SPACEDIM - 1);
+  const amrex::Real fac = area / dx[0];
 
   amrex::ParallelFor(Nsten, [=] AMREX_GPU_DEVICE(int L) {
     if (bx.contains(ebg[L].iv)) {
@@ -299,9 +312,9 @@ pc_fill_bndry_grad_stencil_ls(
 #if AMREX_SPACEDIM > 2
           for (int kk = 0; kk < 3; kk++) {
 #endif
-            AMREX_D_TERM(sten_iv[0] = baseiv[0] + ii;
-                         , sten_iv[1] = baseiv[1] + jj;
-                         , sten_iv[2] = baseiv[2] + kk;)
+            AMREX_D_TERM(
+              sten_iv[0] = baseiv[0] + ii;, sten_iv[1] = baseiv[1] + jj;
+              , sten_iv[2] = baseiv[2] + kk;)
 
             if (bx.contains(sten_iv)) {
               if (
@@ -309,13 +322,14 @@ pc_fill_bndry_grad_stencil_ls(
                   sten_iv[0] != ivs[0], || sten_iv[1] != ivs[1],
                   || sten_iv[2] != ivs[2])) &&
                 !flags(sten_iv).isCovered()) {
-                AMREX_D_TERM(xi[0] = sten_iv[0] - ivs[0];
-                             , xi[1] = sten_iv[1] - ivs[1];
-                             , xi[2] = sten_iv[2] - ivs[2];)
+                AMREX_D_TERM(
+                  xi[0] = sten_iv[0] - ivs[0];, xi[1] = sten_iv[1] - ivs[1];
+                  , xi[2] = sten_iv[2] - ivs[2];)
 
-                AMREX_D_TERM(delta_x_i[iter] = (xi[0] - centcoord[0]);
-                             , delta_y_i[iter] = (xi[1] - centcoord[1]);
-                             , delta_z_i[iter] = (xi[2] - centcoord[2]);)
+                AMREX_D_TERM(
+                  delta_x_i[iter] = (xi[0] - centcoord[0]);
+                  , delta_y_i[iter] = (xi[1] - centcoord[1]);
+                  , delta_z_i[iter] = (xi[2] - centcoord[2]);)
 
                 iter++;
               }
@@ -340,9 +354,9 @@ pc_fill_bndry_grad_stencil_ls(
 #if AMREX_SPACEDIM > 2
             for (int kk = 0; kk < 3; kk++) {
 #endif
-              AMREX_D_TERM(sten_iv[0] = baseiv[0] + ii;
-                           , sten_iv[1] = baseiv[1] + jj;
-                           , sten_iv[2] = baseiv[2] + kk;)
+              AMREX_D_TERM(
+                sten_iv[0] = baseiv[0] + ii;, sten_iv[1] = baseiv[1] + jj;
+                , sten_iv[2] = baseiv[2] + kk;)
 
               if (bx.contains(sten_iv)) {
                 if (
@@ -634,8 +648,9 @@ pc_apply_eb_boundry_visc_flux_stencil(
 
       amrex::Real Qt[AMREX_SPACEDIM][AMREX_SPACEDIM];
       for (int idir = 0; idir < AMREX_SPACEDIM; idir++) {
-        AMREX_D_TERM(Qt[0][idir] = norm[idir];, Qt[1][idir] = t1[idir];
-                     , Qt[2][idir] = t2[idir];)
+        AMREX_D_TERM(
+          Qt[0][idir] = norm[idir];, Qt[1][idir] = t1[idir];
+          , Qt[2][idir] = t2[idir];)
       }
 
       // Transform velocities at stencil points to coordinates aligned with EB

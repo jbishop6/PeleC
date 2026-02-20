@@ -1,11 +1,13 @@
 ############################ BASE ######################################
 
-cmake_minimum_required (VERSION 3.14 FATAL_ERROR)
+cmake_minimum_required (VERSION 3.23 FATAL_ERROR)
 project(PeleC CXX)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake")
 include(CMakePackageConfigHelpers)
 include(PeleUtils)
+enable_testing()
+include(CTest)
 
 ########################## OPTIONS #####################################
 
@@ -25,6 +27,7 @@ option(PELE_ENABLE_HDF5 "Enable plot file output using HDF5" OFF)
 option(PELE_ENABLE_HDF5_ZFP "Enable ZFP compression in HDF5" OFF)
 option(PELE_ENABLE_ASCENT "Enable Ascent in-situ visualization" OFF)
 option(PELE_EXCLUDE_BUILD_IN_CI "Exclude some builds when running in the CI" OFF)
+option(PELE_SKIP_NON_FCOMPARE_TESTS "For reference comparison in CI skip tests not being used for comparison" OFF)
 set(PELE_PRECISION "DOUBLE" CACHE STRING "Floating point precision SINGLE or DOUBLE")
 
 #Options for performance
@@ -121,7 +124,4 @@ init_code_checks()
 include(SetRpath)
 
 add_subdirectory(Exec)
-
-enable_testing()
-include(CTest)
 add_subdirectory(Tests)

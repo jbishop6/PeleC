@@ -31,8 +31,8 @@ for i, fn in enumerate(fn_list):
 outfile.close()
 
 # plot
-ref = pd.read_csv("cantera_soln", delim_whitespace=True)
-df = pd.read_csv(fname, delim_whitespace=True, header=None, names=["t", "temp"])
+ref = pd.read_csv("cantera_soln", sep="\\s+")
+df = pd.read_csv(fname, sep="\\s+", header=None, names=["t", "temp"])
 
 plt.figure()
 plt.plot(ref["Time(s)"], ref["Temperature(K)"], label="Ref.")

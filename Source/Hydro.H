@@ -4,7 +4,7 @@
 #include "PeleC.H"
 #include "IndexDefines.H"
 #include "PelePhysics.H"
-#include "Utilities.H"
+#include "PeleCUtilities.H"
 #include "Godunov.H"
 #include "AMReX_EB_Redistribution.H"
 
@@ -20,6 +20,10 @@ pc_srctoprim(
   amrex::Array4<const amrex::Real> const& src,
   amrex::Array4<amrex::Real> const& srcq)
 {
+  // Note (Hari S):
+  // rotational frame not incorporated here, but shouldn't be called because
+  // RF required MOL and this is only used for SDC/Godunov
+
   // Local loading Vars ==> Load once from global memory use multiple times
   const amrex::Real srcrho = src(i, j, k, URHO);
   const amrex::Real rhoinv = 1.0 / q(i, j, k, QRHO);
@@ -53,8 +57,7 @@ pc_srctoprim(
   }
 #if NUM_AUX > 0
   for (int n = 0; n < NUM_AUX; n++) {
-    srcq(i, j, k, QFX + n) =
-      (src(i, j, k, UFX + n) - q(i, j, k, QFX + n) * srcrho) * rhoinv;
+    srcq(i, j, k, QFX + n) = src(i, j, k, UFX + n);
   }
 #endif
 #if NUM_LIN > 0
@@ -126,8 +129,9 @@ pc_compute_hyp_wallflux(
   // Option 2
   amrex::ignore_unused(qa);
   amrex::Real p = q(i, j, k, QPRES);
-  AMREX_D_TERM(fluxw[UMX] = (axm - axp) * p;, fluxw[UMY] = (aym - ayp) * p;
-               , fluxw[UMZ] = (azm - azp) * p;);
+  AMREX_D_TERM(
+    fluxw[UMX] = (axm - axp) * p;, fluxw[UMY] = (aym - ayp) * p;
+    , fluxw[UMZ] = (azm - azp) * p;);
 }
 
 AMREX_GPU_DEVICE AMREX_FORCE_INLINE void
@@ -163,8 +167,9 @@ eb_compute_div(
   amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> const& dxinv,
   const int eb_weights_type)
 {
-  AMREX_D_TERM(bool x_high = (i == bhi[0]);, bool y_high = (j == bhi[1]);
-               , bool z_high = (k == bhi[2]));
+  AMREX_D_TERM(
+    bool x_high = (i == bhi[0]);, bool y_high = (j == bhi[1]);
+    , bool z_high = (k == bhi[2]));
   bool valid_cell = AMREX_D_TERM(
     (blo[0] <= i) && (i <= bhi[0]), &&(blo[1] <= j) && (j <= bhi[1]),
     &&(blo[2] <= k) && (k <= bhi[2]));

@@ -26,6 +26,7 @@ CEXE_sources += LES.cpp
 CEXE_sources += EB.cpp
 CEXE_sources += Geometry.cpp
 CEXE_sources += InitEB.cpp
+CEXE_sources += RotSource.cpp
 
 #C++ headers
 CEXE_headers += PeleC.H
@@ -42,7 +43,7 @@ CEXE_headers += GradUtil.H
 CEXE_headers += Godunov.H
 CEXE_headers += PLM.H
 CEXE_headers += PPM.H
-CEXE_headers += Utilities.H
+CEXE_headers += PeleCUtilities.H
 CEXE_headers += Transport.H
 CEXE_headers += MOL.H
 CEXE_headers += Riemann.H

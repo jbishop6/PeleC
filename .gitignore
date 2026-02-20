@@ -1,4 +1,5 @@
 /Exec/WORK/*
+.vscode/
 .DS_Store
 datlog
 mmslog
@@ -6,6 +7,8 @@ extremalog
 ic.txt
 plt*
 chk*
+*.visit
+Backtrace.*
 tmp_build_dir
 .ccls
 .ccls-cache

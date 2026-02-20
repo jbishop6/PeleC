@@ -34,13 +34,15 @@ pc_initdata(
   const amrex::Real* prob_hi = geomdata.ProbHi();
   const amrex::Real* dx = geomdata.CellSize();
 
-  AMREX_D_TERM(const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0];
-               , const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
-               , const amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2];);
+  AMREX_D_TERM(
+    const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0];
+    , const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
+    , const amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2];);
 
-  AMREX_D_TERM(const amrex::Real Lx = prob_hi[0] - prob_lo[0];
-               , const amrex::Real Ly = prob_hi[1] - prob_lo[1];
-               , const amrex::Real Lz = prob_hi[2] - prob_lo[2]);
+  AMREX_D_TERM(
+    const amrex::Real Lx = prob_hi[0] - prob_lo[0];
+    , const amrex::Real Ly = prob_hi[1] - prob_lo[1];
+    , const amrex::Real Lz = prob_hi[2] - prob_lo[2]);
 
 #if AMREX_SPACEDIM == 2
   const amrex::Real z = 0.0;
@@ -60,25 +62,25 @@ pc_initdata(
   vel[0] = std::sqrt(prob_parm.dpdx * Ly / (1e-3 * 0.4688 * c_f)) *
            (1.0 - std::pow(std::abs(2.0 * y / Ly), 10.0));
 
-  AMREX_D_TERM(const amrex::Real u =
-                 vel[0] *
-                 (1.0 +
-                  std::sin(2 * constants::PI() * 5 * y / Ly) *
-                    std::sin(2 * constants::PI() * 14 * z / Lz) +
-                  std::sin(2 * constants::PI() * 7 * y / Ly) *
-                    std::sin(2 * constants::PI() * 6 * (z - 0.541) / Lz));
-               , const amrex::Real v =
-                   0.2 * vel[0] *
-                   (std::sin(2 * constants::PI() * 5 * y / Ly) *
-                      std::sin(2 * constants::PI() * 7 * (x - 0.13) / Lx) +
-                    std::sin(2 * constants::PI() * 6 * y / Ly) *
-                      std::sin(2 * constants::PI() * 13 * x / Lx));
-               , const amrex::Real w =
-                   0.2 * vel[0] *
-                   (std::sin(2 * constants::PI() * 11 * z / Lz) *
-                      std::sin(2 * constants::PI() * 4 * x / Lx) +
-                    std::sin(2 * constants::PI() * 3 * z / Lz) *
-                      std::sin(2 * constants::PI() * 9 * (x - 0.779) / Lx)));
+  AMREX_D_TERM(
+    const amrex::Real u =
+      vel[0] * (1.0 +
+                std::sin(2 * constants::PI() * 5 * y / Ly) *
+                  std::sin(2 * constants::PI() * 14 * z / Lz) +
+                std::sin(2 * constants::PI() * 7 * y / Ly) *
+                  std::sin(2 * constants::PI() * 6 * (z - 0.541) / Lz));
+    , const amrex::Real v =
+        0.2 * vel[0] *
+        (std::sin(2 * constants::PI() * 5 * y / Ly) *
+           std::sin(2 * constants::PI() * 7 * (x - 0.13) / Lx) +
+         std::sin(2 * constants::PI() * 6 * y / Ly) *
+           std::sin(2 * constants::PI() * 13 * x / Lx));
+    , const amrex::Real w =
+        0.2 * vel[0] *
+        (std::sin(2 * constants::PI() * 11 * z / Lz) *
+           std::sin(2 * constants::PI() * 4 * x / Lx) +
+         std::sin(2 * constants::PI() * 3 * z / Lz) *
+           std::sin(2 * constants::PI() * 9 * (x - 0.779) / Lx)));
 
   state(i, j, k, URHO) = rho;
   AMREX_D_TERM(state(i, j, k, UMX) = rho * u;, state(i, j, k, UMY) = rho * v;

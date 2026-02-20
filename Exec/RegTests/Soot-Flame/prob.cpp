@@ -123,14 +123,14 @@ read_pmf(const std::string& myfile)
     for (int n = 0; n < NUM_SPECIES; n++) {
       const int col = specCol + n;
       amrex::Real Yval = PeleC::prob_parm_host->h_pmf_Y[N * col + i];
-      Yval = std::min(1., std::max(Yval, 0.));
+      Yval = amrex::Clamp(Yval, 0.0, 1.0);
       sumY += Yval;
     }
-    sumY = 1. / sumY;
+    sumY = 1.0 / sumY;
     for (int n = 0; n < NUM_SPECIES; n++) {
       const int col = specCol + n;
       amrex::Real Yval = PeleC::prob_parm_host->h_pmf_Y[N * col + i];
-      Yval = std::min(1., std::max(Yval, 0.));
+      Yval = amrex::Clamp(Yval, 0.0, 1.0);
       PeleC::prob_parm_host->h_pmf_Y[N * col + i] = Yval * sumY;
     }
   }
@@ -170,9 +170,10 @@ amrex_probinit(
   pp.query("pmf_standoff", PeleC::h_prob_parm_device->standoff);
   pp.get("pmf_datafile", pmf_datafile);
 
-  AMREX_D_TERM(PeleC::h_prob_parm_device->L[0] = probhi[0] - problo[0];
-               , PeleC::h_prob_parm_device->L[1] = probhi[1] - problo[1];
-               , PeleC::h_prob_parm_device->L[2] = probhi[2] - problo[2];);
+  AMREX_D_TERM(
+    PeleC::h_prob_parm_device->L[0] = probhi[0] - problo[0];
+    , PeleC::h_prob_parm_device->L[1] = probhi[1] - problo[1];
+    , PeleC::h_prob_parm_device->L[2] = probhi[2] - problo[2];);
 
   read_pmf(pmf_datafile);
 

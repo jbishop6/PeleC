@@ -8,7 +8,7 @@
 #include "PelePhysics.H"
 #include "IndexDefines.H"
 #include "Constants.H"
-#include "Utilities.H"
+#include "PeleCUtilities.H"
 #include "TransCoeff.H"
 
 // EstDt routines
@@ -71,15 +71,16 @@ pc_estdt_hydro(
       }
       auto eos = pele::physics::PhysicsType::eos();
       eos.RTY2Cs(rho, T, massfrac, c);
-      AMREX_D_TERM(const amrex::Real ux = u(i, j, k, UMX) * rhoInv;
-                   const amrex::Real dt1 = dx / (c + std::abs(ux));
-                   dt = amrex::min<amrex::Real>(dt, dt1);
-                   , const amrex::Real uy = u(i, j, k, UMY) * rhoInv;
-                   const amrex::Real dt2 = dy / (c + std::abs(uy));
-                   dt = amrex::min<amrex::Real>(dt, dt2);
-                   , const amrex::Real uz = u(i, j, k, UMZ) * rhoInv;
-                   const amrex::Real dt3 = dz / (c + std::abs(uz));
-                   dt = amrex::min<amrex::Real>(dt, dt3););
+      AMREX_D_TERM(
+        const amrex::Real ux = u(i, j, k, UMX) * rhoInv;
+        const amrex::Real dt1 = dx / (c + std::abs(ux));
+        dt = amrex::min<amrex::Real>(dt, dt1);
+        , const amrex::Real uy = u(i, j, k, UMY) * rhoInv;
+        const amrex::Real dt2 = dy / (c + std::abs(uy));
+        dt = amrex::min<amrex::Real>(dt, dt2);
+        , const amrex::Real uz = u(i, j, k, UMZ) * rhoInv;
+        const amrex::Real dt3 = dz / (c + std::abs(uz));
+        dt = amrex::min<amrex::Real>(dt, dt3););
     }
   });
   AMREX_ALWAYS_ASSERT_WITH_MESSAGE(dt > 0.0, "ERROR: dt needs to be positive.");

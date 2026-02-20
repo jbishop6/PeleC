@@ -1,31 +1,47 @@
 PeleC: An adaptive mesh refinement solver for compressible reacting flows
 -------------------------------------------------------------------------
 
-`Documentation <https://amrex-combustion.github.io/PeleC/>`_ | `Nightly Test Results <https://my.cdash.org/index.php?project=PeleC>`_ | `PeleC Citation <https://doi.org/10.1177/10943420221121151>`_ | `Pele Citation <https://doi.org/10.1137/1.9781611977967.2>`_
+`Documentation <https://amrex-combustion.github.io/PeleC/>`_ | `Nightly Test Results <https://my.cdash.org/index.php?project=Pele>`_ | `PeleC Citation <https://doi.org/10.1177/10943420221121151>`_ | `Pele Citation <https://doi.org/10.1137/1.9781611977967.2>`_
 
 Getting Started
 ~~~~~~~~~~~~~~~
 
-To compile and run `PeleC`, one needs a C++ compiler that supports the C++17 standard.  A hierarchical strategy for parallelism is supported, based on MPI, MPI + OpenMP, or MPI + GPU (CUDA/HIP/DPC++).  The code should work with all major MPI and OpenMP implementations.  PeleC should build and run with no modifications to the `make` system if using a Linux system with the GNU compilers, version 7 and above.  CMake, although used mostly for testing, is also an option for building the code.
+To compile and run `PeleC`, one needs a C++ compiler that supports the C++17 standard.  A hierarchical strategy for parallelism is supported, based on MPI, MPI + OpenMP, or MPI + GPU (CUDA/HIP/DPC++).  The code should work with all major MPI and OpenMP implementations.  PeleC should build and run with no modifications to the `make` system if using a Linux system with the GNU compilers, version 7 and above. The preferred build strategy for most users is to use GNU Make to build executables for individual cases as needed, from the directory containing the case files. CMake, although used mostly for testing, is also an option for building the code.
 
-To build `PeleC` (using the default submodules for AMReX, PelePhysics, and SUNDIALS) and run a sample 3D flame problem::
+The best way to download `PeleC` and its necessary dependencies AMReX, PelePhysics, and SUNDIALS (as git submodules) is through a recursive
+git clone. To reduce the download size, the ``--shallow-submodules`` and ``--single-branch`` flags can be added to the clone command to omit
+extraneous parts of the git history. By default, you will download the latest version of PeleC. If you'd like to use a specific
+`released version <https://github.com/AMReX-Combustion/PeleC/releases/>`_
+of PeleC, you can add the option ``--branch=<version>``, e.g. ``--branch=v25.04``, to your clone command. ::
 
-    git clone --recursive git@github.com:AMReX-Combustion/PeleC.git
+    git clone --recursive https://github.com/AMReX-Combustion/PeleC.git
+
+To run `PeleC` for a sample 3D flame problem::
+
     cd PeleC/Exec/RegTests/PMF
     make TPLrealclean && make realclean && make TPL && make -j
     ./Pele3d.xxx.yyy.ex example.inp
 
 1. In the exec line above, xxx.yyy is a tag identifying your compiler and various build options, and will vary across pltaform.  (Note that GNU compilers must be at least version 7, and MPI should be at least of standard version 3).
 
-2. The example is a 3D premixed flame, flowing vertically upward through the domain with no gravity. The lateral boundaries are periodic.  A detailed hydrogen model is used.  The solution is initialized with a wrinkled (perturbed) 2D steady flame solution computed using the PREMIX code.  Two levels of solution-adaptive refinement are automatically triggered by the presence of the flame intermediate, HO2.
+   a. To run with MPI support, ensure ``USE_MPI = TRUE`` in the ``GNUmakefile`` or specify it on the command line::
+
+        make TPLrealclean && make realclean && make TPL USE_MPI=TRUE && make -j USE_MPI=TRUE
+        mpiexec -n 4 ./PeleC3d.xxx.MPI.ex example.inp
+
+   b. If the string ``.MPI.`` does not appear in your executable name, you have not successfully built PeleC with MPI support, and if you execute in parallel you will be running multiple instances of the solver in serial.
+
+   c. See the ``GNUmakefile`` for other build options, including the compiler used (``COMP``), and certain model settings that must determined at compile time, such as the solver dimensionality (``DIM``) and the chemical mechanism used (``Chemistry_Model``).
+
+2. The example is a 3D premixed flame, flowing vertically upward through the domain with no gravity. The lateral boundaries are periodic.  A detailed hydrogen model is used.  The solution is initialized with a wrinkled/perturbed 1D steady flame solution computed using Cantera (historically these used the PREMIX code).  Two levels of solution-adaptive refinement are automatically triggered by the presence of the flame intermediate, HO2.
 
 3. In addition to informative output to the terminal, periodic plotfiles are written in the run folder.  These may be viewed with AMReX's `Amrvis <https://amrex-codes.github.io/amrex/docs_html/Visualization.html>`_, `VisIt <https://visit-dav.github.io/visit-website/>`_, or `ParaView <https://www.paraview.org>`_:
 
    a. In VisIt, direct the File->Open dialogue to select the file named "Header" that is inside each plotfile folder.
 
-   b. In ParaViuew, navigate to the case directory, open the plotfile folder.
+   b. In ParaView, navigate to the case directory, open the plotfile folder.
 
-   c. With Amrvis, `$ amrvis3d plt00030`, for example.
+   c. With Amrvis, ``$ amrvis3d plt00030``, for example.
 
 Dependencies
 ~~~~~~~~~~~~
@@ -52,16 +68,16 @@ To add a new feature to PeleC, the procedure is:
 
 3. Build and run
 
-   a. Build and run the full test suite using CMake and CTest (See the `Build` directory for an example script). Please do not introduce warnings. PeleC is checked against `clang-tidy` and `cppcheck` in the CI. To use `cppcheck` and `clang-tidy` locally use these CMake options: ::
+   a. Build and run the full test suite using CMake and CTest (See the ``Build/`` directory for an example script). Please do not introduce warnings. PeleC is checked against ``clang-tidy`` and ``cppcheck`` in the CI. To use ``cppcheck`` and ``clang-tidy`` locally use these CMake options: ::
 
         -DPELE_ENABLE_CLANG_TIDY:BOOL=ON
         -DPELE_ENABLE_CPPCHECK:BOOL=ON
 
-   b. Run `clang-tidy` by using an LLVM compiler and making sure `clang-tidy` is found during configure. Then `make` will run `clang-tidy` along with compilation. Once verifying `cppcheck` was found during configure, using the `make cppcheck` target should run its checks on the `compile_commands.json` database generated by CMake. More information on these checks can be seen in the CI files used for GitHub Actions in the `.github/workflows` directory.
+   b. Run ``clang-tidy`` by using an LLVM compiler and making sure ``clang-tidy`` is found during configure. Then ``make`` will run ``clang-tidy`` along with compilation. Once verifying ``cppcheck`` was found during configure, using the ``make cppcheck`` target should run its checks on the ``compile_commands.json`` database generated by CMake. More information on these checks can be seen in the CI files used for GitHub Actions in the ``.github/workflows/`` directory.
 
    c. To easily format all source files before commit, use the following command: ::
 
-        find Source Exec \( -name "*.cpp" -o -name "*.H" \) -exec clang-format -i {} +
+        find ./Source ./Exec \( -name "*.cpp" -o -name "*.H" -o -name "*.h" -o -name "*.C" \) -exec clang-format -i {} +
 
 4. If you don't already have a fork of the PeleC repository, follow the `Github instructions <https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo>`_ to create one. Then, push a feature branch to your forked PeleC repository: ::
 
@@ -80,7 +96,7 @@ To add a new feature to PeleC, the procedure is:
 Test Status
 ~~~~~~~~~~~
 
-Nightly test results for PeleC against multiple compilers and machines can be seen on its `CDash page <https://my.cdash.org/index.php?project=PeleC>`_.
+Nightly test results for PeleC against multiple compilers and machines can be seen on its `CDash page <https://my.cdash.org/index.php?project=Pele>`_.
 
 Documentation
 ~~~~~~~~~~~~~
@@ -140,6 +156,25 @@ Additionally, to cite the application of PeleC to compressible reacting flows, u
     doi = {https://doi.org/10.1016/j.combustflame.2021.111531},
     url = {https://www.sciencedirect.com/science/article/pii/S0010218021002741},
   }
+
+A full list of publications documenting the development of the Pele suite and its
+application to various reacting flow and other simulations is available on the main
+`Pele suite page <https://amrex-combustion.github.io/pubs.html>`_. After publication,
+if you'd like your work to be included on that list, you can request to have it added
+`here <https://github.com/AMReX-Combustion/AMReX-Combustion.github.io/discussions/3>`_.
+
+Versioning
+~~~~~~~~~~
+
+PeleC now uses a type of semantic versioning to help users navigate different versions of the code,
+which are labeled with `GitHub tags <https://github.com/AMReX-Combustion/PeleC/releases/>`_. These tagged versions are not exhaustive, but they adhere to
+the following convention. Given a version number MAJOR.MINOR.PATCH:
+1. MAJOR version for changes to key aspects of the solver affecting input/source files for all cases, when a key model is changed to significantly affect results of simulations, when a major new capability is added
+2. MINOR version for when a significant feature is added (in a backward compatible manner), accumulation of smaller features, or changes to input file compatibility for less central aspects of the solver (e.g., post-processing) or aspects not affecting all cases
+3. PATCH version for backward compatible bug fixes and minor features
+
+PeleC previously used YY.MM formatting for versions. These should be interpreted as version 0 subversions,
+e.g. v25.04 is equivalent to v0.25.04.
 
 
 Acknowledgment

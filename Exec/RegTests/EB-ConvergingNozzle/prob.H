@@ -17,7 +17,7 @@
 #include "prob_parm.H"
 #include "EB.H"
 #include <AMReX_EB2_IF_Rotation.H>
-#include "Utilities.H"
+#include "PeleCUtilities.H"
 #include "Geometry.H"
 
 void parse_params(std::unique_ptr<ProbParmDevice>& prob_parm_device);
@@ -78,7 +78,7 @@ bcnormal(
   const amrex::Real /*time*/,
   amrex::GeometryData const& geomdata,
   ProbParmDevice const& prob_parm,
-  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& /*turb_fluc*/)
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& turb_fluc)
 {
 
   if ((idir == 0) && (sgn == 1)) {
@@ -113,6 +113,14 @@ bcnormal(
     amrex::Real u_in = prob_parm.M_inlet * Cs_in;
     amrex::Real v_in = 0.0;
     amrex::Real w_in = 0.0;
+    // Use TurbInflow stuff if needed
+    if (prob_parm.turb_inflow_type == TurbInflowType::TurbulentFluctuations) {
+      AMREX_D_TERM(
+        u_in += turb_fluc[0];, v_in += turb_fluc[1];, w_in += turb_fluc[2];);
+    } else if (prob_parm.turb_inflow_type == TurbInflowType::TotalVelocity) {
+      AMREX_D_TERM(
+        u_in = turb_fluc[0];, v_in = turb_fluc[1];, w_in = turb_fluc[2];);
+    }
 
     // Set boundary cells
     s_ext[URHO] = rho_in;

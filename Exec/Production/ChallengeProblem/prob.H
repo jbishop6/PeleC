@@ -20,7 +20,7 @@
 #include "ProblemSpecificFunctions.H"
 #include "Tagging.H"
 #include "Transport.H"
-#include "Utilities.H"
+#include "PeleCUtilities.H"
 #include "prob_parm.H"
 #include "Geometry.H"
 
@@ -97,7 +97,8 @@ pc_initdata(
     amrex::Real slp[3] = {0.0};
     for (int cnt = 0; cnt < 3; cnt++) {
       mod[cnt] = std::fmod(x[cnt], prob_parm.Linput);
-      locate(prob_parm.d_xarray, prob_parm.inres, mod[cnt], idx[cnt]);
+      pele::physics::utilities::locate(
+        prob_parm.d_xarray, prob_parm.inres, mod[cnt], idx[cnt]);
       idxp1[cnt] = (idx[cnt] + 1) % prob_parm.inres;
       slp[cnt] =
         (mod[cnt] - prob_parm.d_xarray[idx[cnt]]) / prob_parm.d_xdiff[idx[cnt]];
@@ -382,9 +383,10 @@ struct MyProblemSpecificFunctions : public DefaultProblemSpecificFunctions
     const int /*level*/,
     ProbParmDevice const& prob_parm) noexcept
   {
-    AMREX_D_TERM(const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0];
-                 , const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
-                 , const amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2];);
+    AMREX_D_TERM(
+      const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0];
+      , const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
+      , const amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2];);
 
     // Tag around the jets
     const amrex::Real dphi_angle = 2.0 * constants::PI() / prob_parm.nholes;

@@ -1,5 +1,5 @@
-#ifndef UTILITIES_H
-#define UTILITIES_H
+#ifndef PELEC_UTILITIES_H
+#define PELEC_UTILITIES_H
 
 #include <AMReX_IArrayBox.H>
 #include <AMReX_FArrayBox.H>
@@ -18,6 +18,50 @@ pc_cmp_loc(const amrex::IntVect& idx, const amrex::GeometryData& geomdata)
     geomdata.ProbLo(1) + (idx[1] + 0.5) * geomdata.CellSize(1),
     geomdata.ProbLo(2) + (idx[2] + 0.5) * geomdata.CellSize(2)));
   return x;
+}
+
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+amrex::RealVect
+get_rotaxis_vec(
+  const amrex::IntVect& iv,
+  amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc,
+  amrex::GeometryData const& geomdata)
+{
+  amrex::RealVect axloc(AMREX_D_DECL(axis_loc[0], axis_loc[1], axis_loc[2]));
+  amrex::RealVect r(AMREX_D_DECL(0.0, 0.0, 0.0));
+  amrex::RealVect x = pc_cmp_loc(iv, geomdata);
+  r = x - axloc;
+  return (r);
+}
+
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+amrex::Real
+get_rotaxis_dist(
+  const amrex::IntVect& iv,
+  int axis,
+  amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc,
+  amrex::GeometryData const& geomdata)
+{
+  amrex::RealVect r = get_rotaxis_vec(iv, axis_loc, geomdata);
+  amrex::Real rad2 = r.radSquared();
+  rad2 -= r[axis] * r[axis]; // only in plane
+  return (std::sqrt(rad2));
+}
+
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+amrex::Real
+get_rot_energy(
+  const amrex::IntVect& iv,
+  amrex::Real omega,
+  int axis,
+  amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc,
+  amrex::GeometryData const& geomdata)
+{
+  amrex::Real rad = get_rotaxis_dist(iv, axis, axis_loc, geomdata);
+  return (0.5 * omega * omega * rad * rad);
 }
 
 AMREX_GPU_DEVICE
@@ -51,10 +95,11 @@ pc_rst_int_e(
   const bool allow_negative_energy,
   const bool dual_energy_update_E_from_e,
   const amrex::Real dual_energy_eta2,
-  const int /*verbose*/)
+  amrex::Real omega = 0.0,
+  amrex::Real rad = 0.0)
 {
-  if (std::is_same<
-        pele::physics::PhysicsType::eos_type, pele::physics::eos::SRK>::value) {
+  if (std::is_same_v<
+        pele::physics::PhysicsType::eos_type, pele::physics::eos::SRK>) {
     if ((!allow_small_energy) || (!allow_negative_energy)) {
       amrex::Error("Small/negative energy must be allowed for nonideal EOS");
     }
@@ -65,7 +110,8 @@ pc_rst_int_e(
     const amrex::Real Up = S(i, j, k, UMX) * rhoInv;
     const amrex::Real Vp = S(i, j, k, UMY) * rhoInv;
     const amrex::Real Wp = S(i, j, k, UMZ) * rhoInv;
-    const amrex::Real ke = 0.5 * (Up * Up + Vp * Vp + Wp * Wp);
+    const amrex::Real ke =
+      0.5 * (Up * Up + Vp * Vp + Wp * Wp) - 0.5 * omega * omega * rad * rad;
     const amrex::Real eden = S(i, j, k, UEDEN) * rhoInv;
     const amrex::Real eos_state_T = constants::very_small_num();
     amrex::Real eos_state_massfrac[NUM_SPECIES] = {0.0};
@@ -122,7 +168,8 @@ pc_rst_int_e(
     const amrex::Real Up = S(i, j, k, UMX) * rhoInv;
     const amrex::Real Vp = S(i, j, k, UMY) * rhoInv;
     const amrex::Real Wp = S(i, j, k, UMZ) * rhoInv;
-    const amrex::Real ke = 0.5 * (Up * Up + Vp * Vp + Wp * Wp);
+    const amrex::Real ke =
+      0.5 * (Up * Up + Vp * Vp + Wp * Wp) - 0.5 * omega * omega * rad * rad;
     if (
       S(i, j, k, UEDEN) <
       (S(i, j, k, URHO) * std::numeric_limits<amrex::Real>::min())) {
@@ -183,7 +230,8 @@ pc_rst_int_e(
     const amrex::Real Up = S(i, j, k, UMX) * rhoInv;
     const amrex::Real Vp = S(i, j, k, UMY) * rhoInv;
     const amrex::Real Wp = S(i, j, k, UMZ) * rhoInv;
-    const amrex::Real ke = 0.5 * (Up * Up + Vp * Vp + Wp * Wp);
+    const amrex::Real ke =
+      0.5 * (Up * Up + Vp * Vp + Wp * Wp) - 0.5 * omega * omega * rad * rad;
     S(i, j, k, UEINT) = S(i, j, k, UEDEN) - rho * ke;
   }
 }
@@ -197,7 +245,9 @@ pc_ctoprim(
   const int k,
   amrex::Array4<const amrex::Real> const& u,
   amrex::Array4<amrex::Real> const& q,
-  amrex::Array4<amrex::Real> const& qa)
+  amrex::Array4<amrex::Real> const& qa,
+  amrex::Real omega = 0.0,
+  amrex::Real rad = 0.0)
 {
   auto eos = pele::physics::PhysicsType::eos();
   const amrex::Real rho = u(i, j, k, URHO);
@@ -205,7 +255,8 @@ pc_ctoprim(
   const amrex::Real vx = u(i, j, k, UMX) * rhoinv;
   const amrex::Real vy = u(i, j, k, UMY) * rhoinv;
   const amrex::Real vz = u(i, j, k, UMZ) * rhoinv;
-  const amrex::Real kineng = 0.5 * rho * (vx * vx + vy * vy + vz * vz);
+  const amrex::Real kineng = 0.5 * rho * (vx * vx + vy * vy + vz * vz) -
+                             0.5 * rho * omega * omega * rad * rad;
   q(i, j, k, QRHO) = rho;
   q(i, j, k, QU) = vx;
   q(i, j, k, QV) = vy;
@@ -220,7 +271,7 @@ pc_ctoprim(
   }
 #if NUM_AUX > 0
   for (int n = 0; n < NUM_AUX; n++) {
-    q(i, j, k, QFX + n) = u(i, j, k, UFX + n) / rho;
+    q(i, j, k, QFX + n) = u(i, j, k, UFX + n);
   }
 #endif
   // Handle passive variables that are not per unit mass
@@ -368,56 +419,14 @@ void read_binary(
   const size_t ny,
   const size_t nz,
   const size_t ncol,
-  amrex::Vector<amrex::Real>& data);
+  amrex::Vector<double>& data); // needs to be double
 
 void read_csv(
   const std::string& iname,
   const size_t nx,
   const size_t ny,
   const size_t nz,
-  amrex::Vector<amrex::Real>& data);
-
-// -----------------------------------------------------------
-// Search for the closest index in an array to a given value
-// using the bisection technique.
-// INPUTS/OUTPUTS:
-// xtable(0:n-1) => array to search in (ascending order)
-// n             => array size
-// x             => x location
-// idxlo        <=> output st. xtable(idxlo) <= x < xtable(idxlo+1)
-// -----------------------------------------------------------
-AMREX_GPU_DEVICE
-AMREX_FORCE_INLINE
-void
-locate(const amrex::Real* xtable, const int n, const amrex::Real& x, int& idxlo)
-{
-  // If x is out of bounds, return boundary index
-  if (x >= xtable[n - 1]) {
-    idxlo = n - 1;
-    return;
-  }
-  if (x <= xtable[0]) {
-    idxlo = 0;
-    return;
-  }
-
-  // Do the bisection
-  idxlo = 0;
-  int idxhi = n - 1;
-  bool notdone = true;
-  while (notdone) {
-    if (idxhi - idxlo <= 1) {
-      notdone = false;
-    } else {
-      const int idxmid = (idxhi + idxlo) / 2;
-      if (x >= xtable[idxmid]) {
-        idxlo = idxmid;
-      } else {
-        idxhi = idxmid;
-      }
-    }
-  }
-}
+  amrex::Vector<double>& data); // needs to be double
 
 // Find position of element in vector
 template <typename T>

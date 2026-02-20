@@ -100,8 +100,9 @@ bcnormal(
 
   // Set the external state
   s_ext[URHO] = rho;
-  AMREX_D_TERM(s_ext[UMX] = rho * u[0];, s_ext[UMY] = rho * u[1];
-               , s_ext[UMZ] = rho * u[2];)
+  AMREX_D_TERM(
+    s_ext[UMX] = rho * u[0];, s_ext[UMY] = rho * u[1];
+    , s_ext[UMZ] = rho * u[2];)
   s_ext[UEINT] = rho * eint;
   s_ext[UEDEN] =
     rho *

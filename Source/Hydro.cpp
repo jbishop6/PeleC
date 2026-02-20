@@ -181,6 +181,15 @@ PeleC::construct_hydro_source(
             area[0].const_array(mfi), area[1].const_array(mfi),
             area[2].const_array(mfi))}};
 
+        amrex::FArrayBox dm_as_fine(
+          amrex::Box::TheUnitBox(), hydro_source.nComp(),
+          amrex::The_Async_Arena());
+        amrex::FArrayBox fab_drho_as_crse(
+          amrex::Box::TheUnitBox(), hydro_source.nComp(),
+          amrex::The_Async_Arena());
+        amrex::IArrayBox fab_rrflag_as_crse(
+          amrex::Box::TheUnitBox(), 1, amrex::The_Async_Arena());
+
         const int ngrow_bx = (redistribution_type == "StateRedist") ? 3 : 2;
         const amrex::Box& fbxg_i = grow(fbx, ngrow_bx);
         if (flag_fab.getType(fbxg_i) == amrex::FabType::singlevalued) {
@@ -198,15 +207,6 @@ PeleC::construct_hydro_source(
 
           const int as_crse = static_cast<int>(fr_as_crse != nullptr);
           const int as_fine = static_cast<int>(fr_as_fine != nullptr);
-
-          amrex::FArrayBox dm_as_fine(
-            amrex::Box::TheUnitBox(), hydro_source.nComp(),
-            amrex::The_Async_Arena());
-          amrex::FArrayBox fab_drho_as_crse(
-            amrex::Box::TheUnitBox(), hydro_source.nComp(),
-            amrex::The_Async_Arena());
-          amrex::IArrayBox fab_rrflag_as_crse(
-            amrex::Box::TheUnitBox(), 1, amrex::The_Async_Arena());
 
           auto* p_drho_as_crse = (fr_as_crse != nullptr)
                                    ? fr_as_crse->getCrseData(mfi)
@@ -281,9 +281,6 @@ PeleC::construct_hydro_source(
         // Refluxing
         if (do_reflux && sub_iteration == sub_ncycle - 1) {
           const amrex::FabType gtyp = flag_fab.getType(amrex::grow(bx, 1));
-          amrex::FArrayBox dm_as_fine(
-            amrex::Box::TheUnitBox(), hyd_src.nComp(),
-            amrex::The_Async_Arena());
           update_flux_registers(
             dt, mfi, gtyp,
             {{AMREX_D_DECL(flux.data(), &(flux[1]), &(flux[2]))}}, dm_as_fine);
@@ -295,8 +292,9 @@ PeleC::construct_hydro_source(
       amrex::Print() << "WARNING -- EFFECTIVE CFL AT THIS LEVEL " << level
                      << " IS " << courno << '\n';
       if (hard_cfl_limit) {
-        amrex::Abort("CFL is too high at this level -- go back to a checkpoint "
-                     "and restart with lower cfl number");
+        amrex::Abort(
+          "CFL is too high at this level -- go back to a checkpoint "
+          "and restart with lower cfl number");
       }
     }
   }
@@ -438,8 +436,9 @@ pc_adjust_fluxes_eb(
   // These are the fluxes on face centroids -- they are defined in
   // eb_compute_div
   //    and are the fluxes that go into the flux registers
-  AMREX_D_TERM(auto const& fx_arr = flux[0];, auto const& fy_arr = flux[1];
-               , auto const& fz_arr = flux[2];);
+  AMREX_D_TERM(
+    auto const& fx_arr = flux[0];, auto const& fy_arr = flux[1];
+    , auto const& fz_arr = flux[2];);
 
   // Compute divu to be used in artificial viscosity
   auto bx_divu = amrex::Box(q_arr);
@@ -540,8 +539,6 @@ pc_adjust_fluxes_eb(
   });
 
 #endif
-
-  amrex::Gpu::streamSynchronize();
 }
 
 void
@@ -592,16 +589,16 @@ pc_consup_eb(
   // These are the fluxes we computed in MOL_umeth_eb and modified in
   // adjust_fluxes_eb
   //  -- they live at face centers
-  AMREX_D_TERM(auto const& fx_in_arr = flux_tmp[0];
-               , auto const& fy_in_arr = flux_tmp[1];
-               , auto const& fz_in_arr = flux_tmp[2];);
+  AMREX_D_TERM(
+    auto const& fx_in_arr = flux_tmp[0];, auto const& fy_in_arr = flux_tmp[1];
+    , auto const& fz_in_arr = flux_tmp[2];);
 
   // These are the fluxes on face centroids -- they are defined in
   // eb_compute_div
   //    and are the fluxes that go into the flux registers
-  AMREX_D_TERM(auto const& fx_out_arr = flux[0];
-               , auto const& fy_out_arr = flux[1];
-               , auto const& fz_out_arr = flux[2];);
+  AMREX_D_TERM(
+    auto const& fx_out_arr = flux[0];, auto const& fy_out_arr = flux[1];
+    , auto const& fz_out_arr = flux[2];);
 
   auto const& blo = bx.smallEnd();
   auto const& bhi = bx.bigEnd();
@@ -674,12 +671,14 @@ pc_umdrv_eb(
 
   amrex::Array4<amrex::Real const> AMREX_D_DECL(fcx, fcy, fcz),
     AMREX_D_DECL(apx, apy, apz), ccc;
-  AMREX_D_TERM(fcx = fact->getFaceCent()[0]->const_array(mfi);
-               , fcy = fact->getFaceCent()[1]->const_array(mfi);
-               , fcz = fact->getFaceCent()[2]->const_array(mfi););
-  AMREX_D_TERM(apx = fact->getAreaFrac()[0]->const_array(mfi);
-               , apy = fact->getAreaFrac()[1]->const_array(mfi);
-               , apz = fact->getAreaFrac()[2]->const_array(mfi););
+  AMREX_D_TERM(
+    fcx = fact->getFaceCent()[0]->const_array(mfi);
+    , fcy = fact->getFaceCent()[1]->const_array(mfi);
+    , fcz = fact->getFaceCent()[2]->const_array(mfi););
+  AMREX_D_TERM(
+    apx = fact->getAreaFrac()[0]->const_array(mfi);
+    , apy = fact->getAreaFrac()[1]->const_array(mfi);
+    , apz = fact->getAreaFrac()[2]->const_array(mfi););
   ccc = fact->getCentroid().const_array(mfi);
 
   const auto* domlo = geom.Domain().loVect();
@@ -700,13 +699,19 @@ pc_umdrv_eb(
   // Quantities for redistribution
   amrex::FArrayBox divc, redistwgt;
   if (redistribution_type == "StateRedist") {
-    divc.resize(bxg_i, NVAR); // This will hold "dUdt" before redistribution
+    divc.resize(
+      bxg_i, NVAR,
+      amrex::The_Async_Arena()); // This will hold "dUdt" before redistribution
     redistwgt.resize(
-      bxg_i, NVAR); // This will be "scratch" which holds "Uold + dt*dUdt"
+      bxg_i, NVAR, amrex::The_Async_Arena()); // This will be "scratch" which
+                                              // holds "Uold + dt*dUdt"
   } else {
-    divc.resize(bxg_i, NVAR); // This will hold "dUdt" before redistribution
+    divc.resize(
+      bxg_i, NVAR,
+      amrex::The_Async_Arena()); // This will hold "dUdt" before redistribution
     redistwgt.resize(
-      bxg_i, 1); // This will hold the weights used in flux redistribution
+      bxg_i, 1, amrex::The_Async_Arena()); // This will hold the weights used in
+                                           // flux redistribution
   }
   divc.setVal<amrex::RunOn::Device>(0.0);
   redistwgt.setVal<amrex::RunOn::Device>(0.0);
@@ -748,8 +753,9 @@ pc_umdrv_eb(
 #endif
 
   // Construct divu
-  AMREX_D_TERM(const amrex::Real dx0 = dx[0];, const amrex::Real dx1 = dx[1];
-               , const amrex::Real dx2 = dx[2];);
+  AMREX_D_TERM(
+    const amrex::Real dx0 = dx[0];, const amrex::Real dx1 = dx[1];
+    , const amrex::Real dx2 = dx[2];);
 
   amrex::ParallelFor(
     bxg_ii, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {

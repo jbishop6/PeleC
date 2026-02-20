@@ -299,8 +299,8 @@ if __name__ == "__main__":
                 profile_fields["heat_release"] = ["HR", -10.0]
 
         # Read time history files
-        datdf = pd.read_csv(os.path.join(fdir, datname), delim_whitespace=True)
-        extradf = pd.read_csv(os.path.join(fdir, extraname), delim_whitespace=True)
+        datdf = pd.read_csv(os.path.join(fdir, datname), sep="\\s+")
+        extradf = pd.read_csv(os.path.join(fdir, extraname), sep="\\s+")
         tdf = pd.concat(
             [datdf.set_index("time"), extradf.set_index("time")], axis=1, join="inner"
         ).reset_index()
@@ -313,7 +313,7 @@ if __name__ == "__main__":
             [
                 pd.read_csv(
                     os.path.join(datadir, f"{field}.curve"),
-                    delim_whitespace=True,
+                    sep="\\s+",
                     header=None,
                     names=["t", field],
                     comment="#",
@@ -336,7 +336,7 @@ if __name__ == "__main__":
             for j, fname in enumerate(fnames):
                 tmp = pd.read_csv(
                     fname,
-                    delim_whitespace=True,
+                    sep="\\s+",
                     header=None,
                     names=["pos", profile_fields[field][0]],
                     comment="#",

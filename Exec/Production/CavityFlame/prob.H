@@ -20,7 +20,7 @@
 
 #include "ProblemSpecificFunctions.H"
 #include "prob_parm.H"
-#include "Utilities.H"
+#include "PeleCUtilities.H"
 #include "turbinflow.H"
 
 AMREX_GPU_DEVICE
@@ -70,8 +70,9 @@ pc_initdata(
       1.0);
     x_velocity = interp * Cs * prob_parm.Mach_channel;
   } else {
-    amrex::Abort("prob.init_type must be 0 (uniform velocity), 1 (quiescent "
-                 "cavity), or 2 (linear velocity in cavity)");
+    amrex::Abort(
+      "prob.init_type must be 0 (uniform velocity), 1 (quiescent "
+      "cavity), or 2 (linear velocity in cavity)");
   }
 
   // Set the state

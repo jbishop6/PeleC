@@ -23,7 +23,7 @@ class MMSTestCase(unittest.TestCase):
         # Load the data
         fdir = os.path.abspath(".")
         fname = os.path.join(fdir, "mmslog")
-        df = pd.read_csv(fname, delim_whitespace=True)
+        df = pd.read_csv(fname, sep="\\s+")
         npt.assert_allclose(df.u_mms_err, df.v_mms_err, rtol=1e-13)
         npt.assert_allclose(df.u_mms_err, df.w_mms_err, rtol=1e-13)
         npt.assert_allclose(df.rhou_residual, df.rhov_residual, rtol=1e-13)

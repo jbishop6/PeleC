@@ -7,7 +7,7 @@
 #include "IndexDefines.H"
 #include "EBStencilTypes.H"
 #include "PelePhysics.H"
-#include "Utilities.H"
+#include "PeleCUtilities.H"
 #include "GradUtil.H"
 #include "TransCoeff.H"
 
@@ -221,10 +221,11 @@ pc_diffusion_flux_eb(
 #endif
       const amrex::Real divu = AMREX_D_TERM(dudx, +dvdy, +dwdz);
 
-      AMREX_D_TERM(taux = coef[dComp_mu] * (2.0 * dudx - 2.0 / 3.0 * divu) +
-                          coef[dComp_xi] * divu;
-                   , tauy = coef[dComp_mu] * (dudy + dvdx);
-                   , tauz = coef[dComp_mu] * (dudz + dwdx););
+      AMREX_D_TERM(
+        taux = coef[dComp_mu] * (2.0 * dudx - 2.0 / 3.0 * divu) +
+               coef[dComp_xi] * divu;
+        , tauy = coef[dComp_mu] * (dudy + dvdx);
+        , tauz = coef[dComp_mu] * (dudz + dwdx););
     } else if (dir == 1) {
       AMREX_D_TERM(
         const amrex::Real dudy = dxinv[dir] * (q(iv, QU) - q(ivm, QU));
@@ -266,13 +267,14 @@ pc_diffusion_flux_eb(
 #endif
 
       const amrex::Real divu = AMREX_D_TERM(dudx, +dvdy, +dwdz);
-      AMREX_D_TERM(taux = coef[dComp_mu] * (dudy + dvdx);
-                   , tauy = coef[dComp_mu] * (2.0 * dvdy - 2.0 / 3.0 * divu) +
-                            coef[dComp_xi] * divu;
-                   , tauz = coef[dComp_mu] * (dwdy + dvdz);)
+      AMREX_D_TERM(
+        taux = coef[dComp_mu] * (dudy + dvdx);
+        , tauy = coef[dComp_mu] * (2.0 * dvdy - 2.0 / 3.0 * divu) +
+                 coef[dComp_xi] * divu;
+        , tauz = coef[dComp_mu] * (dwdy + dvdz);)
     } else if (dir == 2) {
+#if AMREX_SPACEDIM == 3
       const amrex::Real dudz = dxinv[dir] * (q(iv, QU) - q(ivm, QU));
-
       const amrex::Real dvdz = dxinv[dir] * (q(iv, QV) - q(ivm, QV));
       const amrex::Real dwdz = dxinv[dir] * (q(iv, QW) - q(ivm, QW));
 
@@ -313,6 +315,7 @@ pc_diffusion_flux_eb(
       tauy = coef[dComp_mu] * (dvdz + dwdy);
       tauz = coef[dComp_mu] * (2.0 * dwdz - 2.0 / 3.0 * divu) +
              coef[dComp_xi] * divu;
+#endif
     }
   }
   const amrex::Real dTdd =
@@ -382,8 +385,9 @@ pc_diffusion_flux(
 
     taux =
       coef[dComp_mu] * (2.0 * dudx - 2.0 / 3.0 * divu) + coef[dComp_xi] * divu;
-    AMREX_D_TERM(, tauy = coef[dComp_mu] * (dudy + dvdx);
-                 , tauz = coef[dComp_mu] * (dudz + dwdx););
+    AMREX_D_TERM(
+      , tauy = coef[dComp_mu] * (dudy + dvdx);
+      , tauz = coef[dComp_mu] * (dudz + dwdx););
   } else if (dir == 1) {
 
     AMREX_D_TERM(
@@ -413,6 +417,7 @@ pc_diffusion_flux(
       coef[dComp_mu] * (2.0 * dvdy - 2.0 / 3.0 * divu) + coef[dComp_xi] * divu;
     AMREX_D_TERM(, , tauz = coef[dComp_mu] * (dwdy + dvdz););
   } else if (dir == 2) {
+#if AMREX_SPACEDIM == 3
     const amrex::Real dudz = dxinv[dir] * (q(iv, QU) - q(ivm, QU));
     const amrex::Real dvdz = dxinv[dir] * (q(iv, QV) - q(ivm, QV));
     const amrex::Real dwdz = dxinv[dir] * (q(iv, QW) - q(ivm, QW));
@@ -434,6 +439,7 @@ pc_diffusion_flux(
     tauy = coef[dComp_mu] * (dvdz + dwdy);
     tauz =
       coef[dComp_mu] * (2.0 * dwdz - 2.0 / 3.0 * divu) + coef[dComp_xi] * divu;
+#endif
   }
   const amrex::Real dTdd = dxinv[dir] * (q(iv, QTEMP) - q(ivm, QTEMP));
 

@@ -49,7 +49,7 @@ if __name__ == "__main__":
 
     fields = ["density", "pressure", "u", "Temp"]
 
-    exact = pd.read_csv("exact_soln", delim_whitespace=True)
+    exact = pd.read_csv("exact_soln", sep="\\s+")
     for field in fields:
         plt.figure(field)
         p = plt.plot(exact.x, exact[field], lw=1, color=cmap[-1], label=f"Exact")
