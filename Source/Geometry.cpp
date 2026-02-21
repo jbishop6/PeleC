@@ -368,36 +368,29 @@ TwoBranch::build (const amrex::Geometry& geom,
 
   ParmParse pp("geo");
 
-  // --- User knobs (matching your timing diagram) ---
-  // H   = TOTAL height (red arrow in the figure)
-  // mid = separator thickness between upper & lower branches
-  // X   = length of the two-branch region (blue X in the figure)
-  // xs  = left x of the two-branch region
-  // cL, cR = trims in the separator to open the junctions
-  Real W        = 0.04;   // unused, kept for symmetry with ThreeBranch
-  Real Htot     = 0.10;   // total height (will be overridden by geo.H)
-  Real mid      = 0.02;   // separator thickness
-  Real X        = 0.40;
-  Real xs       = 0.30;
-  Real cL       = 0.0;
-  Real cR       = 0.0;
-  Real y_offset = 0.0;
+  // --- User knobs (aligned with ThreeBranch) ---
+  // L   = channel height (inlet / outlet thickness)
+  // mid = center wall thickness between upper & lower branches
+  // H   = "total height" in the paper figure, but here it's INFO ONLY;
+  //       we recompute H_eff = 2*L + mid from L and mid.
+  Real H_input   = 0.10;   // informational only
+  Real L         = 0.04;   // channel height
+  Real mid       = 0.02;   // center wall thickness
+  Real X         = 0.40;   // length of the two-branch region
+  Real xs        = 0.30;   // left x of the two-branch region
+  Real cL        = 0.0;    // left connector trim
+  Real cR        = 0.0;    // right connector trim
+  Real y_offset  = 0.0;    // vertical shift of the whole stack
 
-  // Optional: explicit channel height override
-  bool has_L_input = false;
-  Real L_input     = 0.0;
-
-  pp.query("W",        W);
-  pp.query("H",        Htot);      // *** H in inputs = TOTAL HEIGHT ***
-  pp.query("mid",      mid);       // separator thickness
-  pp.query("xs",       xs);
+  // Read from inputs
+  pp.query("H",        H_input);   // not used to shape geometry
+  pp.query("L",        L);         // *** controls inlet/outlet thickness ***
+  pp.query("mid",      mid);       // center wall thickness
   pp.query("X",        X);
+  pp.query("xs",       xs);
   pp.query("cL",       cL);
   pp.query("cR",       cR);
   pp.query("y_offset", y_offset);
-  if (pp.query("L", L_input)) {
-    has_L_input = true;            // user explicitly set channel height
-  }
 
   const RealBox& rb = geom.ProbDomain();
   const Real xlo = rb.lo(0), xhi = rb.hi(0);
@@ -409,27 +402,15 @@ TwoBranch::build (const amrex::Geometry& geom,
   const Real dy = geom.CellSize(1);
   const Real h  = std::max(dx, dy);
 
-  // Keep xs inside the domain
+  // Safety: minimum thicknesses so EB is resolvable
+  L   = std::max(L,   4.0*h);
+  mid = std::max(mid, 4.0*h);
+
+  // Keep xs reasonable
   xs = std::min(std::max(xs, xlo + 2.0*h), xhi - 2.0*h);
   Real xr = xs + X;
 
-  // Separator at least a few cells thick
-  mid = std::max(mid, 4.0*h);
-
-  // --- derive channel height and enforce consistency ---
-  Real Lchan;
-  if (!has_L_input) {
-    // Main mode: you give TOTAL height Htot and mid,
-    // we solve Htot = 2*Lchan + mid for Lchan.
-    Htot  = std::max(Htot, mid + 8.0*h);   // 2 channels of ≥ 4 cells each
-    Lchan = 0.5 * (Htot - mid);
-  } else {
-    // If you explicitly give L, use it and recompute Htot
-    Lchan = std::max(L_input, 4.0*h);
-    Htot  = 2.0 * Lchan + mid;
-  }
-
-  // Make sure trims don't delete the mid-wall
+  // Connector trims: don't remove the mid-wall
   const Real max_pad = std::max(0.0, 0.5*(xr - xs) - 3.0*h);
   cL = std::min(std::max(cL, 0.0), max_pad);
   cR = std::min(std::max(cR, 0.0), max_pad);
@@ -442,37 +423,38 @@ TwoBranch::build (const amrex::Geometry& geom,
     return BoxIF(lo, hi, false);  // solid
   };
 
-  // --- Vertical layout built from Htot & mid (like the paper figure) ---
-
-  // Separator (center wall):
+  // --- Vertical layout (mirrors three-branch channels) ---
+  // Center wall:
   const Real y_base_lo  = ymid - 0.5 * mid;
   const Real y_base_hi  = ymid + 0.5 * mid;
 
-  // Upper branch:
+  // Upper channel (height = L):
   const Real y_upper_lo = y_base_hi;
-  const Real y_upper_hi = y_upper_lo + Lchan;
+  const Real y_upper_hi = y_upper_lo + L;
 
-  // Lower branch:
+  // Lower channel (height = L):
   const Real y_lower_hi = y_base_lo;
-  const Real y_lower_lo = y_lower_hi - Lchan;
+  const Real y_lower_lo = y_lower_hi - L;
 
-  const Real Htot_eff = y_upper_hi - y_lower_lo;  // should ≈ Htot
+  // Total stack height from these choices
+  const Real H_eff = y_upper_hi - y_lower_lo;
 
   // Mid-wall x-extent with trims
   const Real mw_x0 = xs + cL;
   const Real mw_x1 = xr - cR;
 
-  // Domain walls (outside your timing-model H)
+  // Top / bottom domain walls outside the two-branch stack
   auto s_top    = boxS(xlo, y_upper_hi, xhi, yhi);
   auto s_bottom = boxS(xlo, ylo,       xhi, y_lower_lo);
 
-  // Side walls of the two branches
+  // Side walls for upper & lower channels
   auto s_left_upper  = boxS(xlo, y_base_hi,  xs,  y_upper_hi);
   auto s_right_upper = boxS(xr,  y_base_hi,  xhi, y_upper_hi);
+
   auto s_left_lower  = boxS(xlo, y_lower_lo, xs,  y_base_lo);
   auto s_right_lower = boxS(xr,  y_lower_lo, xhi, y_base_lo);
 
-  // Center separating wall
+  // Center separating wall between the two branches
   auto s_mid_wall    = boxS(mw_x0, y_base_lo, mw_x1, y_base_hi);
 
   auto walls = makeUnion(
@@ -482,18 +464,17 @@ TwoBranch::build (const amrex::Geometry& geom,
     s_mid_wall
   );
 
-  Print() << "\n=== TWO-BRANCH GEOMETRY (H = TOTAL HEIGHT) ===\n";
-  Print() << "Input total height Htot    = " << Htot << "\n";
-  Print() << "Separator thickness mid    = " << mid << "\n";
-  Print() << "Derived channel height L   = " << Lchan << "\n";
-  Print() << "Effective total height     = " << Htot_eff << "\n";
+  Print() << "\n=== TWO-BRANCH GEOMETRY (aligned with ThreeBranch) ===\n";
+  Print() << "Input H (info only)       = " << H_input << "\n";
+  Print() << "Channel height L          = " << L << "\n";
+  Print() << "Center wall thickness mid = " << mid << "\n";
+  Print() << "Effective total height    = " << H_eff << " (≈ 2L + mid)\n";
   Print() << "Upper channel: y=[" << y_upper_lo << ", " << y_upper_hi << "]\n";
-  Print() << "Separator:      y=[" << y_base_lo << ", " << y_base_hi << "]\n";
-  Print() << "Lower channel:  y=[" << y_lower_lo << ", " << y_lower_hi << "]\n";
+  Print() << "Lower channel: y=[" << y_lower_lo << ", " << y_lower_hi << "]\n";
   Print() << "xs=" << xs << ", xr=" << xr << ", X=" << X << "\n";
   Print() << "cL=" << cL << ", cR=" << cR << "\n";
   Print() << "Mid-wall: x=[" << mw_x0 << ", " << mw_x1 << "]\n";
-  Print() << "=============================================\n\n";
+  Print() << "=====================================================\n\n";
 
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
