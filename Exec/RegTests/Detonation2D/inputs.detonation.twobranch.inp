@@ -77,14 +77,10 @@ eb2.build_type            = all
 eb2.max_coarsening_level  = 0
 eb2.geom_type             = twobranch
 
-# ---- Two-branch geometry knobs (domain units) ----
-# H   = TOTAL height (red arrow in Fig. 2)
-# mid = separator thickness
-# L   (optional) = channel height; omit if you don't care
-
-geo.H   = 1.0      # match the H in your timing figure
-geo.mid = 0.1      # pick the separator thickness you want
-# geo.L = 0.2      # OPTIONAL; leave this line out if you don't care about L
+# ---- Two-branch geometry knobs ----
+geo.H   = 1.0        # optional / informational – you can set 2*L + mid
+geo.L   = 0.10       # <--- this is the inlet & outlet thickness
+geo.mid = 0.10       # separator wall thickness
 geo.X   = 0.4
 geo.xs  = 0.30
 geo.cL  = 0.05
