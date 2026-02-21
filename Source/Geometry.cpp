@@ -400,7 +400,6 @@ TwoBranch::build(const amrex::Geometry& geom,
 
   xs = std::min(std::max(xs, xlo + 2*h), xhi - 2*h);
   Real xr = xs + X;
-
   mid = std::min(std::max(mid, 4*h), std::max(W - 4*h, 4*h + 1e-12));
 
   const Real max_pad = std::max(0.0, 0.5*(xr - xs) - 3*h);
@@ -415,13 +414,11 @@ TwoBranch::build(const amrex::Geometry& geom,
     return BoxIF(lo, hi, false); // solid
   };
 
-  // ---- Vertical layout: IDENTICAL to ThreeBranch ----
+  // Vertical layout: IDENTICAL to ThreeBranch
   const Real y_base_lo  = ymid - 0.5 * H;  // bottom of separator
   const Real y_base_hi  = ymid + 0.5 * H;  // top of separator
-
   const Real y_upper_lo = y_base_hi;       // upper channel
   const Real y_upper_hi = y_upper_lo + L;
-
   const Real y_lower_hi = y_base_lo;       // lower channel
   const Real y_lower_lo = y_lower_hi - L;
 
@@ -431,16 +428,16 @@ TwoBranch::build(const amrex::Geometry& geom,
   const Real mw_x0 = xs + cL;
   const Real mw_x1 = xr - cR;
 
-  // ---- Walls: same as ThreeBranch, but without third branch or bottom gap ----
+  // Walls: same as ThreeBranch, but with solid bottom (no third branch)
   auto s_top    = boxS(xlo, y_upper_hi, xhi, yhi);            // top wall
-  auto s_bottom = boxS(xlo, ylo,       xhi, y_lower_lo);      // full bottom wall
+  auto s_bottom = boxS(xlo, ylo,       xhi, y_lower_lo);      // SOLID bottom wall
 
   auto s_left_upper   = boxS(xlo, y_base_hi,  xs,  y_upper_hi);
   auto s_left_lower   = boxS(xlo, y_lower_lo, xs,  y_base_lo);
   auto s_right_upper  = boxS(xr,  y_base_hi,  xhi, y_upper_hi);
-  auto s_right_lower  = boxS(xr,  y_lower_lo, xhi, y_base_lo);
+  auto s_right_lower  = boxS(xr,  y_lower_lo, xhi, y_base_lo);  // CORRECTED: extends to xhi
 
-  // mid “block” between upper & lower connections
+  // mid "block" between upper & lower connections
   auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
 
   auto walls = makeUnion(
@@ -455,12 +452,13 @@ TwoBranch::build(const amrex::Geometry& geom,
   Print() << "Channel height L: "     << L << "\n";
   Print() << "Total stack height: "   << (2*L + H) << "\n";
   Print() << "Upper channel: y=[" << y_upper_lo << ", " << y_upper_hi << "]\n";
-  Print() << "Separator:    y=[" << y_base_lo  << ", " << y_base_hi  << "]\n";
+  Print() << "Separator:     y=[" << y_base_lo  << ", " << y_base_hi  << "]\n";
   Print() << "Lower channel: y=[" << y_lower_lo << ", " << y_lower_hi << "]\n";
   Print() << "xs=" << xs << ", xr=" << xr << ", X=" << X << "\n";
   Print() << "cL=" << cL << ", cR=" << cR << "\n";
   Print() << "Mid block x=[" << mw_x0 << ", " << mw_x1
           << "], y=[" << y_mid_lo << ", " << y_mid_hi << "]\n";
+  Print() << "Bottom wall: SOLID (no third branch)\n";
   Print() << "=============================================================\n\n";
 
   auto gshop = makeShop(walls);
