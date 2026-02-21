@@ -1,0 +1,41 @@
+🔧 Geometry Construction: TwoBranch / ThreeBranch System
+
+This section describes how the 2D embedded boundary (EB) geometry is constructed for the TwoBranch and ThreeBranch systems in this detonation simulation.
+
+📐 Overview
+
+The geometry defines a central detonation duct with upper and lower branches extending vertically from a horizontal channel. These branches are used to control wave interference and detonation behavior.
+
+The geometry is built using AMReX's EB2 API by defining a union of solid box regions. The fluid domain exists wherever solid boundaries are not defined.
+
+🧱 Geometry Parameters (from geo namespace in inputs)
+Parameter |	Description
+W	| Width of the main duct
+H	| Height of the upper branch
+L	| Depth of the lower branch
+xs	| X-position where the branch region begins
+xr	| X-position where the branch region ends
+mid	| Thickness of the center wall (between upper/lower branches)
+cL	| Retraction distance of mid-wall from the left (creates connection to upper/lower)
+cR	| Retraction distance of mid-wall from the right
+y_offset (optional)	| Vertical shift of the entire duct (used in ThreeBranch)
+
+These are specified in the inputs file using the prefix geo. (e.g., geo.W = 0.04).
+
+🧰 Geometry Construction Logic (in geometry.cpp)
+
+Each solid region is constructed as a BoxIF, which defines a solid box in the domain. These boxes are combined with EB2::makeUnion(...).
+
+🧩 Components:
+
+- Top and Bottom Caps
+  Solid boxes that seal the domain vertically above the upper and below the lower branches.
+- Side Walls (Left and Right)
+  Solid boxes that extend vertically from the domain edge to the beginning (xs) and end (xr) of the branch region.
+- Upper and Lower Branches
+  Vertical extensions defined by:
+    Upper: y_base_hi to y_base_hi + H
+    Lower: y_base_lo - L to y_base_lo
+- Center Mid-Wall
+  A horizontal wall placed between the upper and lower ducts. Can be retracted from either end (cL, cR) to form connections for wave propagation.
+
