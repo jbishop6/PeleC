@@ -86,18 +86,36 @@ void amrex_probinit(const int*, const int*, const int*,
         P->split[d] = problo[d] + P->frac * (probhi[d] - problo[d]);
 
     // --- Compute rho*e for both states ---
-    amrex::Real e = 0.0;
-    amrex::Real Yl[NUM_SPECIES] = {0.0};
-    if (P->left_gas_id >= 0 && P->left_gas_id < NUM_SPECIES)
-        Yl[P->left_gas_id] = 1.0;
-    eos.RYP2E(P->rho_l, Yl, P->p_l, e);
-    P->rhoe_l = P->rho_l * e;
+    // --- Build a premixed H2/O2 composition (stoichiometric 2H2 + O2) ---
 
-    amrex::Real Yr[NUM_SPECIES] = {0.0};
-    if (P->right_gas_id >= 0 && P->right_gas_id < NUM_SPECIES)
-        Yr[P->right_gas_id] = 1.0;
-    eos.RYP2E(P->rho_r, Yr, P->p_r, e);
-    P->rhoe_r = P->rho_r * e;
+amrex::Real Y_mix[NUM_SPECIES] = {0.0};
+
+// Get indices for H2 and O2 from the mechanism
+int iH2 = species_id_from_name("H2");
+int iO2 = species_id_from_name("O2");
+
+// Stoichiometric: 2 H2 (2 g/mol) + 1 O2 (32 g/mol)
+// Total mass = 4 + 32 = 36
+const amrex::Real m_H2 = 4.0;
+const amrex::Real m_O2 = 32.0;
+const amrex::Real m_tot = m_H2 + m_O2;
+
+Y_mix[iH2] = m_H2 / m_tot;
+Y_mix[iO2] = m_O2 / m_tot;
+
+// Store mixture in prob parameters for left and right states
+for (int n = 0; n < NUM_SPECIES; ++n) {
+    P->Y_l[n] = Y_mix[n];
+    P->Y_r[n] = Y_mix[n];
+}
+
+// Compute rho*e for left/right using this SAME mixture
+amrex::Real e = 0.0;
+eos.RYP2E(P->rho_l, Y_mix, P->p_l, e);
+P->rhoe_l = P->rho_l * e;
+
+eos.RYP2E(P->rho_r, Y_mix, P->p_r, e);
+P->rhoe_r = P->rho_r * e;
 }
 } // extern "C"
 
