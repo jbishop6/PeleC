@@ -38,31 +38,28 @@ pelec.diffuse_temp = 0
 pelec.diffuse_spec = 0
 
 # ------------------ DETONATION WAVE ------------------
-pelec.do_react = 0
-# pelec.chem_integrator = "ReactorCvode"
-# pelec.use_typ_vals_chem = 1
-# cvode.solve_type = "denseAJ_direct"
-# ode.rtol = 1.0e-6
-# ode.atol = 1.0e-5
+pelec.do_react          = 1
+pelec.chem_integrator   = "ReactorCvode"
+pelec.use_typ_vals_chem = 1
+cvode.solve_type        = "denseAJ_direct"
+ode.rtol                = 1.0e-6
+ode.atol                = 1.0e-5
 
+# ------------------ PROBLEM PARAMETERS -------------------
+# Left: hot premixed H2/O2 region
+prob.p_l   = 1.0e5
+prob.u_l   = 0.0
+prob.rho_l = 9.6e-4
+prob.T_l   = 2500.0
 
+# Right: cold premixed H2/O2 region
+prob.p_r   = 1.0e5
+prob.u_r   = 0.0
+prob.rho_r = 9.6e-4
+prob.T_r   = 300.0
 
-prob.idir  = 0
-# prob.frac  = 0.02
-# prob.rho_l = 1.2
-# prob.T_l   = 3000.0
-# 
-# prob.p_l   = 5e6
-# prob.u_l   = 5000.0
-# prob.rho_l = 5e-4
-# 
-# prob.p_r   = 1e6
-# prob.u_r   = 0.0
-# prob.rho_r = 1e-4
-# 
-# prob.left_gas  = H2
-# prob.right_gas = O2
-
+prob.idir  = 1
+prob.frac  = 0.04
 
 
 # ------------------ TIME STEP CONTROL -------------------
