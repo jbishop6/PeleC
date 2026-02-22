@@ -44,78 +44,125 @@ pc_initdata(
   }
 
   // Set the states
+   // Set the states
   if (prob_parm.idir == 1) {
+    // Split along x using split[0]
     if (x <= prob_parm.split[0]) {
+      // LEFT (hot) premixed state
       state(i, j, k, URHO) = prob_parm.rho_l;
-      state(i, j, k, UMX) = prob_parm.rho_l * prob_parm.u_l;
-      state(i, j, k, UMY) = 0.0;
-      state(i, j, k, UMZ) = 0.0;
-      state(i, j, k, UEDEN) = prob_parm.rhoe_l + 0.5 * prob_parm.rho_l *
-                                                   prob_parm.u_l *
-                                                   prob_parm.u_l;
+      state(i, j, k, UMX)  = prob_parm.rho_l * prob_parm.u_l;
+      state(i, j, k, UMY)  = 0.0;
+      state(i, j, k, UMZ)  = 0.0;
+
+      state(i, j, k, UEDEN) =
+        prob_parm.rhoe_l +
+        0.5 * prob_parm.rho_l * prob_parm.u_l * prob_parm.u_l;
+
       state(i, j, k, UEINT) = prob_parm.rhoe_l;
       state(i, j, k, UTEMP) = prob_parm.T_l;
-      state(i, j, k, UFS + prob_parm.left_gas_id) = state(i, j, k, URHO);
+
+      // 🔴 NEW: use premixed Y_l instead of single left_gas_id
+      for (int n = 0; n < NUM_SPECIES; ++n) {
+        state(i, j, k, UFS + n) =
+          prob_parm.Y_l[n] * state(i, j, k, URHO);
+      }
     } else {
+      // RIGHT (cold) premixed state
       state(i, j, k, URHO) = prob_parm.rho_r;
-      state(i, j, k, UMX) = prob_parm.rho_r * prob_parm.u_r;
-      state(i, j, k, UMY) = 0.0;
-      state(i, j, k, UMZ) = 0.0;
-      state(i, j, k, UEDEN) = prob_parm.rhoe_r + 0.5 * prob_parm.rho_r *
-                                                   prob_parm.u_r *
-                                                   prob_parm.u_r;
+      state(i, j, k, UMX)  = prob_parm.rho_r * prob_parm.u_r;
+      state(i, j, k, UMY)  = 0.0;
+      state(i, j, k, UMZ)  = 0.0;
+
+      state(i, j, k, UEDEN) =
+        prob_parm.rhoe_r +
+        0.5 * prob_parm.rho_r * prob_parm.u_r * prob_parm.u_r;
+
       state(i, j, k, UEINT) = prob_parm.rhoe_r;
       state(i, j, k, UTEMP) = prob_parm.T_r;
-      state(i, j, k, UFS + prob_parm.right_gas_id) = state(i, j, k, URHO);
+
+      // 🔴 NEW: use premixed Y_r instead of single right_gas_id
+      for (int n = 0; n < NUM_SPECIES; ++n) {
+        state(i, j, k, UFS + n) =
+          prob_parm.Y_r[n] * state(i, j, k, URHO);
+      }
     }
+
   } else if (prob_parm.idir == 2) {
+    // Split along y using split[1]
     if (y <= prob_parm.split[1]) {
       state(i, j, k, URHO) = prob_parm.rho_l;
-      state(i, j, k, UMX) = 0.0;
-      state(i, j, k, UMY) = prob_parm.rho_l * prob_parm.u_l;
-      state(i, j, k, UMZ) = 0.0;
-      state(i, j, k, UEDEN) = prob_parm.rhoe_l + 0.5 * prob_parm.rho_l *
-                                                   prob_parm.u_l *
-                                                   prob_parm.u_l;
+      state(i, j, k, UMX)  = 0.0;
+      state(i, j, k, UMY)  = prob_parm.rho_l * prob_parm.u_l;
+      state(i, j, k, UMZ)  = 0.0;
+
+      state(i, j, k, UEDEN) =
+        prob_parm.rhoe_l +
+        0.5 * prob_parm.rho_l * prob_parm.u_l * prob_parm.u_l;
+
       state(i, j, k, UEINT) = prob_parm.rhoe_l;
       state(i, j, k, UTEMP) = prob_parm.T_l;
-      state(i, j, k, UFS + prob_parm.left_gas_id) = state(i, j, k, URHO);
+
+      for (int n = 0; n < NUM_SPECIES; ++n) {
+        state(i, j, k, UFS + n) =
+          prob_parm.Y_l[n] * state(i, j, k, URHO);
+      }
     } else {
       state(i, j, k, URHO) = prob_parm.rho_r;
-      state(i, j, k, UMX) = 0.0;
-      state(i, j, k, UMY) = prob_parm.rho_r * prob_parm.u_r;
-      state(i, j, k, UMZ) = 0.0;
-      state(i, j, k, UEDEN) = prob_parm.rhoe_r + 0.5 * prob_parm.rho_r *
-                                                   prob_parm.u_r *
-                                                   prob_parm.u_r;
+      state(i, j, k, UMX)  = 0.0;
+      state(i, j, k, UMY)  = prob_parm.rho_r * prob_parm.u_r;
+      state(i, j, k, UMZ)  = 0.0;
+
+      state(i, j, k, UEDEN) =
+        prob_parm.rhoe_r +
+        0.5 * prob_parm.rho_r * prob_parm.u_r * prob_parm.u_r;
+
       state(i, j, k, UEINT) = prob_parm.rhoe_r;
       state(i, j, k, UTEMP) = prob_parm.T_r;
-      state(i, j, k, UFS + prob_parm.right_gas_id) = state(i, j, k, URHO);
+
+      for (int n = 0; n < NUM_SPECIES; ++n) {
+        state(i, j, k, UFS + n) =
+          prob_parm.Y_r[n] * state(i, j, k, URHO);
+      }
     }
+
   } else if (prob_parm.idir == 3) {
+    // Split along z using split[2]
     if (z <= prob_parm.split[2]) {
       state(i, j, k, URHO) = prob_parm.rho_l;
-      state(i, j, k, UMX) = 0.0;
-      state(i, j, k, UMY) = 0.0;
-      state(i, j, k, UMZ) = prob_parm.rho_l * prob_parm.u_l;
-      state(i, j, k, UEDEN) = prob_parm.rhoe_l + 0.5 * prob_parm.rho_l *
-                                                   prob_parm.u_l *
-                                                   prob_parm.u_l;
+      state(i, j, k, UMX)  = 0.0;
+      state(i, j, k, UMY)  = 0.0;
+      state(i, j, k, UMZ)  = prob_parm.rho_l * prob_parm.u_l;
+
+      state(i, j, k, UEDEN) =
+        prob_parm.rhoe_l +
+        0.5 * prob_parm.rho_l * prob_parm.u_l * prob_parm.u_l;
+
       state(i, j, k, UEINT) = prob_parm.rhoe_l;
       state(i, j, k, UTEMP) = prob_parm.T_l;
-      state(i, j, k, UFS + prob_parm.left_gas_id) = state(i, j, k, URHO);
+
+      for (int n = 0; n < NUM_SPECIES; ++n) {
+        state(i, j, k, UFS + n) =
+          prob_parm.Y_l[n] * state(i, j, k, URHO);
+      }
     } else {
       state(i, j, k, URHO) = prob_parm.rho_r;
-      state(i, j, k, UMX) = 0.0;
-      state(i, j, k, UMY) = 0.0;
-      state(i, j, k, UMZ) = prob_parm.rho_r * prob_parm.u_r;
-      state(i, j, k, UEDEN) = prob_parm.rhoe_r + 0.5 * prob_parm.rho_r *
-                                                   prob_parm.u_r *
-                                                   prob_parm.u_r;
+      state(i, j, k, UMX)  = 0.0;
+      state(i, j, k, UMY)  = 0.0;
+      state(i, j, k, UMZ)  = prob_parm.rho_r * prob_parm.u_r;
+
+      state(i, j, k, UEDEN) =
+        prob_parm.rhoe_r +
+        0.5 * prob_parm.rho_r * prob_parm.u_r * prob_parm.u_r;
+
       state(i, j, k, UEINT) = prob_parm.rhoe_r;
       state(i, j, k, UTEMP) = prob_parm.T_r;
-      state(i, j, k, UFS + prob_parm.right_gas_id) = state(i, j, k, URHO);
+
+      for (int n = 0; n < NUM_SPECIES; ++n) {
+        state(i, j, k, UFS + n) =
+          prob_parm.Y_r[n] * state(i, j, k, URHO);
+      }
     }
+
   } else {
     amrex::Abort("invalid idir");
   }
