@@ -78,9 +78,17 @@ eb2.max_coarsening_level  = 0
 eb2.geom_type             = twobranch
 
 # ---- Two-branch geometry knobs ----
-geo.H  = 0.1   # same as threebranch
-geo.L  = 0.0390625  # same as threebranch
-geo.X  = 0.4
-geo.xs = 0.30
-geo.cL = 0.05
-geo.cR = 0.05
+# Box separating the upper and lower channel 
+geo.xs = 0.30 # left edge of box
+geo.xr = 0.70 # right edge of box
+geo.mid = 0.02 # thickness of box
+
+# NEW: retract mid-wall from each end to connect branches
+geo.cL = 0.05    # left-side connection length
+geo.cR = 0.05    # right-side connection length
+
+# Adjustable parameters of the system
+geo.Z = 0.1 # Length of third branch
+geo.X = 0.4 # Length of channel (circumference of RDE)
+geo.H = 0.1 #Total height from top of upper branch to bottom of lower branch
+geo.W = 0.1 # Thickness of the third branch
