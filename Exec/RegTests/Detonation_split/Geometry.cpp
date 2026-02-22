@@ -545,7 +545,7 @@ TwoBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
     const Real y_upper_hi = y_upper_lo + L;
 
     const Real y_lower_hi = y_base_lo;
-    const Real y_lower_lo = y_lower_hi - L;
+    const Real y_lower_lo = y_lower_hi;
 
     const Real mw_x0 = xs + cL;
     const Real mw_x1 = xr - cR;
