@@ -32,13 +32,6 @@ cvode.solve_type = "denseAJ_direct"
 ode.rtol = 1.0e-6
 ode.atol = 1.0e-5
 
-
-# ------------------ TIME STEP CONTROL -------------------
-pelec.cfl         = 0.3
-pelec.init_shrink = 0.5
-pelec.change_max  = 1.05
-pelec.dt_cutoff   = 5.e-20
-
 pelec.lo_bc = "SlipWall" "SlipWall"
 pelec.hi_bc = "SlipWall"  "SlipWall"
 
@@ -88,18 +81,6 @@ amr.plot_int          = 1000
 # put vfrac in plot_vars (not derive) so it is guaranteed to appear
 amr.plot_vars         = vfrac density Temp
 amr.derive_plot_vars  = pressure x_velocity y_velocity magvel magvort
-
-# ------------------ PROBLEM PARAMETERS -------------------
-prob.p_l   = 1e7
-prob.u_l   = 1e4
-prob.rho_l = 9.6e-4
-prob.p_r   = 1e6
-prob.u_r   = 0.0
-prob.rho_r = 1.2e-4
-prob.idir  = 1
-prob.frac  = 0.5
-prob.left_gas  = N2
-prob.right_gas = HE
 
 # ------------------ EMBEDDED BOUNDARY (EB) -------------------
 pelec.eb_in_domain = 1
