@@ -39,7 +39,7 @@ from scipy.stats import norm
 
 # Shared across all optimization runs
 # Shared input and result files — read-only
-SHARED_BASE = os.path.expanduser("~/PeleC/Exec/RegTests/Detonation2D/outputs")
+SHARED_BASE = os.path.expanduser("~/PeleC/Exec/RegTests/Detonation2D/outputs_new")
 LHS_INPUT_CSV = os.path.join(SHARED_BASE, "lhs_samples", "lhs_input.csv")
 LHS_RESULTS_CSV = os.path.join(SHARED_BASE, "results_log.csv")   # <- This is important
 
