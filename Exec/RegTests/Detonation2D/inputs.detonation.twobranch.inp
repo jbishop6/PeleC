@@ -88,7 +88,7 @@ geo.cL = 0.05    # left-side connection length
 geo.cR = 0.05    # right-side connection length
 
 # Adjustable parameters of the system
-geo.Z = 0.1 # Length of third branch
+geo.L  = 0.0390625
 geo.X = 0.4 # Length of channel (circumference of RDE)
 geo.H = 0.1 #Total height from top of upper branch to bottom of lower branch
-geo.W = 0.1 # Thickness of the third branch
+
