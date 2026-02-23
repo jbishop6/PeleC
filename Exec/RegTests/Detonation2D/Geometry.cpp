@@ -363,125 +363,128 @@ RotatedBox::build(const amrex::Geometry& geom, const int max_coarsening_level)
     gshop, geom, max_coarsening_level, max_coarsening_level, 4, false);
 }
 
-void
-TwoBranch::build (const amrex::Geometry& geom,
-                  const int max_coarsening_level)
+void TwoBranch::build(const amrex::Geometry& geom,
+                      const int max_coarsening_level)
 {
   using namespace amrex;
   using namespace amrex::EB2;
 
   ParmParse pp("geo");
 
-  // Same parameter meanings as ThreeBranch
-  Real W  = 0.04;   // kept for compatibility (not used for two-branch)
-  Real H  = 0.04;   // separator thickness between upper/lower branches
-  Real L  = 0.04;   // channel height (same for upper and lower)
-  Real xs = 0.30;   // start of structure
-  Real X  = 0.40;   // length of structure
+  // Same interface as ThreeBranch
+  Real W = 0.04, H = 0.04, L = 0.04, xs = 0.30;
+  Real X = 0.40;
+  Real mid = 0.02;
+  Real cL  = 0.00;
+  Real cR  = 0.00;
+  Real y_offset = 0.0;
+  Real Z = 0.08;  // kept for symmetry with ThreeBranch, but not used here
 
-  Real mid      = 0.02;  // mid connector thickness
-  Real cL       = 0.00;  // left trim
-  Real cR       = 0.00;  // right trim
-  Real y_offset = 0.0;   // vertical shift
-
-  // Load user values
-  pp.query("W",        W);
-  pp.query("H",        H);
-  pp.query("L",        L);
-  pp.query("xs",       xs);
-  pp.query("X",        X);
-  pp.query("mid",      mid);
-  pp.query("cL",       cL);
-  pp.query("cR",       cR);
+  pp.query("W", W);  
+  pp.query("H", H);   // separator thickness
+  pp.query("L", L);   // channel height
+  pp.query("xs", xs); 
+  pp.query("X", X);
+  pp.query("mid", mid);
+  pp.query("cL", cL); 
+  pp.query("cR", cR); 
   pp.query("y_offset", y_offset);
+  pp.query("Z", Z);   // ignored in TwoBranch
 
   const RealBox& rb = geom.ProbDomain();
+
   const Real xlo = rb.lo(0), xhi = rb.hi(0);
   const Real ylo = rb.lo(1), yhi = rb.hi(1);
-
-  const Real ymid = 0.5*(ylo + yhi) + y_offset;
+  const Real ymid = 0.5 * (ylo + yhi) + y_offset;
 
   const Real dx = geom.CellSize(0);
   const Real dy = geom.CellSize(1);
   const Real h  = std::max(dx, dy);
 
-  // Keep xs inside domain
   xs = std::min(std::max(xs, xlo + 2*h), xhi - 2*h);
   Real xr = xs + X;
+  
+  // Same clamp on mid as in ThreeBranch
+  mid = std::min(std::max(mid, 4*h), std::max(W - 4*h, 4*h + 1e-12));
 
-  // Limit trims cL/cR so mid-wall doesn't vanish
   const Real max_pad = std::max(0.0, 0.5*(xr - xs) - 3*h);
   cL = std::min(std::max(cL, 0.0), max_pad);
   cR = std::min(std::max(cR, 0.0), max_pad);
 
   auto boxS = [] (Real x0, Real y0, Real x1, Real y1) {
-    Array<Real,AMREX_SPACEDIM> lo{
+    Array<Real, AMREX_SPACEDIM> lo{
       AMREX_D_DECL(std::min(x0,x1), std::min(y0,y1), 0.0)};
-    Array<Real,AMREX_SPACEDIM> hi{
+    Array<Real, AMREX_SPACEDIM> hi{
       AMREX_D_DECL(std::max(x0,x1), std::max(y0,y1), 0.0)};
     return BoxIF(lo, hi, false);  // solid
   };
 
-  // -----------------------------------------------------
-  // *** Vertical geometry — EXACT match with ThreeBranch ***
-  // -----------------------------------------------------
-  const Real y_base_lo  = ymid - 0.5*H;  // separator bottom
-  const Real y_base_hi  = ymid + 0.5*H;  // separator top
-
+  // ---- Vertical layout (identical to ThreeBranch) ----
+  const Real y_base_lo  = ymid - 0.5 * H;  // separator bottom
+  const Real y_base_hi  = ymid + 0.5 * H;  // separator top
   const Real y_upper_lo = y_base_hi;
   const Real y_upper_hi = y_upper_lo + L;
-
   const Real y_lower_hi = y_base_lo;
   const Real y_lower_lo = y_lower_hi - L;
 
-  const Real y_mid_lo = ymid - 0.5*mid;
-  const Real y_mid_hi = ymid + 0.5*mid;
+  const Real y_mid_lo = ymid - 0.5 * mid;
+  const Real y_mid_hi = ymid + 0.5 * mid;
 
-  // Mid-wall x-extent
   const Real mw_x0 = xs + cL;
   const Real mw_x1 = xr - cR;
 
-  // -----------------------------------------------------
-  // Logging (same style as ThreeBranch)
-  // -----------------------------------------------------
-  Print() << "\n=== TWO-BRANCH GEOMETRY (MATCHES THREEBRANCH) ===\n";
-  Print() << "Separator thickness H    = " << H << "\n";
-  Print() << "Channel height L         = " << L << "\n";
-  Print() << "Total height             = " << (2*L + H) << "\n";
-  Print() << "Upper channel y=[" << y_upper_lo << ", " << y_upper_hi << "]\n";
-  Print() << "Separator y=["    << y_base_lo  << ", " << y_base_hi  << "]\n";
-  Print() << "Lower channel y=[" << y_lower_lo << ", " << y_lower_hi << "]\n";
+  // Third-branch extents (computed the same, but we WON'T open it)
+  const Real z_x_left  = mw_x1;
+  const Real z_x_right = mw_x1 + W; 
+  const Real z_y_top   = y_lower_lo;
+  const Real z_y_bottom = std::max(z_y_top - Z, ylo + 2*h);
+
+  Print() << "\n=== TWO-BRANCH GEOMETRY (ThreeBranch core, NO third branch) ===\n";
+  Print() << "Separator thickness H: " << H << "\n";
+  Print() << "Channel height L: " << L << " (constant)\n";
+  Print() << "Total system height: " << (2*L + H) << "\n";
+  Print() << "Upper channel: y=[" << y_upper_lo << ", " << y_upper_hi
+          << "], height=" << (y_upper_hi - y_upper_lo) << "\n";
+  Print() << "Separator: y=[" << y_base_lo << ", " << y_base_hi
+          << "], thickness=" << H << "\n";
+  Print() << "Lower channel: y=[" << y_lower_lo << ", " << y_lower_hi
+          << "], height=" << (y_lower_hi - y_lower_lo) << "\n";
   Print() << "xs=" << xs << ", xr=" << xr << ", X=" << X << "\n";
-  Print() << "cL=" << cL << ", cR=" << cR 
-          << "    mid-wall x=[" << mw_x0 << ", " << mw_x1 << "]\n";
-  Print() << "=================================================\n\n";
+  Print() << "cL=" << cL << ", cR=" << cR << "\n";
+  Print() << "Blue separator: x=[" << mw_x0 << ", " << mw_x1 << "]\n";
+  Print() << "Third-branch region (SEALED): x=[" << z_x_left << ", " << z_x_right 
+          << "], y=[" << z_y_bottom << ", " << z_y_top << "]\n";
+  Print() << "===============================================================\n\n";
 
-  // -----------------------------------------------------
-  // Walls — SAME AS THREEBRANCH, but **no third branch**
-  // -----------------------------------------------------
+  // ---- Walls: EXACT same structure, but fill the bottom gap ----
 
-  // Full top boundary
+  // Top boundary wall
   auto s_top = boxS(xlo, y_upper_hi, xhi, yhi);
 
-  // FULL bottom wall (no opening)
-  auto s_bottom = boxS(xlo, ylo, xhi, y_lower_lo);
+  // Bottom walls: ThreeBranch splits into left / under-gap / right.
+  // Here we *fill* the under-gap up to y_lower_lo, so the third branch is solid.
+  auto s_bottom_left  = boxS(xlo,      ylo, mw_x1,      y_lower_lo);
+  auto s_bottom_mid   = boxS(mw_x1,    ylo, z_x_right,  y_lower_lo); // <- filled, no opening
+  auto s_bottom_right = boxS(z_x_right,ylo, xhi,        y_lower_lo);
 
-  // Side walls
-  auto s_left_upper  = boxS(xlo, y_base_hi,  xs,  y_upper_hi);
-  auto s_left_lower  = boxS(xlo, y_lower_lo, xs,  y_base_lo);
-  auto s_right_upper = boxS(xr,  y_base_hi,  xhi, y_upper_hi);
-  auto s_right_lower = boxS(xr,  y_lower_lo, xhi, y_base_lo);
+  // Two-branch side walls (same as ThreeBranch)
+  auto s_left_upper   = boxS(xlo, y_base_hi,  xs,        y_upper_hi);
+  auto s_left_lower   = boxS(xlo, y_lower_lo, xs,        y_base_lo);
+  auto s_right_upper  = boxS(xr,  y_base_hi,  xhi,       y_upper_hi);
+  auto s_right_lower  = boxS(z_x_right, y_lower_lo, xhi, y_base_lo);
 
-  // Mid-connector (the “blue” part)
-  auto s_mid_between = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
+  // Mid connector between upper & lower channel
+  auto s_mid_between  = boxS(mw_x0, y_mid_lo, mw_x1,    y_mid_hi);
 
-  // Combine solids (following ThreeBranch's pattern)
-  auto u1 = makeUnion(s_top, s_bottom);
-  auto u2 = makeUnion(u1,   s_left_upper);
-  auto u3 = makeUnion(u2,   s_left_lower);
-  auto u4 = makeUnion(u3,   s_right_upper);
-  auto u5 = makeUnion(u4,   s_right_lower);
-  auto walls = makeUnion(u5, s_mid_between);
+  // Union everything in the same order as ThreeBranch
+  auto u1 = makeUnion(s_top,         s_bottom_left);
+  auto u2 = makeUnion(u1,            s_bottom_mid);
+  auto u3 = makeUnion(u2,            s_bottom_right);
+  auto u4 = makeUnion(u3,            s_left_upper);
+  auto u5 = makeUnion(u4,            s_left_lower);
+  auto u6 = makeUnion(u5,            s_right_upper);
+  auto u7 = makeUnion(u6,            s_right_lower);
+  auto walls = makeUnion(u7,         s_mid_between);
 
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
