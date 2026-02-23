@@ -35,20 +35,20 @@ ode.atol = 1.0e-5
 pelec.lo_bc = "SlipWall" "SlipWall"
 pelec.hi_bc = "SlipWall"  "SlipWall"
 
-prob.idir  = 0
-prob.frac  = 0.02
+prob.idir  = 1
+prob.frac  = 0.5
 prob.rho_l = 1.2
 prob.T_l   = 3000.0
 
-prob.p_l   = 5e6
-prob.u_l   = 5000.0
-prob.rho_l = 5e-4
+prob.p_l   = 1e7
+prob.u_l   = 1e4
+prob.rho_l = 9.6e-4
 prob.p_r   = 1e6
 prob.u_r   = 0.0
-prob.rho_r = 1e-4
+prob.rho_r = 1.2e-4
 
-prob.left_gas  = H2
-prob.right_gas = O2
+prob.left_gas  = N2
+prob.right_gas = He
 
 
 
