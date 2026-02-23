@@ -59,7 +59,7 @@ export OMP_NUM_THREADS=1
 # Launch MPI code...
 
 # mpirun ./bin/hydro-2d-g++ ./tests/FlowVortexShedLarge/input
-mpirun ./PeleC2d.gnu.ex ./inputs_detonation_threebranch.inp
+mpirun ./PeleC2d.gnu.MPI.ex ./inputs_detonation_split.inp
 
 # ---------------------------------------------------
 

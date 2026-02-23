@@ -5,6 +5,115 @@
 
 using namespace amrex;
 
+std::string
+read_pmf_file(std::ifstream& in)
+{
+  return static_cast<std::stringstream const&>(
+           std::stringstream() << in.rdbuf())
+    .str();
+}
+
+bool
+checkQuotes(const std::string& str)
+{
+  int count = 0;
+  for (char c : str) {
+    if (c == '"') {
+      count++;
+    }
+  }
+  return (count % 2) == 0;
+}
+
+void
+read_pmf(const std::string& myfile)
+{
+  std::string firstline;
+  std::string secondline;
+  std::string remaininglines;
+  unsigned int pos1;
+  unsigned int pos2;
+  int variable_count;
+  int line_count;
+
+  std::ifstream infile(myfile);
+  const std::string memfile = read_pmf_file(infile);
+  infile.close();
+  std::istringstream iss(memfile);
+
+  std::getline(iss, firstline);
+  if (!checkQuotes(firstline)) {
+    amrex::Abort("PMF file variable quotes unbalanced");
+  }
+  std::getline(iss, secondline);
+  pos1 = 0;
+  pos2 = 0;
+  variable_count = 0;
+  while ((pos1 < firstline.length() - 1) && (pos2 < firstline.length() - 1)) {
+    pos1 = firstline.find('"', pos1);
+    pos2 = firstline.find('"', pos1 + 1);
+    variable_count++;
+    pos1 = pos2 + 1;
+  }
+
+  amrex::Vector<std::string> pmf_names;
+  pmf_names.resize(variable_count);
+  pos1 = 0;
+  // pos2 = 0;
+  for (int i = 0; i < variable_count; i++) {
+    pos1 = firstline.find('"', pos1);
+    pos2 = firstline.find('"', pos1 + 1);
+    pmf_names[i] = firstline.substr(pos1 + 1, pos2 - (pos1 + 1));
+    pos1 = pos2 + 1;
+  }
+
+  amrex::Print() << variable_count << " variables found in PMF file"
+                 << std::endl;
+  // for (int i = 0; i < variable_count; i++)
+  //  amrex::Print() << "Variable found: " << pmf_names[i] <<
+  //  std::endl;
+
+  line_count = 0;
+  while (std::getline(iss, remaininglines)) {
+    line_count++;
+  }
+  amrex::Print() << line_count << " data lines found in PMF file" << std::endl;
+
+  PeleC::h_prob_parm_device->pmf_N = line_count;
+  PeleC::h_prob_parm_device->pmf_M = variable_count - 1;
+  PeleC::prob_parm_host->h_pmf_X.resize(PeleC::h_prob_parm_device->pmf_N);
+  PeleC::prob_parm_host->pmf_X.resize(PeleC::h_prob_parm_device->pmf_N);
+  PeleC::prob_parm_host->h_pmf_Y.resize(
+    PeleC::h_prob_parm_device->pmf_N * PeleC::h_prob_parm_device->pmf_M);
+  PeleC::prob_parm_host->pmf_Y.resize(
+    PeleC::h_prob_parm_device->pmf_N * PeleC::h_prob_parm_device->pmf_M);
+
+  iss.clear();
+  iss.seekg(0, std::ios::beg);
+  std::getline(iss, firstline);
+  std::getline(iss, secondline);
+  for (unsigned int i = 0; i < PeleC::h_prob_parm_device->pmf_N; i++) {
+    std::getline(iss, remaininglines);
+    std::istringstream sinput(remaininglines);
+    sinput >> PeleC::prob_parm_host->h_pmf_X[i];
+    for (unsigned int j = 0; j < PeleC::h_prob_parm_device->pmf_M; j++) {
+      sinput >> PeleC::prob_parm_host
+                  ->h_pmf_Y[j * PeleC::h_prob_parm_device->pmf_N + i];
+    }
+  }
+
+  amrex::Gpu::copy(
+    amrex::Gpu::hostToDevice, PeleC::prob_parm_host->h_pmf_X.begin(),
+    PeleC::prob_parm_host->h_pmf_X.end(), PeleC::prob_parm_host->pmf_X.begin());
+  amrex::Gpu::copy(
+    amrex::Gpu::hostToDevice, PeleC::prob_parm_host->h_pmf_Y.begin(),
+    PeleC::prob_parm_host->h_pmf_Y.end(), PeleC::prob_parm_host->pmf_Y.begin());
+  PeleC::h_prob_parm_device->d_pmf_X = PeleC::prob_parm_host->pmf_X.data();
+  PeleC::h_prob_parm_device->d_pmf_Y = PeleC::prob_parm_host->pmf_Y.data();
+  PeleC::d_prob_parm_device->d_pmf_X = PeleC::prob_parm_host->pmf_X.data();
+  PeleC::d_prob_parm_device->d_pmf_Y = PeleC::prob_parm_host->pmf_Y.data();
+}
+
 // Map species name -> index for your 14-spec mechanism
 static int species_id_from_name(const std::string& s)
 {

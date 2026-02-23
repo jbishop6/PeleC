@@ -22,12 +22,29 @@ struct ProbParmDevice
   amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> split;
   int left_gas_id = N2_ID;
   int right_gas_id = HE_ID;
+
+  // for mix init
+  unsigned int pmf_N = 0;
+  unsigned int pmf_M = 0;
+  int pmf_do_average = 0;
+  int init_dim = 0;
+
+  amrex::GpuArray<amrex::Real, NVAR> fuel_state = {{0.0}};
+  amrex::Real* d_pmf_X = nullptr;
+  amrex::Real* d_pmf_Y = nullptr;
 };
 
 struct ProbParmHost
 {
   std::string gasL = "N2";
   std::string gasR = "HE";
-  ProbParmHost() = default;
+  // for mix init
+  amrex::Vector<amrex::Real> h_pmf_X;
+  amrex::Vector<amrex::Real> h_pmf_Y;
+  amrex::Gpu::DeviceVector<amrex::Real> pmf_X;
+  amrex::Gpu::DeviceVector<amrex::Real> pmf_Y;
+  ProbParmHost() : pmf_X(0), pmf_Y(0) {}
+  //
+  // ProbParmHost() = default;
 };
 #endif

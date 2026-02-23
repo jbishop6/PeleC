@@ -38,7 +38,8 @@ pelec.diffuse_temp = 0
 pelec.diffuse_spec = 0
 
 # ------------------ DETONATION WAVE ------------------
-pelec.do_react = 0
+pelec.do_react = 1
+pelec.chem_integrator = "ReactorRK64"
 # pelec.chem_integrator = "ReactorCvode"
 # pelec.use_typ_vals_chem = 1
 # cvode.solve_type = "denseAJ_direct"
@@ -62,6 +63,9 @@ prob.idir  = 0
 # 
 # prob.left_gas  = H2
 # prob.right_gas = O2
+
+prob.pmf_datafile = "Init_mix.dat"
+prob.init_dim = 0
 
 
 
@@ -89,8 +93,8 @@ amr.n_error_buf     = 12 8 2 2
 
 # put vfrac in plot_vars (not derive) so it is guaranteed to appear
 amr.plot_vars         = vfrac density Temp
-amr.derive_plot_vars  = pressure x_velocity y_velocity magvel magvort
-# amr.derive_plot_vars = ALL
+# amr.derive_plot_vars  = pressure x_velocity y_velocity magvel magvort
+amr.derive_plot_vars = ALL
 
 
 
@@ -120,8 +124,8 @@ prob.u_r   = 0.0
 prob.rho_r = 1.2e-4
 prob.idir  = 1
 prob.frac  = 0.04
-prob.left_gas  = N2
-prob.right_gas = HE
+# prob.left_gas  = N2
+# prob.right_gas = HE
 
 # ------------------ EMBEDDED BOUNDARY (EB) -------------------
 pelec.eb_in_domain = 1
