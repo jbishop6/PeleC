@@ -5,8 +5,9 @@ from scipy.stats.qmc import LatinHypercube
 from optimize_geometry import is_valid_input
 
 # === Parameters ===
-SCRATCH_BASE = "~/PeleC/Exec/RegTests/Detonation2D/outputs_new"
-os.makedirs(os.path.join(SCRATCH_BASE, "lhs_samples"), exist_ok=True)
+SCRATCH_BASE = os.path.expanduser("~/PeleC/Exec/RegTests/Detonation2D/outputs_new")
+lhs_dir = os.path.join(SCRATCH_BASE, "lhs_samples")
+os.makedirs(lhs_dir, exist_ok=True)
 
 bounds = np.array([
     [0.08, 0.15],   # Z
