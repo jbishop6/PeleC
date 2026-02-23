@@ -87,6 +87,7 @@ geo.mid = 0.02 # thickness of box
 geo.cL = 0.05    # left-side connection length
 geo.cR = 0.05    # right-side connection length
 geo.L  = 0.0390625
+W = 0.0846302
 
 # Adjustable parameters of the system
 
