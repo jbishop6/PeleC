@@ -61,6 +61,11 @@ prob.T_r   = 300.0
 prob.idir  = 1
 prob.frac  = 0.04
 
+# temporarily turning off the chemistry
+# ------------------ CHEMISTRY / REACTIONS -------------------
+chem_integrator = none        # turn off integrator
+do_react = 0                  # disables reactions in time stepping
+use_reactions = false         # legacy flag some branches still check
 
 # ------------------ TIME STEP CONTROL -------------------
 pelec.cfl         = 0.9
