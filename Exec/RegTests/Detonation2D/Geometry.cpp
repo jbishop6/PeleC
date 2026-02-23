@@ -372,69 +372,45 @@ TwoBranch::build (const amrex::Geometry& geom,
 
   ParmParse pp("geo");
 
-  // --- User knobs (matching your timing diagram) ---
-  // H   = TOTAL height (red arrow in the figure)
-  // mid = separator thickness between upper & lower branches
-  // X   = length of the two-branch region (blue X in the figure)
-  // xs  = left x of the two-branch region
-  // cL, cR = trims in the separator to open the junctions
-  Real W        = 0.04;   // unused, kept for symmetry with ThreeBranch
-  Real Htot     = 0.10;   // total height (will be overridden by geo.H)
-  Real mid      = 0.02;   // separator thickness
-  Real X        = 0.40;
-  Real xs       = 0.30;
-  Real cL       = 0.0;
-  Real cR       = 0.0;
-  Real y_offset = 0.0;
+  // Same parameter meanings as ThreeBranch
+  Real W  = 0.04;   // kept for compatibility (not used for two-branch)
+  Real H  = 0.04;   // separator thickness between upper/lower branches
+  Real L  = 0.04;   // channel height (same for upper and lower)
+  Real xs = 0.30;   // start of structure
+  Real X  = 0.40;   // length of structure
 
-  // Optional: explicit channel height override
-  bool has_L_input = false;
-  Real L_input     = 0.0;
+  Real mid      = 0.02;  // mid connector thickness
+  Real cL       = 0.00;  // left trim
+  Real cR       = 0.00;  // right trim
+  Real y_offset = 0.0;   // vertical shift
 
+  // Load user values
   pp.query("W",        W);
-  pp.query("H",        Htot);      // *** H in inputs = TOTAL HEIGHT ***
-  pp.query("mid",      mid);       // separator thickness
+  pp.query("H",        H);
+  pp.query("L",        L);
   pp.query("xs",       xs);
   pp.query("X",        X);
+  pp.query("mid",      mid);
   pp.query("cL",       cL);
   pp.query("cR",       cR);
   pp.query("y_offset", y_offset);
-  if (pp.query("L", L_input)) {
-    has_L_input = true;            // user explicitly set channel height
-  }
 
   const RealBox& rb = geom.ProbDomain();
   const Real xlo = rb.lo(0), xhi = rb.hi(0);
   const Real ylo = rb.lo(1), yhi = rb.hi(1);
 
-  const Real ymid = 0.5 * (ylo + yhi) + y_offset;
+  const Real ymid = 0.5*(ylo + yhi) + y_offset;
 
   const Real dx = geom.CellSize(0);
   const Real dy = geom.CellSize(1);
   const Real h  = std::max(dx, dy);
 
-  // Keep xs inside the domain
-  xs = std::min(std::max(xs, xlo + 2.0*h), xhi - 2.0*h);
+  // Keep xs inside domain
+  xs = std::min(std::max(xs, xlo + 2*h), xhi - 2*h);
   Real xr = xs + X;
 
-  // Separator at least a few cells thick
-  mid = std::max(mid, 4.0*h);
-
-  // --- derive channel height and enforce consistency ---
-  Real Lchan;
-  if (!has_L_input) {
-    // Main mode: you give TOTAL height Htot and mid,
-    // we solve Htot = 2*Lchan + mid for Lchan.
-    Htot  = std::max(Htot, mid + 8.0*h);   // 2 channels of ≥ 4 cells each
-    Lchan = 0.5 * (Htot - mid);
-  } else {
-    // If you explicitly give L, use it and recompute Htot
-    Lchan = std::max(L_input, 4.0*h);
-    Htot  = 2.0 * Lchan + mid;
-  }
-
-  // Make sure trims don't delete the mid-wall
-  const Real max_pad = std::max(0.0, 0.5*(xr - xs) - 3.0*h);
+  // Limit trims cL/cR so mid-wall doesn't vanish
+  const Real max_pad = std::max(0.0, 0.5*(xr - xs) - 3*h);
   cL = std::min(std::max(cL, 0.0), max_pad);
   cR = std::min(std::max(cR, 0.0), max_pad);
 
@@ -446,58 +422,66 @@ TwoBranch::build (const amrex::Geometry& geom,
     return BoxIF(lo, hi, false);  // solid
   };
 
-  // --- Vertical layout built from Htot & mid (like the paper figure) ---
+  // -----------------------------------------------------
+  // *** Vertical geometry — EXACT match with ThreeBranch ***
+  // -----------------------------------------------------
+  const Real y_base_lo  = ymid - 0.5*H;  // separator bottom
+  const Real y_base_hi  = ymid + 0.5*H;  // separator top
 
-  // Separator (center wall):
-  const Real y_base_lo  = ymid - 0.5 * mid;
-  const Real y_base_hi  = ymid + 0.5 * mid;
-
-  // Upper branch:
   const Real y_upper_lo = y_base_hi;
-  const Real y_upper_hi = y_upper_lo + Lchan;
+  const Real y_upper_hi = y_upper_lo + L;
 
-  // Lower branch:
   const Real y_lower_hi = y_base_lo;
-  const Real y_lower_lo = y_lower_hi - Lchan;
+  const Real y_lower_lo = y_lower_hi - L;
 
-  const Real Htot_eff = y_upper_hi - y_lower_lo;  // should ≈ Htot
+  const Real y_mid_lo = ymid - 0.5*mid;
+  const Real y_mid_hi = ymid + 0.5*mid;
 
-  // Mid-wall x-extent with trims
+  // Mid-wall x-extent
   const Real mw_x0 = xs + cL;
   const Real mw_x1 = xr - cR;
 
-  // Domain walls (outside your timing-model H)
-  auto s_top    = boxS(xlo, y_upper_hi, xhi, yhi);
-  auto s_bottom = boxS(xlo, ylo,       xhi, y_lower_lo);
+  // -----------------------------------------------------
+  // Logging (same style as ThreeBranch)
+  // -----------------------------------------------------
+  Print() << "\n=== TWO-BRANCH GEOMETRY (MATCHES THREEBRANCH) ===\n";
+  Print() << "Separator thickness H    = " << H << "\n";
+  Print() << "Channel height L         = " << L << "\n";
+  Print() << "Total height             = " << (2*L + H) << "\n";
+  Print() << "Upper channel y=[" << y_upper_lo << ", " << y_upper_hi << "]\n";
+  Print() << "Separator y=["    << y_base_lo  << ", " << y_base_hi  << "]\n";
+  Print() << "Lower channel y=[" << y_lower_lo << ", " << y_lower_hi << "]\n";
+  Print() << "xs=" << xs << ", xr=" << xr << ", X=" << X << "\n";
+  Print() << "cL=" << cL << ", cR=" << cR 
+          << "    mid-wall x=[" << mw_x0 << ", " << mw_x1 << "]\n";
+  Print() << "=================================================\n\n";
 
-  // Side walls of the two branches
+  // -----------------------------------------------------
+  // Walls — SAME AS THREEBRANCH, but **no third branch**
+  // -----------------------------------------------------
+
+  // Full top boundary
+  auto s_top = boxS(xlo, y_upper_hi, xhi, yhi);
+
+  // FULL bottom wall (no opening)
+  auto s_bottom = boxS(xlo, ylo, xhi, y_lower_lo);
+
+  // Side walls
   auto s_left_upper  = boxS(xlo, y_base_hi,  xs,  y_upper_hi);
-  auto s_right_upper = boxS(xr,  y_base_hi,  xhi, y_upper_hi);
   auto s_left_lower  = boxS(xlo, y_lower_lo, xs,  y_base_lo);
+  auto s_right_upper = boxS(xr,  y_base_hi,  xhi, y_upper_hi);
   auto s_right_lower = boxS(xr,  y_lower_lo, xhi, y_base_lo);
 
-  // Center separating wall
-  auto s_mid_wall    = boxS(mw_x0, y_base_lo, mw_x1, y_base_hi);
+  // Mid-connector (the “blue” part)
+  auto s_mid_between = boxS(mw_x0, y_mid_lo, mw_x1, y_mid_hi);
 
-  auto walls = makeUnion(
-    s_top, s_bottom,
-    s_left_upper, s_right_upper,
-    s_left_lower, s_right_lower,
-    s_mid_wall
-  );
-
-  Print() << "\n=== TWO-BRANCH GEOMETRY (H = TOTAL HEIGHT) ===\n";
-  Print() << "Input total height Htot    = " << Htot << "\n";
-  Print() << "Separator thickness mid    = " << mid << "\n";
-  Print() << "Derived channel height L   = " << Lchan << "\n";
-  Print() << "Effective total height     = " << Htot_eff << "\n";
-  Print() << "Upper channel: y=[" << y_upper_lo << ", " << y_upper_hi << "]\n";
-  Print() << "Separator:      y=[" << y_base_lo << ", " << y_base_hi << "]\n";
-  Print() << "Lower channel:  y=[" << y_lower_lo << ", " << y_lower_hi << "]\n";
-  Print() << "xs=" << xs << ", xr=" << xr << ", X=" << X << "\n";
-  Print() << "cL=" << cL << ", cR=" << cR << "\n";
-  Print() << "Mid-wall: x=[" << mw_x0 << ", " << mw_x1 << "]\n";
-  Print() << "=============================================\n\n";
+  // Combine solids (following ThreeBranch's pattern)
+  auto u1 = makeUnion(s_top, s_bottom);
+  auto u2 = makeUnion(u1,   s_left_upper);
+  auto u3 = makeUnion(u2,   s_left_lower);
+  auto u4 = makeUnion(u3,   s_right_upper);
+  auto u5 = makeUnion(u4,   s_right_lower);
+  auto walls = makeUnion(u5, s_mid_between);
 
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
