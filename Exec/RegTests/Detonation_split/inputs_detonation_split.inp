@@ -154,8 +154,9 @@ eb2.geom_type = threebranch
 # geo.W = 0.1 # Thickness of the third branch
 
 # MQ set input
-geo.W = 0.05
-geo.H = 0.1
+geo.W = 0.05;
+#geo.H = 0.1
+geo.H = 0;
 geo.L = 0.15
 geo.xs = 0.05;
 geo.X = 0.40;
