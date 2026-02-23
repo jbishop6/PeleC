@@ -23,9 +23,8 @@ echo "[INFO] Running make_TB_vs_TB3_runs.py"
 python make_TB_vs_TB3_runs.py
 
 # === Submit all individual geometry jobs ===
-cd TB_vs_TB3
 echo "[INFO] Submitting all geometric cases via submit_all.sh"
-./submit_all.sh
+./TB_vs_TB3/submit_all.sh
 
 echo "================================================="
 echo " Sweep setup job $SLURM_JOB_ID finished at $(date)"
