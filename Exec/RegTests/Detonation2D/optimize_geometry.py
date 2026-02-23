@@ -476,6 +476,9 @@ def main():
     lhs_input_csv = LHS_INPUT_CSV
     lhs_results_csv = LHS_RESULTS_CSV
 
+   # Ensure the lhs_samples directory exists
+    os.makedirs(os.path.dirname(lhs_input_csv), exist_ok=True)
+
     # Step 0: Create lhs_input.csv if it doesn't exist
     if not os.path.exists(lhs_input_csv):
         print("[INFO] lhs_input.csv not found — generating LHS samples...")
