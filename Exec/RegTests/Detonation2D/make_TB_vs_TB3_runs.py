@@ -21,7 +21,7 @@ EXECUTABLE_NAME = "PeleC2d.gnu.ex"   # change if your exe name is different
 # Any extra static files PeleC needs (add to this list)
 COMMON_FILES = [
     EXECUTABLE_NAME,
-    "probin",    # if you use probin; delete or comment out if not
+    "probin",    # comment out or remove if you don't use probin
     # add other shared files here if needed
 ]
 
@@ -31,7 +31,7 @@ os.makedirs(base_dir, exist_ok=True)
 
 def get_active_jobnames():
     """
-    Query Slurm for all jobs owned by this user and return their names as a set.
+    Query Slurm for all jobs owned by this user and return their names as a list.
     """
     user = os.getenv("USER", "")
     try:
@@ -39,12 +39,23 @@ def get_active_jobnames():
             ["squeue", "-u", user, "-h", "-o", "%j"],
             check=True, capture_output=True, text=True
         )
-        names = {line.strip() for line in result.stdout.splitlines() if line.strip()}
-        print(f"[INFO] Active jobs for {user}: {sorted(names)}")
+        names = [line.strip() for line in result.stdout.splitlines() if line.strip()]
+        print(f"[INFO] Active jobs for {user}: {names}")
         return names
     except Exception as e:
         print(f"[WARN] Could not query squeue for active jobs: {e}")
-        return set()
+        return []
+
+
+def case_tag_running(tag, active_names):
+    """
+    Return True if any active job name contains this geometry tag.
+    E.g. tag="L0.080_W0.040" will match "2B_L0.080_W0.040" or similar.
+    """
+    for name in active_names:
+        if tag in name:
+            return True
+    return False
 
 
 def edit_geometry_inputs(run_dir, Z_val, W_val, input_filename):
@@ -85,7 +96,6 @@ def edit_geometry_inputs(run_dir, Z_val, W_val, input_filename):
 def make_job_script(path, job_name, input_filename, exe_name):
     """
     Create a Slurm batch script in 'path' for this case.
-    Customize the SBATCH options to match Incline.
     """
     script_path = os.path.join(path, "run_job.sh")
     with open(script_path, "w") as f:
@@ -97,21 +107,16 @@ def make_job_script(path, job_name, input_filename, exe_name):
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 
-# (No module load needed; executable is local)
-
+# Executable is local in this run directory
 srun ./{exe_name} {input_filename}
 """)
     os.chmod(script_path, 0o755)
 
 
-# keep track of (script_path, job_name) so we can write a submit_all.sh
-all_job_scripts = []
-
-
 def setup_run_dir(run_dir, input_file_source, input_file_target_name):
     """
     Create run_dir and copy required files from the current Detonation2D folder.
-    Assumes we've already checked that no job with this name is currently active.
+    Assumes we've already checked that this geometry is not currently running.
     """
     # fresh directory
     if os.path.exists(run_dir):
@@ -132,7 +137,10 @@ def setup_run_dir(run_dir, input_file_source, input_file_target_name):
 # ------------------------------------------------------------
 # Main: check current Slurm jobs and skip any already running
 # ------------------------------------------------------------
-active_jobs = get_active_jobnames()
+active_names = get_active_jobnames()
+
+# keep track of (script_path, job_name, case_tag) so we can write submit_all.sh
+all_job_scripts = []
 
 for Z_val, W_val in itertools.product(lengths, widths):
     case_tag = f"L{Z_val:.3f}_W{W_val:.3f}"
@@ -141,37 +149,38 @@ for Z_val, W_val in itertools.product(lengths, widths):
     job_name_2b = f"2B_{case_tag}"
     run2 = os.path.join(base_dir, f"run_2B_{case_tag}")
 
-    if job_name_2b in active_jobs:
-        print(f"[INFO] Job {job_name_2b} already in queue; skipping 2B case {case_tag}.")
+    if case_tag_running(case_tag, active_names):
+        print(f"[INFO] Geometry {case_tag} already has an active job; skipping setup for 2B {case_tag}.")
     else:
         setup_run_dir(run2, INPUT_FILE_2B, INPUT_FILE_2B)
         edit_geometry_inputs(run2, Z_val, W_val, INPUT_FILE_2B)
         make_job_script(run2, job_name_2b, INPUT_FILE_2B, EXECUTABLE_NAME)
-        all_job_scripts.append((os.path.join(run2, "run_job.sh"), job_name_2b))
+        all_job_scripts.append((os.path.join(run2, "run_job.sh"), job_name_2b, case_tag))
 
     # ----------------- 3-branch case -----------------
     job_name_3b = f"3B_{case_tag}"
     run3 = os.path.join(base_dir, f"run_3B_{case_tag}")
 
-    if job_name_3b in active_jobs:
-        print(f"[INFO] Job {job_name_3b} already in queue; skipping 3B case {case_tag}.")
+    if case_tag_running(case_tag, active_names):
+        print(f"[INFO] Geometry {case_tag} already has an active job; skipping setup for 3B {case_tag}.")
     else:
         setup_run_dir(run3, INPUT_FILE_3B, INPUT_FILE_3B)
         edit_geometry_inputs(run3, Z_val, W_val, INPUT_FILE_3B)
         make_job_script(run3, job_name_3b, INPUT_FILE_3B, EXECUTABLE_NAME)
-        all_job_scripts.append((os.path.join(run3, "run_job.sh"), job_name_3b))
+        all_job_scripts.append((os.path.join(run3, "run_job.sh"), job_name_3b, case_tag))
 
 
 # write a master submit script
 submit_all = os.path.join(base_dir, "submit_all.sh")
 with open(submit_all, "w") as f:
     f.write("#!/bin/bash\n\n")
-    for script_path, job_name in all_job_scripts:
+    for script_path, job_name, case_tag in all_job_scripts:
         run_dir = os.path.dirname(script_path)
         script_name = os.path.basename(script_path)
+        # At submission time, also check by geometry tag so we don't submit duplicates
         f.write(f"""# {job_name}
-if squeue -u $USER -h -o "%j" | grep -qx "{job_name}"; then
-    echo "Skipping {job_name}: already in queue"
+if squeue -u $USER -h -o "%j" | grep -q "{case_tag}"; then
+    echo "Skipping {job_name}: a job for {case_tag} is already in the queue"
 else
     cd "{run_dir}" && sbatch "{script_name}" && cd - > /dev/null
 fi
@@ -179,7 +188,7 @@ fi
 """)
 os.chmod(submit_all, 0o755)
 
-print("All cases created (skipping any with jobs already in squeue).")
-print(f"To submit the remaining cases:")
+print("All cases created (skipping any geometries that already have active jobs).")
+print("To submit the remaining cases:")
 print(f"  cd {base_dir}")
 print("  ./submit_all.sh")
