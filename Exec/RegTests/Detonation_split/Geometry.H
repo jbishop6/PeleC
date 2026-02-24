@@ -121,5 +121,15 @@ public:
   build(const amrex::Geometry& geom, const int max_coarsening_level) override;
 };
 
+class TubeBranch : public Geometry::Register<TubeBranch>
+{
+public:
+  // This is the string you will use in the input file
+  static std::string identifier() { return "tubebranch"; }
+
+  void
+  build(const amrex::Geometry& geom, const int max_coarsening_level) override;
+};
+
 } // namespace pele::pelec
 #endif
