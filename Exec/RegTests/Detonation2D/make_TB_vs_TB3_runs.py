@@ -3,6 +3,7 @@ import os
 import shutil
 import itertools
 import re
+import subprocess
 
 # --- user choices -------------------------------------------------
 # geometric sweep for third branch
@@ -20,12 +21,30 @@ EXECUTABLE_NAME = "PeleC2d.gnu.ex"   # change if your exe name is different
 # Any extra static files PeleC needs (add to this list)
 COMMON_FILES = [
     EXECUTABLE_NAME,
-    "probin",    # if you use probin; delete if not
+    "probin",    # if you use probin; delete or comment out if not
     # add other shared files here if needed
 ]
 
 # ------------------------------------------------------------------
 os.makedirs(base_dir, exist_ok=True)
+
+
+def get_active_jobnames():
+    """
+    Query Slurm for all jobs owned by this user and return their names as a set.
+    """
+    user = os.getenv("USER", "")
+    try:
+        result = subprocess.run(
+            ["squeue", "-u", user, "-h", "-o", "%j"],
+            check=True, capture_output=True, text=True
+        )
+        names = {line.strip() for line in result.stdout.splitlines() if line.strip()}
+        print(f"[INFO] Active jobs for {user}: {sorted(names)}")
+        return names
+    except Exception as e:
+        print(f"[WARN] Could not query squeue for active jobs: {e}")
+        return set()
 
 
 def edit_geometry_inputs(run_dir, Z_val, W_val, input_filename):
@@ -66,7 +85,7 @@ def edit_geometry_inputs(run_dir, Z_val, W_val, input_filename):
 def make_job_script(path, job_name, input_filename, exe_name):
     """
     Create a Slurm batch script in 'path' for this case.
-    Customize the SBATCH options and module loads to match Incline.
+    Customize the SBATCH options to match Incline.
     """
     script_path = os.path.join(path, "run_job.sh")
     with open(script_path, "w") as f:
@@ -78,21 +97,21 @@ def make_job_script(path, job_name, input_filename, exe_name):
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 
-module load pelec   # <-- CUSTOMIZE: modules you actually use
+# (No module load needed; executable is local)
 
-# run the code
 srun ./{exe_name} {input_filename}
 """)
     os.chmod(script_path, 0o755)
 
 
-# keep track of all job script paths so we can write a submit_all.sh
+# keep track of (script_path, job_name) so we can write a submit_all.sh
 all_job_scripts = []
 
 
 def setup_run_dir(run_dir, input_file_source, input_file_target_name):
     """
     Create run_dir and copy required files from the current Detonation2D folder.
+    Assumes we've already checked that no job with this name is currently active.
     """
     # fresh directory
     if os.path.exists(run_dir):
@@ -110,40 +129,57 @@ def setup_run_dir(run_dir, input_file_source, input_file_target_name):
     shutil.copy(input_file_source, os.path.join(run_dir, input_file_target_name))
 
 
-# main loop over (Z, W)
+# ------------------------------------------------------------
+# Main: check current Slurm jobs and skip any already running
+# ------------------------------------------------------------
+active_jobs = get_active_jobnames()
+
 for Z_val, W_val in itertools.product(lengths, widths):
     case_tag = f"L{Z_val:.3f}_W{W_val:.3f}"
 
     # ----------------- 2-branch case -----------------
+    job_name_2b = f"2B_{case_tag}"
     run2 = os.path.join(base_dir, f"run_2B_{case_tag}")
-    setup_run_dir(run2, INPUT_FILE_2B, INPUT_FILE_2B)
 
-    # patch geometry + plotfile path
-    edit_geometry_inputs(run2, Z_val, W_val, INPUT_FILE_2B)
-    make_job_script(run2, f"2B_{case_tag}", INPUT_FILE_2B, EXECUTABLE_NAME)
-    all_job_scripts.append(os.path.join(run2, "run_job.sh"))
+    if job_name_2b in active_jobs:
+        print(f"[INFO] Job {job_name_2b} already in queue; skipping 2B case {case_tag}.")
+    else:
+        setup_run_dir(run2, INPUT_FILE_2B, INPUT_FILE_2B)
+        edit_geometry_inputs(run2, Z_val, W_val, INPUT_FILE_2B)
+        make_job_script(run2, job_name_2b, INPUT_FILE_2B, EXECUTABLE_NAME)
+        all_job_scripts.append((os.path.join(run2, "run_job.sh"), job_name_2b))
 
     # ----------------- 3-branch case -----------------
+    job_name_3b = f"3B_{case_tag}"
     run3 = os.path.join(base_dir, f"run_3B_{case_tag}")
-    setup_run_dir(run3, INPUT_FILE_3B, INPUT_FILE_3B)
 
-    # patch geometry + plotfile path
-    edit_geometry_inputs(run3, Z_val, W_val, INPUT_FILE_3B)
-    make_job_script(run3, f"3B_{case_tag}", INPUT_FILE_3B, EXECUTABLE_NAME)
-    all_job_scripts.append(os.path.join(run3, "run_job.sh"))
+    if job_name_3b in active_jobs:
+        print(f"[INFO] Job {job_name_3b} already in queue; skipping 3B case {case_tag}.")
+    else:
+        setup_run_dir(run3, INPUT_FILE_3B, INPUT_FILE_3B)
+        edit_geometry_inputs(run3, Z_val, W_val, INPUT_FILE_3B)
+        make_job_script(run3, job_name_3b, INPUT_FILE_3B, EXECUTABLE_NAME)
+        all_job_scripts.append((os.path.join(run3, "run_job.sh"), job_name_3b))
 
 
 # write a master submit script
 submit_all = os.path.join(base_dir, "submit_all.sh")
 with open(submit_all, "w") as f:
     f.write("#!/bin/bash\n\n")
-    for script in all_job_scripts:
-        # This cd / sbatch / cd - pattern keeps sbatch paths clean
-        f.write(
-            f"cd {os.path.dirname(script)} && sbatch {os.path.basename(script)} && cd - > /dev/null\n"
-        )
+    for script_path, job_name in all_job_scripts:
+        run_dir = os.path.dirname(script_path)
+        script_name = os.path.basename(script_path)
+        f.write(f"""# {job_name}
+if squeue -u $USER -h -o "%j" | grep -qx "{job_name}"; then
+    echo "Skipping {job_name}: already in queue"
+else
+    cd "{run_dir}" && sbatch "{script_name}" && cd - > /dev/null
+fi
+
+""")
 os.chmod(submit_all, 0o755)
 
-print("All cases created. To submit everything:")
+print("All cases created (skipping any with jobs already in squeue).")
+print(f"To submit the remaining cases:")
 print(f"  cd {base_dir}")
 print("  ./submit_all.sh")
