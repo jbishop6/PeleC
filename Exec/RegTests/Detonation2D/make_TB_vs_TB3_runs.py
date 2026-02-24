@@ -176,10 +176,10 @@ with open(submit_all, "w") as f:
     for script_path, job_name, case_tag in all_job_scripts:
         run_dir = os.path.dirname(script_path)
         script_name = os.path.basename(script_path)
-        # At submission time, also check by geometry tag so we don't submit duplicates
+        # At submission time, check by *job name* so 2B and 3B don't block each other
         f.write(f"""# {job_name}
-if squeue -u $USER -h -o "%j" | grep -q "{case_tag}"; then
-    echo "Skipping {job_name}: a job for {case_tag} is already in the queue"
+if squeue -u $USER -h -o "%j" | grep -q "{job_name}"; then
+    echo "Skipping {job_name}: a job named {job_name} is already in the queue"
 else
     cd "{run_dir}" && sbatch "{script_name}" && cd - > /dev/null
 fi
