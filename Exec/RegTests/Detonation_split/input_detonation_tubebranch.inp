@@ -1,6 +1,8 @@
 # ------------------ MAIN CONTROL -------------------
 max_step  = 1
 stop_time = 1.0e-30
+amr.max_level = 0
+
 
 # ------------------ GEOMETRY (2D) -------------------
 geometry.coord_sys   = 0
@@ -15,9 +17,12 @@ pelec.hi_bc = "SlipWall" "SlipWall"
 
 # ------------------ EB2 GEOMETRY -------------------
 # This should match TubeBranch::identifier()
-eb2.geometry          = tubebranch
+eb2.geom_type            = tubebranch
 eb2.max_level         = 0
 eb2.max_coarsening_level = 0
+eb2.max_grid_size        = 64
+eb2.num_coarsen_opt      = 0
+eb2.extend_domain_face   = 1
 
 # ------------------ TubeBranch parameters -------------------
 # These map to the pp("geo") queries in TubeBranch::build
