@@ -155,8 +155,8 @@ eb2.geom_type = threebranch
 
 # MQ set input
 geo.W = 0.05;
-#geo.H = 0.1
-geo.H = 0;
+geo.H = 0.1
+#geo.H = 0;
 geo.L = 0.15
 geo.xs = 0.05;
 geo.X = 0.40;
