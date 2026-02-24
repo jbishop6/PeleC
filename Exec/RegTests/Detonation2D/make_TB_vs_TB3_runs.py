@@ -111,7 +111,6 @@ def make_job_script(path, job_name, input_filename, exe_name):
 #SBATCH --job-name={job_name}
 #SBATCH --output={job_name}.out
 #SBATCH --error={job_name}.err
-#SBATCH --time=04:00:00
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 
