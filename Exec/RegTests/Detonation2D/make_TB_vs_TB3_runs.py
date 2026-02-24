@@ -51,11 +51,19 @@ def case_tag_running(tag, active_names):
     """
     Return True if any active job name contains this geometry tag.
     E.g. tag="L0.080_W0.040" will match "2B_L0.080_W0.040" or similar.
+    (Currently unused, but kept for reference.)
     """
     for name in active_names:
         if tag in name:
             return True
     return False
+
+
+def job_running(job_name, active_names):
+    """
+    Return True if this exact job name is active.
+    """
+    return job_name in active_names
 
 
 def edit_geometry_inputs(run_dir, Z_val, W_val, input_filename):
@@ -116,7 +124,7 @@ srun ./{exe_name} {input_filename}
 def setup_run_dir(run_dir, input_file_source, input_file_target_name):
     """
     Create run_dir and copy required files from the current Detonation2D folder.
-    Assumes we've already checked that this geometry is not currently running.
+    Assumes we've already checked that this specific job is not currently running.
     """
     # fresh directory
     if os.path.exists(run_dir):
@@ -187,7 +195,7 @@ fi
 """)
 os.chmod(submit_all, 0o755)
 
-print("All cases created (skipping any geometries that already have active jobs).")
+print("All cases created (skipping any jobs that already have active jobs).")
 print("To submit the remaining cases:")
 print(f"  cd {base_dir}")
 print("  ./submit_all.sh")
