@@ -586,6 +586,106 @@ TwoBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
 }
 
 void
+TubeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
+{
+  using namespace amrex;
+  using namespace amrex::EB2;
+
+  ParmParse pp("geo");
+
+  // Parameters (all in physical units, like your other geo.*)
+  // Interpretation for this geometry:
+  //   H  -> main tube height
+  //   W  -> branch width
+  //   Z  -> branch depth (downward from tube bottom)
+  //   xs -> x-location of branch attachment (left edge)
+  //   y_offset -> vertical shift of tube centerline
+  Real H        = 0.10;   // tube height
+  Real W        = 0.05;   // branch width
+  Real Z        = 0.15;   // branch length
+  Real xs       = 0.20;   // branch left x
+  Real y_offset = 0.00;   // vertical shift
+
+  pp.query("H", H);
+  pp.query("W", W);
+  pp.query("Z", Z);
+  pp.query("xs", xs);
+  pp.query("y_offset", y_offset);
+
+  const RealBox& rb = geom.ProbDomain();
+
+  const Real xlo = rb.lo(0), xhi = rb.hi(0);
+  const Real ylo = rb.lo(1), yhi = rb.hi(1);
+
+  const Real dx = geom.CellSize(0);
+  const Real dy = geom.CellSize(1);
+  const Real h  = std::max(dx, dy);
+
+  // Centerline of the tube (can be shifted vertically with y_offset)
+  const Real ymid = 0.5 * (ylo + yhi) + y_offset;
+
+  // Main tube walls
+  const Real y_main_lo = ymid - 0.5 * H;  // tube bottom
+  const Real y_main_hi = ymid + 0.5 * H;  // tube top
+
+  // Clamp tube to domain (so we don't go outside if user is wild)
+  AMREX_ALWAYS_ASSERT_WITH_MESSAGE(
+    y_main_lo > ylo + 2.0*h && y_main_hi < yhi - 2.0*h,
+    "TubeBranch: tube height/offset puts walls too close to domain bounds");
+
+  // Branch x-span: left at xs, right at xs+W (clamped to domain)
+  xs = std::min(std::max(xs, xlo + 2.0*h), xhi - 2.0*h - W);
+  const Real z_x_left  = xs;
+  const Real z_x_right = xs + W;
+
+  // Branch vertical extent
+  const Real z_y_top    = y_main_lo;                               // attaches to tube bottom
+  const Real z_y_bottom = std::max(z_y_top - Z, ylo + 2.0*h);      // don't crash into domain bottom
+
+  // Helper to make solid boxes (walls)
+  auto boxS = [] (Real x0, Real y0, Real x1, Real y1) {
+    Array<Real, AMREX_SPACEDIM> lo{AMREX_D_DECL(std::min(x0,x1), std::min(y0,y1), 0.0)};
+    Array<Real, AMREX_SPACEDIM> hi{AMREX_D_DECL(std::max(x0,x1), std::max(y0,y1), 0.0)};
+    return BoxIF(lo, hi, /*has_fluid_inside=*/false);
+  };
+
+  Print() << "\n=== TUBE + BRANCH GEOMETRY ===\n";
+  Print() << "Tube height H: " << H << "\n";
+  Print() << "Branch width W: " << W << "\n";
+  Print() << "Branch depth Z: " << Z << "\n";
+  Print() << "Tube: y = [" << y_main_lo << ", " << y_main_hi << "]\n";
+  Print() << "Branch: x = [" << z_x_left << ", " << z_x_right
+          << "], y = [" << z_y_bottom << ", " << z_y_top << "]\n";
+  Print() << "xs = " << xs << ", y_offset = " << y_offset << "\n";
+  Print() << "================================\n\n";
+
+  // --- Walls definition ----------------------------------------------------
+  //
+  // Top wall of the tube: solid from tube top up to domain top
+  auto s_top = boxS(xlo, y_main_hi, xhi, yhi);
+
+  // Bottom walls (with a lowered section where the branch lives):
+  //
+  // 1) Left of branch: bottom wall at y_main_lo
+  auto s_bottom_left  = boxS(xlo,       ylo, z_x_left,  y_main_lo);
+
+  // 2) Under the branch: bottom wall at z_y_bottom
+  //    (so branch interior is between z_y_bottom and y_main_lo)
+  auto s_bottom_under = boxS(z_x_left,  ylo, z_x_right, z_y_bottom);
+
+  // 3) Right of branch: bottom wall at y_main_lo
+  auto s_bottom_right = boxS(z_x_right, ylo, xhi,       y_main_lo);
+
+  // Union all walls into a single implicit function
+  auto u1    = makeUnion(s_top, s_bottom_left);
+  auto u2    = makeUnion(u1,    s_bottom_under);
+  auto walls = makeUnion(u2,    s_bottom_right);
+
+  auto gshop = makeShop(walls);
+  Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
+}
+
+void
 CheckpointFile::build(
   const amrex::Geometry& geom, const int max_coarsening_level)
 {

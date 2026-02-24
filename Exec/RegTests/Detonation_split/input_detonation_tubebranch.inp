@@ -1,0 +1,55 @@
+# ------------------ MAIN CONTROL -------------------
+max_step  = 1
+stop_time = 1.0e-30
+amr.max_level = 0
+
+
+# ------------------ GEOMETRY (2D) -------------------
+geometry.coord_sys   = 0
+geometry.is_periodic = 0 0
+geometry.prob_lo     = 0.0  0.0
+geometry.prob_hi     = 1.0  0.5     # domain size; adjust if you like
+amr.n_cell           = 512  256
+
+# ------------------ BOUNDARY CONDITIONS -------------------
+pelec.lo_bc = "SlipWall" "SlipWall"
+pelec.hi_bc = "SlipWall" "SlipWall"
+
+# ------------------ EB2 GEOMETRY -------------------
+# This should match TubeBranch::identifier()
+eb2.geom_type            = tubebranch
+eb2.max_level         = 0
+eb2.max_coarsening_level = 0
+eb2.max_grid_size        = 64
+eb2.num_coarsen_opt      = 0
+eb2.extend_domain_face   = 1
+
+# ------------------ TubeBranch parameters -------------------
+# These map to the pp("geo") queries in TubeBranch::build
+geo.H        = 0.10      # main tube height
+geo.W        = 0.05      # branch width
+geo.Z        = 0.15      # branch depth
+geo.xs       = 0.40      # x-location of branch left edge
+geo.y_offset = 0.0       # vertical offset of tube centerline
+
+# ------------------ PHYSICS -------------------
+pelec.do_hydro     = 1
+pelec.diffuse_vel  = 0
+pelec.diffuse_temp = 0
+pelec.diffuse_spec = 0
+
+# Disable reactions entirely (nonreacting check geometry)
+chem_integrator = none
+do_react        = 0
+use_reactions   = false
+
+# ------------------ TIME STEP CONTROL -------------------
+pelec.cfl  = 0.9
+
+# ------------------ PROBLEM DEFINITION -------------------
+# (Borrow these from your working nonreacting 2B/3B inputs)
+# prob.lo_temp = ...
+# prob.hi_temp = ...
+# prob.lo_pres = ...
+# prob.hi_pres = ...
+# etc.
