@@ -41,7 +41,7 @@
 #SBATCH -e det_split.e%j    # Name of stderr error file
 #SBATCH -p compute          # Queue (partition) name
 #SBATCH --ntasks-per-node=128
-#SBATCH -N 1               # Total # of nodes
+#SBATCH -N 4               # Total # of nodes
 #SBATCH -t 24:00:00        # Run time (hh:mm:ss)
 
 # Other commands must follow all #SBATCH directives...
@@ -59,7 +59,7 @@ export OMP_NUM_THREADS=1
 # Launch MPI code...
 
 # mpirun ./bin/hydro-2d-g++ ./tests/FlowVortexShedLarge/input
-mpirun ./PeleC2d.gnu.ex ./inputs_detonation_threebranch.inp
+mpirun ./PeleC2d.gnu.MPI.ex ./inputs_detonation_split.inp
 
 # ---------------------------------------------------
 

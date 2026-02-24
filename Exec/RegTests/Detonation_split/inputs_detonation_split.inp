@@ -1,20 +1,21 @@
 # ------------------ INPUTS TO MAIN PROGRAM -------------------
 max_step = 100000000
-stop_time = 5.0e-6
-pelec.fixed_dt = 1e-9
+stop_time = 7.5e-6
+pelec.fixed_dt = 2e-9
 
 # ------------------ Outputs (regular or high-speed) -----
 # PLOT FILES
 amr.plot_files_output = 1
 # amr.plot_file = /home/XXXX...XXXX/output/plt
-amr.plot_file = ./output/plt
-# amr.plot_file = /mmfs1/home/jquinlan/runs/temp/plt
-amr.plot_int          = 100
+# amr.plot_file = ./output_rxn/plt
+amr.plot_file = /mmfs1/home/jquinlan/runs/temp2/plt
+amr.plot_int          = 50
 
 # CHECKPOINT FILES
 amr.checkpoint_files_output = 0
-amr.check_file      = ./output/chk        # root name of checkpoint file
-amr.check_int       = 200        # number of timesteps between checkpoints
+# amr.check_file      = ./output/chk        # root name of checkpoint file
+amr.check_file      = /mmfs1/home/jquinlan/runs/temp/chk        # root name of checkpoint file
+amr.check_int       = 1000        # number of timesteps between checkpoints
 
 # ------------------ GEOMETRY (2D) -------------------
 geometry.is_periodic = 0 0
@@ -24,12 +25,12 @@ geometry.prob_lo     = 0.0  0.0
 geometry.prob_hi     = 0.8  0.8   #0.125
 geometry.use_h = 0
 # amr.n_cell           = 512  1024 #64
-# amr.n_cell           = 256 256 #64
-amr.n_cell           = 512 512 #64
+amr.n_cell           = 256 256 #64
+# amr.n_cell           = 512 512 #64
 
 # ------------------ BOUNDARY CONDITIONS -------------------
 pelec.lo_bc = "SlipWall" "SlipWall"
-pelec.hi_bc = "SlipWall" "SlipWall"
+pelec.hi_bc = "FOExtrap" "SlipWall"
 
 # ------------------ PHYSICS -------------------
 pelec.do_hydro     = 1
@@ -39,23 +40,24 @@ pelec.diffuse_spec = 0
 
 # ------------------ DETONATION WAVE ------------------
 pelec.do_react          = 1
-pelec.chem_integrator   = "ReactorCvode"
-pelec.use_typ_vals_chem = 1
-cvode.solve_type        = "denseAJ_direct"
-ode.rtol                = 1.0e-6
-ode.atol                = 1.0e-5
+pelec.chem_integrator = "ReactorRK64"
+# pelec.chem_integrator   = "ReactorCvode"
+# pelec.use_typ_vals_chem = 1
+# cvode.solve_type        = "denseAJ_direct"
+# ode.rtol                = 1.0e-6
+# ode.atol                = 1.0e-5
 
 # ------------------ PROBLEM PARAMETERS -------------------
 # Left: hot premixed H2/O2 region
-prob.p_l   = 1.0e5
-prob.u_l   = 0.0
-prob.rho_l = 9.6e-4
-prob.T_l   = 2500.0
+prob.p_l   = 1.0e7
+prob.u_l   = 1.0e5
+prob.rho_l = 4.8e-4
+prob.T_l   = 3000.0
 
 # Right: cold premixed H2/O2 region
 prob.p_r   = 1.0e5
 prob.u_r   = 0.0
-prob.rho_r = 9.6e-4
+prob.rho_r = 4.8e-5
 prob.T_r   = 300.0
 
 prob.idir  = 1
@@ -79,7 +81,7 @@ amr.v        = 1
 amr.data_log = datlog
 
 # ------------------ REFINEMENT / GRIDS -------------------
-amr.max_level       = 1
+amr.max_level       = 3
 amr.ref_ratio       = 2 2 2 2 # refinement ratio
 amr.regrid_int      = 2       # how often to regrid
 amr.blocking_factor = 16 16      # block factor in grid generation
@@ -91,8 +93,9 @@ amr.n_error_buf     = 12 8 2 2
 
 # put vfrac in plot_vars (not derive) so it is guaranteed to appear
 amr.plot_vars         = vfrac density Temp
-amr.derive_plot_vars  = pressure x_velocity y_velocity magvel magvort
+# amr.derive_plot_vars  = pressure x_velocity y_velocity magvel magvort
 # amr.derive_plot_vars = ALL
+amr.derive_plot_vars = ALL Y(H2) Y(O2) Y(H2O) Y(H) Y(O) Y(OH) Y(HO2) Y(H2O2) Y(N2)
 
 
 
@@ -114,16 +117,16 @@ tagging.vorterr = 100
 
 
 # ------------------ PROBLEM PARAMETERS -------------------
-prob.p_l   = 1e7
-prob.u_l   = 1e4
-prob.rho_l = 9.6e-4
-prob.p_r   = 1e6
-prob.u_r   = 0.0
-prob.rho_r = 1.2e-4
-prob.idir  = 1
-prob.frac  = 0.04
-prob.left_gas  = N2
-prob.right_gas = HE
+# prob.p_l   = 1e7
+# prob.u_l   = 1e5
+# prob.rho_l = 7.6e-4
+# prob.p_r   = 1e6
+# prob.u_r   = 0.0
+# prob.rho_r = 1.2e-4
+# prob.idir  = 1
+# prob.frac  = 0.04
+# prob.left_gas  = N2
+# prob.right_gas = HE
 
 # ------------------ EMBEDDED BOUNDARY (EB) -------------------
 pelec.eb_in_domain = 1
