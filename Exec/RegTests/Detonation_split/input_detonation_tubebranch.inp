@@ -8,7 +8,7 @@ amr.max_level = 0
 geometry.coord_sys   = 0
 geometry.is_periodic = 0 0
 geometry.prob_lo     = 0.0  0.0
-geometry.prob_hi     = 1.0  0.4     # domain size; adjust if you like
+geometry.prob_hi     = 1.0  0.5     # domain size; adjust if you like
 amr.n_cell           = 512  256
 
 # ------------------ BOUNDARY CONDITIONS -------------------
