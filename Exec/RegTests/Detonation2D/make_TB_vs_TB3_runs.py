@@ -149,8 +149,8 @@ for Z_val, W_val in itertools.product(lengths, widths):
     job_name_2b = f"2B_{case_tag}"
     run2 = os.path.join(base_dir, f"run_2B_{case_tag}")
 
-    if case_tag_running(case_tag, active_names):
-        print(f"[INFO] Geometry {case_tag} already has an active job; skipping setup for 2B {case_tag}.")
+    if job_running(job_name_2b, active_names):
+        print(f"[INFO] {job_name_2b} already has an active job; skipping setup for {job_name_2b}.")
     else:
         setup_run_dir(run2, INPUT_FILE_2B, INPUT_FILE_2B)
         edit_geometry_inputs(run2, Z_val, W_val, INPUT_FILE_2B)
@@ -161,14 +161,13 @@ for Z_val, W_val in itertools.product(lengths, widths):
     job_name_3b = f"3B_{case_tag}"
     run3 = os.path.join(base_dir, f"run_3B_{case_tag}")
 
-    if case_tag_running(case_tag, active_names):
-        print(f"[INFO] Geometry {case_tag} already has an active job; skipping setup for 3B {case_tag}.")
+    if job_running(job_name_3b, active_names):
+        print(f"[INFO] {job_name_3b} already has an active job; skipping setup for {job_name_3b}.")
     else:
         setup_run_dir(run3, INPUT_FILE_3B, INPUT_FILE_3B)
         edit_geometry_inputs(run3, Z_val, W_val, INPUT_FILE_3B)
         make_job_script(run3, job_name_3b, INPUT_FILE_3B, EXECUTABLE_NAME)
         all_job_scripts.append((os.path.join(run3, "run_job.sh"), job_name_3b, case_tag))
-
 
 # write a master submit script
 submit_all = os.path.join(base_dir, "submit_all.sh")
