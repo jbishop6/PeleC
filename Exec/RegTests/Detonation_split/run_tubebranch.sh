@@ -22,7 +22,7 @@ OUTDIR="TubeBranch_outputs"
 mkdir -p "$OUTDIR"
 
 # === Run PeleC with two-branch input file ===
-srun -n 1 ./PeleC2d.gnu.MPI.ex input_detonation_tubebranch.inp
+srun --mpi=pmix -n 1 ./PeleC2d.gnu.MPI.ex input_detonation_tubebranch.inp
 
 # === Move plotfiles to output folder ===
 mv plt* "$OUTDIR"
