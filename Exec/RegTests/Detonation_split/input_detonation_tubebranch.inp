@@ -26,11 +26,10 @@ eb2.extend_domain_face   = 1
 
 # ------------------ TubeBranch parameters -------------------
 # These map to the pp("geo") queries in TubeBranch::build
-geo.H        = 0.10      # main tube height
-geo.W        = 0.05      # branch width
-geo.Z        = 0.15      # branch depth
-geo.xs       = 0.40      # x-location of branch left edge
-geo.y_offset = 0.0       # vertical offset of tube centerline
+geo.Rtube = 0.15
+geo.x_branch0 = 0.4
+geo.branch_len = 0.15
+branch_drop = 0.15
 
 # ------------------ PHYSICS -------------------
 pelec.do_hydro     = 1
