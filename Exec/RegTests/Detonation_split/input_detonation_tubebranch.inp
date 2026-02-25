@@ -44,6 +44,7 @@ use_reactions   = false
 
 # ------------------ TIME STEP CONTROL -------------------
 pelec.cfl  = 0.9
+prob.idir = 1
 
 # ------------------ PROBLEM DEFINITION -------------------
 # (Borrow these from your working nonreacting 2B/3B inputs)
