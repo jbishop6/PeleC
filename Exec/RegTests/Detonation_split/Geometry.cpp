@@ -591,11 +591,43 @@ TubeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   using namespace amrex;
   using namespace amrex::EB2;
 
-  Print() << "\n>>> TubeBranch::build CALLED (TEST SHAPE) <<<\n";
+  Print() << "\n>>> TubeBranch::build CALLED (Tube + Branch) <<<\n";
+
+  // --- Parameters -------------------------------------------------
+  ParmParse pp("geo");
+
+  // Main tube "radius" (half height) and location of branch
+  Real Rtube      = 0.15;   // half-height of main tube
+  Real x_branch0  = 0.40;   // where the branch starts in x
+  Real branch_len = 0.15;   // how far the branch extends in x
+  Real branch_drop = 0.15;  // how far the branch drops in y
+
+  pp.query("Rtube",       Rtube);
+  pp.query("x_branch0",   x_branch0);
+  pp.query("branch_len",  branch_len);
+  pp.query("branch_drop", branch_drop);
 
   const RealBox& rb = geom.ProbDomain();
-  Real xlo = rb.lo(0), xhi = rb.hi(0);
-  Real ylo = rb.lo(1), yhi = rb.hi(1);
+  const Real xlo = rb.lo(0), xhi = rb.hi(0);
+  const Real ylo = rb.lo(1), yhi = rb.hi(1);
+
+  const Real dx = geom.CellSize(0);
+  const Real dy = geom.CellSize(1);
+  const Real h  = std::max(dx, dy);
+
+  // Center tube vertically in the domain
+  const Real ymid = 0.5 * (ylo + yhi);
+
+  // Clamp branch parameters to stay inside domain
+  Rtube = std::max(Rtube, 4.0*h);
+
+  Real x_b0 = std::max(x_branch0, xlo + 2.0*h);
+  Real x_b1 = std::min(x_branch0 + branch_len, xhi - 2.0*h);
+
+  Real y_tube_top    = ymid + Rtube;
+  Real y_tube_bottom = ymid - Rtube;
+
+  Real y_branch_bottom = std::max(y_tube_bottom - branch_drop, ylo + 2.0*h);
 
   auto boxS = [] (Real x0, Real y0, Real x1, Real y1) {
     Array<Real, AMREX_SPACEDIM> lo{AMREX_D_DECL(std::min(x0,x1), std::min(y0,y1), 0.0)};
@@ -603,13 +635,45 @@ TubeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
     return BoxIF(lo, hi, /*has_fluid_inside=*/false);
   };
 
-  // Just a solid slab at the very top (like s_top)
-  auto slab = boxS(xlo, 0.75*(ylo + yhi), xhi, yhi);
+  Print() << "TubeBranch parameters:\n";
+  Print() << "  Rtube          = " << Rtube << "\n";
+  Print() << "  Tube y-range   = [" << y_tube_bottom << ", " << y_tube_top << "]\n";
+  Print() << "  Branch x-range = [" << x_b0 << ", " << x_b1 << "]\n";
+  Print() << "  Branch drop to y = " << y_branch_bottom << "\n";
 
-  auto gshop = makeShop(slab);
+  // --- Build solids -----------------------------------------------
+  // Top wall above tube
+  auto s_top = boxS(xlo, y_tube_top, xhi, yhi);
+
+  // Bottom wall of tube, but with a gap where the branch starts
+  auto s_bottom_left  = boxS(xlo, ylo, x_b0, y_tube_bottom);
+  auto s_bottom_right = boxS(x_b1, ylo, xhi, y_tube_bottom);
+
+  // Bottom of the branch (below the gap)
+  auto s_branch_bottom = boxS(x_b0, ylo, x_b1, y_branch_bottom);
+
+  // Left/right side walls of the domain above & below, to make a proper tube
+  auto s_left_tube  = boxS(xlo, y_tube_bottom, xlo + 2.0*h, y_tube_top);
+  auto s_right_tube = boxS(xhi - 2.0*h, y_tube_bottom, xhi, y_tube_top);
+
+  // Side walls of the branch
+  auto s_branch_left  = boxS(x_b0, y_branch_bottom, x_b0 + 2.0*h, y_tube_bottom);
+  auto s_branch_right = boxS(x_b1 - 2.0*h, y_branch_bottom, x_b1, y_tube_bottom);
+
+  // Union everything (all solids)
+  auto u1 = makeUnion(s_top,          s_bottom_left);
+  auto u2 = makeUnion(u1,             s_bottom_right);
+  auto u3 = makeUnion(u2,             s_branch_bottom);
+  auto u4 = makeUnion(u3,             s_left_tube);
+  auto u5 = makeUnion(u4,             s_right_tube);
+  auto u6 = makeUnion(u5,             s_branch_left);
+  auto walls = makeUnion(u6,          s_branch_right);
+
+  Print() << "[EB] TubeBranch: main tube + single side branch constructed.\n\n";
+
+  auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
 }
-
 void
 CheckpointFile::build(
   const amrex::Geometry& geom, const int max_coarsening_level)
