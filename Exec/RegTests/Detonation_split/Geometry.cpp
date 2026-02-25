@@ -275,7 +275,7 @@ PolygonRevolution::build(
                     " combustor?\n";
   amrex::Abort();
 }
-
+#if (AMREX_SPACEDIM == 3)
 void
 QuarterCircle::build(
   const amrex::Geometry& geom, const int max_coarsening_level)
@@ -325,7 +325,7 @@ RotatedCylinder::build(
   amrex::EB2::Build(
     gshop, geom, max_coarsening_level, max_coarsening_level, 4, false);
 }
-
+#endif
 void
 RotatedBox::build(const amrex::Geometry& geom, const int max_coarsening_level)
 {
