@@ -111,9 +111,9 @@ geo.cR = 0.05    # right-side connection length
 
 # Adjustable parameters of the system
 geo.Z = 0.1 # Length of third branch
-geo.X = 0.4 # Length of channel (circumference of RDE)
-geo.H = 0.1 #Total height from top of upper branch to bottom of lower branch
-geo.W = 0.1 # Thickness of the third branch
+geo.X = 0.3269623 # Length of channel (circumference of RDE)
+geo.H = 0.1880923 #Total height from top of upper branch to bottom of lower branch
+geo.W = 0.0846302 # Thickness of the third branch
 
 chem_integrator = none
 do_react = 0
