@@ -156,8 +156,8 @@ for Z_val, W_val in itertools.product(lengths, widths):
     case_tag = f"L{Z_val:.3f}_W{W_val:.3f}"
 
     # ----------------- 2-branch case -----------------
-    job_name_2b = f"2B_{case_tag}"
-    run2 = os.path.join(base_dir, f"run_2B_{case_tag}")
+    job_name_2b = f"{CONFIG_TAG}_2B_{case_tag}"
+    run2 = os.path.join(base_dir, f"run_{CONFIG_TAG}_2B_{case_tag}")
 
     if job_running(job_name_2b, active_names):
         print(f"[INFO] {job_name_2b} already has an active job; skipping setup for {job_name_2b}.")
@@ -168,8 +168,8 @@ for Z_val, W_val in itertools.product(lengths, widths):
         all_job_scripts.append((os.path.join(run2, "run_job.sh"), job_name_2b, case_tag))
 
     # ----------------- 3-branch case -----------------
-    job_name_3b = f"3B_{case_tag}"
-    run3 = os.path.join(base_dir, f"run_3B_{case_tag}")
+    job_name_3b = f"{CONFIG_TAG}_3B_{case_tag}"
+    run3 = os.path.join(base_dir, f"run_{CONFIG_TAG}_3B_{case_tag}")
 
     if job_running(job_name_3b, active_names):
         print(f"[INFO] {job_name_3b} already has an active job; skipping setup for {job_name_3b}.")
