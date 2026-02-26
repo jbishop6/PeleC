@@ -115,10 +115,3 @@ geo.X = 0.3269623 # Length of channel (circumference of RDE)
 geo.H = 0.1880923 #Total height from top of upper branch to bottom of lower branch
 geo.W = 0.0846302 # Thickness of the third branch
 
-chem_integrator = none
-do_react = 0
-use_reactions = false
-pelec.do_react = 0
-
-max_step = 0
-stop_time = 0.0
