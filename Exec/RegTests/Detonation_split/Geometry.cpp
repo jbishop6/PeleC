@@ -591,21 +591,28 @@ TubeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   using namespace amrex;
   using namespace amrex::EB2;
 
-  Print() << "\n>>> TubeBranch::build CALLED (Tube + Branch) <<<\n";
+  Print() << "\n>>> TubeBranch::build CALLED (NewConfig loop + 3rd branch) <<<\n";
 
-  // --- Parameters -------------------------------------------------
   ParmParse pp("geo");
 
-  // Main tube "radius" (half height) and location of branch
-  Real Rtube      = 0.15;   // half-height of main tube
-  Real x_branch0  = 0.40;   // where the branch starts in x
-  Real branch_len = 0.15;   // how far the branch extends in x
-  Real branch_drop = 0.15;  // how far the branch drops in y
+  // --- Geometry knobs (defaults) ---------------------------------
+  Real Rtube = 0.15;        // half-height of main duct
+  Real x_branch0 = 0.40;    // left edge of the downward branch duct
+  Real branch_len = 0.15;   // width of downward branch duct in x
+  Real branch_drop = 0.15;  // how far it goes down from main duct
 
-  pp.query("Rtube",       Rtube);
-  pp.query("x_branch0",   x_branch0);
-  pp.query("branch_len",  branch_len);
+  Real x_loopL = 0.08;      // x-location of the LEFT riser
+  Real loop_gap = 0.05;     // vertical gap between main duct top and bypass duct bottom
+  Real riser_w = 0.05;      // width of the risers in x (match branch width if you want)
+
+  pp.query("Rtube", Rtube);
+  pp.query("x_branch0", x_branch0);
+  pp.query("branch_len", branch_len);
   pp.query("branch_drop", branch_drop);
+
+  pp.query("x_loopL", x_loopL);
+  pp.query("loop_gap", loop_gap);
+  pp.query("riser_w", riser_w);
 
   const RealBox& rb = geom.ProbDomain();
   const Real xlo = rb.lo(0), xhi = rb.hi(0);
@@ -615,65 +622,80 @@ TubeBranch::build(const amrex::Geometry& geom, const int max_coarsening_level)
   const Real dy = geom.CellSize(1);
   const Real h  = std::max(dx, dy);
 
-  // Center tube vertically in the domain
-  const Real ymid = 0.5 * (ylo + yhi);
+  // Center main duct in y
+  const Real ymid = 0.5*(ylo + yhi);
 
-  // Clamp branch parameters to stay inside domain
   Rtube = std::max(Rtube, 4.0*h);
 
+  // Main duct
+  const Real y_main_lo = ymid - Rtube;
+  const Real y_main_hi = ymid + Rtube;
+
+  // Downward (third) branch duct (placed at junction)
   Real x_b0 = std::max(x_branch0, xlo + 2.0*h);
   Real x_b1 = std::min(x_branch0 + branch_len, xhi - 2.0*h);
+  Real y_branch_bot = std::max(y_main_lo - branch_drop, ylo + 2.0*h);
 
-  Real y_tube_top    = ymid + Rtube;
-  Real y_tube_bottom = ymid - Rtube;
+  // Upper bypass duct (same thickness as main duct)
+  const Real duct_thick = (y_main_hi - y_main_lo);          // = 2*Rtube
+  Real y_loop_lo = y_main_hi + std::max(loop_gap, 2.0*h);
+  Real y_loop_hi = y_loop_lo + duct_thick;
 
-  Real y_branch_bottom = std::max(y_tube_bottom - branch_drop, ylo + 2.0*h);
+  // Clamp bypass so it fits
+  if (y_loop_hi > yhi - 2.0*h) {
+    y_loop_hi = yhi - 2.0*h;
+    y_loop_lo = y_loop_hi - duct_thick;
+  }
 
-  auto boxS = [] (Real x0, Real y0, Real x1, Real y1) {
-    Array<Real, AMREX_SPACEDIM> lo{AMREX_D_DECL(std::min(x0,x1), std::min(y0,y1), 0.0)};
-    Array<Real, AMREX_SPACEDIM> hi{AMREX_D_DECL(std::max(x0,x1), std::max(y0,y1), 0.0)};
+  // Left riser x-range
+  Real x_rL0 = std::max(x_loopL, xlo + 2.0*h);
+  Real x_rL1 = std::min(x_rL0 + riser_w, xhi - 2.0*h);
+
+  // Right riser aligned to the downward branch (so “junction” matches your target figure)
+  Real x_rR0 = x_b0;
+  Real x_rR1 = x_b1;
+
+  // Bypass horizontal segment goes from left riser to right riser
+  Real x_loop0 = x_rL0;
+  Real x_loop1 = x_rR1;
+
+  auto boxCut = [] (Real x0, Real y0, Real x1, Real y1) {
+    Array<Real, AMREX_SPACEDIM> lo{AMREX_D_DECL(std::min(x0,x1), std::min(y0,y1), -1.0)};
+    Array<Real, AMREX_SPACEDIM> hi{AMREX_D_DECL(std::max(x0,x1), std::max(y0,y1),  1.0)};
+    // has_fluid_inside = false => "inside" is SOLID
+    // We'll use these as "cutters" to remove from the big solid
     return BoxIF(lo, hi, /*has_fluid_inside=*/false);
   };
 
-  Print() << "TubeBranch parameters:\n";
-  Print() << "  Rtube          = " << Rtube << "\n";
-  Print() << "  Tube y-range   = [" << y_tube_bottom << ", " << y_tube_top << "]\n";
-  Print() << "  Branch x-range = [" << x_b0 << ", " << x_b1 << "]\n";
-  Print() << "  Branch drop to y = " << y_branch_bottom << "\n";
+  // --- Print parameters (debug) -----------------------------------
+  Print() << "Main duct y=[" << y_main_lo << ", " << y_main_hi << "]\n";
+  Print() << "Down branch x=[" << x_b0 << ", " << x_b1 << "], y=[" << y_branch_bot << ", " << y_main_lo << "]\n";
+  Print() << "Bypass duct x=[" << x_loop0 << ", " << x_loop1 << "], y=[" << y_loop_lo << ", " << y_loop_hi << "]\n";
+  Print() << "Left riser x=[" << x_rL0 << ", " << x_rL1 << "], y=[" << y_main_hi << ", " << y_loop_lo << "]\n";
+  Print() << "Right riser x=[" << x_rR0 << ", " << x_rR1 << "], y=[" << y_main_hi << ", " << y_loop_lo << "]\n";
 
-  // --- Build solids -----------------------------------------------
-  // Top wall above tube
-  auto s_top = boxS(xlo, y_tube_top, xhi, yhi);
+  // --- Build: BIG SOLID minus CUTOUT DUCTS ------------------------
+  // 1) Start with whole domain filled as SOLID
+  auto solid_domain = boxCut(xlo, ylo, xhi, yhi);
 
-  // Bottom wall of tube, but with a gap where the branch starts
-  auto s_bottom_left  = boxS(xlo, ylo, x_b0, y_tube_bottom);
-  auto s_bottom_right = boxS(x_b1, ylo, xhi, y_tube_bottom);
+  // 2) Define duct cutouts (regions to remove from the solid)
+  auto duct_main   = boxCut(xlo, y_main_lo, xhi, y_main_hi);
+  auto duct_branch = boxCut(x_b0, y_branch_bot, x_b1, y_main_lo);
 
-  // Bottom of the branch (below the gap)
-  auto s_branch_bottom = boxS(x_b0, ylo, x_b1, y_branch_bottom);
+  auto duct_bypass = boxCut(x_loop0, y_loop_lo, x_loop1, y_loop_hi);
+  auto riser_left  = boxCut(x_rL0, y_main_hi, x_rL1, y_loop_lo);
+  auto riser_right = boxCut(x_rR0, y_main_hi, x_rR1, y_loop_lo);
 
-  // Left/right side walls of the domain above & below, to make a proper tube
-  auto s_left_tube  = boxS(xlo, y_tube_bottom, xlo + 2.0*h, y_tube_top);
-  auto s_right_tube = boxS(xhi - 2.0*h, y_tube_bottom, xhi, y_tube_top);
+  // Union all cutouts
+  auto cutouts = makeUnion(duct_main, duct_branch, duct_bypass, riser_left, riser_right);
 
-  // Side walls of the branch
-  auto s_branch_left  = boxS(x_b0, y_branch_bottom, x_b0 + 2.0*h, y_tube_bottom);
-  auto s_branch_right = boxS(x_b1 - 2.0*h, y_branch_bottom, x_b1, y_tube_bottom);
+  // 3) Solid = domainSolid \ cutouts
+  auto final_solid = makeDifference(solid_domain, cutouts);
 
-  // Union everything (all solids)
-  auto u1 = makeUnion(s_top,          s_bottom_left);
-  auto u2 = makeUnion(u1,             s_bottom_right);
-  auto u3 = makeUnion(u2,             s_branch_bottom);
-  auto u4 = makeUnion(u3,             s_left_tube);
-  auto u5 = makeUnion(u4,             s_right_tube);
-  auto u6 = makeUnion(u5,             s_branch_left);
-  auto walls = makeUnion(u6,          s_branch_right);
-
-  Print() << "[EB] TubeBranch: main tube + single side branch constructed.\n\n";
-
-  auto gshop = makeShop(walls);
+  auto gshop = makeShop(final_solid);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
 }
+
 void
 CheckpointFile::build(
   const amrex::Geometry& geom, const int max_coarsening_level)
