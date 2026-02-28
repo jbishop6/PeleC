@@ -22,7 +22,7 @@ OUTDIR="TwoBranch_outputs"
 mkdir -p "$OUTDIR"
 
 # === Run PeleC with two-branch input file ===
-./PeleC2d.gnu.ex inputs.detonation.twobranch.inp
+./PeleC2d.gnu.MPI.ex inputs.detonation.twobranch.inp
 
 # === Move plotfiles to output folder ===
 mv plt* "$OUTDIR"
