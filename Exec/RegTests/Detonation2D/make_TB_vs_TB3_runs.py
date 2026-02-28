@@ -16,7 +16,7 @@ base_dir = "TB_vs_TB3"
 # Filenames in the *current* Detonation2D directory
 INPUT_FILE_2B = "inputs.detonation.twobranch.inp"
 INPUT_FILE_3B = "inputs.detonation.threebranch.inp"
-EXECUTABLE_NAME = "PeleC2d.gnu.ex"   # change if your exe name is different
+EXECUTABLE_NAME = "PeleC2d.gnu.MPI.ex"   # change if your exe name is different
 
 # Any extra static files PeleC needs (add to this list)
 COMMON_FILES = [
@@ -112,13 +112,17 @@ def make_job_script(path, job_name, input_filename, exe_name):
 #SBATCH -p compute
 #SBATCH --output={job_name}.out
 #SBATCH --error={job_name}.err
-#SBATCH --ntasks=1
+#SBATCH --ntasks=16
 #SBATCH --cpus-per-task=8
 
 # Run from the directory containing this script
 cd "$(dirname "$0")"
 
+# OpenMP threads: match cpus-per-task
+export OMP_NUM_THREADS=${{SLURM_CPUS_PER_TASK}}
+
 echo "Job $SLURM_JOB_ID running on $(hostname) in $(pwd)"
+echo "MPI ranks: $SLURM_NTASKS, OMP threads: $OMP_NUM_THREADS"
 date
 
 echo "Launching ./{exe_name} {input_filename}"
