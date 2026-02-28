@@ -116,7 +116,7 @@ def make_job_script(path, job_name, input_filename, exe_name):
 #SBATCH -p compute
 #SBATCH --output={job_name}.out
 #SBATCH --error={job_name}.err
-#SBATCH --ntasks=16
+#SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 
 set -x  # echo commands as they run
