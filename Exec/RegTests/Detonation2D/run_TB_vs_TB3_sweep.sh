@@ -2,7 +2,7 @@
 #SBATCH --job-name=TBvsTB3_setup
 #SBATCH --output=TBvsTB3_setup_%j.log
 #SBATCH --error=TBvsTB3_setup_%j.err
-#SBATCH --partition=compute
+#SBATCH --partition=compute-long
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
