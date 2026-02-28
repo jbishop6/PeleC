@@ -122,7 +122,7 @@ def make_job_script(path, job_name, input_filename, exe_name):
 set -x  # echo commands as they run
 
 # Run from the directory containing this script
-cd "$(dirname "$0")"
+cd "$SLURM_SUBMIT_DIR"
 
 # OpenMP threads: match cpus-per-task
 export OMP_NUM_THREADS=${{SLURM_CPUS_PER_TASK}}
