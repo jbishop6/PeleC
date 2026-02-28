@@ -26,8 +26,12 @@ COMMON_FILES = [
 ]
 
 # ------------------------------------------------------------------
+# Hard fail early if the executable is missing, instead of silently
+# copying nothing and generating dead run directories.
+if not os.path.exists(EXECUTABLE_NAME):
+    raise SystemExit(f"[FATAL] Executable '{EXECUTABLE_NAME}' not found in {os.getcwd()}")
+# ------------------------------------------------------------------
 os.makedirs(base_dir, exist_ok=True)
-
 
 def get_active_jobnames():
     """
