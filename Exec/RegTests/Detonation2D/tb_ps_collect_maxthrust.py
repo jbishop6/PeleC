@@ -113,6 +113,8 @@ def extract_thrust_from_plotfile(plotfile_dir, outlet_x=0.9):
     # dyne -> N  (this is effectively N per cm depth)
     thrust_N = thrust_dyne / 1e5
 
+    if not np.isfinite(thrust_N) or not np.isfinite(p_bar_out):
+        print(f"[DEBUG] NaN detected in {plotfile_dir}: thrust_N={thrust_N}, p_bar_out={p_bar_out}")
     
     return thrust_N, p_bar_out
 
