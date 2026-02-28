@@ -119,6 +119,8 @@ def make_job_script(path, job_name, input_filename, exe_name):
 #SBATCH --ntasks=16
 #SBATCH --cpus-per-task=8
 
+set -x  # echo commands as they run
+
 # Run from the directory containing this script
 cd "$(dirname "$0")"
 
