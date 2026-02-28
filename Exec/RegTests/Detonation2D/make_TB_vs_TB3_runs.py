@@ -110,7 +110,6 @@ def make_job_script(path, job_name, input_filename, exe_name):
         f.write(f"""#!/bin/bash
 #SBATCH --job-name={job_name}
 #SBATCH -p compute
-#SBATCH --time=48:00:00
 #SBATCH --output={job_name}.out
 #SBATCH --error={job_name}.err
 #SBATCH --ntasks=1
