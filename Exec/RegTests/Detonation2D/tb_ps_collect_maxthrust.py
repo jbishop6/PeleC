@@ -75,7 +75,7 @@ def extract_thrust_from_plotfile(plotfile_dir, outlet_x=0.9):
     x_cm = ad["x"].to("cm").v
     rho = ad["density"].to("g/cm**3").v
     vx = ad["x_velocity"].to("cm/s").v
-    p_cgs = ad["pressure"].to("dyn/cm**2").v
+    p_cgs = ad["pressure"].v
 
     # Cell sizes
     dx_cm = float((ds.domain_width[0] / ds.domain_dimensions[0]).to("cm"))
