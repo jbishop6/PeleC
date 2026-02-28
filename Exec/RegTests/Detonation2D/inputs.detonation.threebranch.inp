@@ -37,7 +37,6 @@ pelec.hi_bc = "SlipWall"  "SlipWall"
 
 prob.idir  = 1
 prob.frac  = 0.5
-prob.rho_l = 1.2
 prob.T_l   = 3000.0
 
 prob.p_l   = 1e7
