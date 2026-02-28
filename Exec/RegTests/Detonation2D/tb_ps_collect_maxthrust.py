@@ -150,7 +150,9 @@ def analyze_run_max_thrust(run_dir, outlet_x=0.8):
     # delta_P calculation:
     deltaP_cgs = np.mean(pout_values) - P_REF_CGS # dyn/cm^2
     deltaP_Pa = deltaP_cgs * 0.1 # Pa
-    deltaP_kPa = deltaP_cgs * 1e-4 # kPa
+    deltaP_kPa = deltaP_cgs * 1e-4 # kPa   
+
+    print(f"[DEBUG] {run_dir}: thrust_max={thrust_max}, thrust_avg={thrust_avg}, thrust_std={thrust_std}, deltaP_kPa={deltaP_kPa}")
 
     return thrust_max, thrust_avg, thrust_std, deltaP_kPa, len(thrust_values)
 
