@@ -15,7 +15,7 @@ amr.n_cell           = 512  1024
 
 # ------------------ BOUNDARY CONDITIONS -------------------
 pelec.lo_bc = "SlipWall" "SlipWall"
-pelec.hi_bc = "SlipWall" "SlipWall"
+pelec.hi_bc = "FOExtrap" "SlipWall"
 
 # ------------------ PHYSICS -------------------
 pelec.do_hydro     = 1
