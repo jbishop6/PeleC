@@ -7,22 +7,33 @@ import numpy as np
 import yt
 
 # === CONFIG: change this if your TB_PS path moves ===
-TB_ROOT = "/Users/jenniferbishop/Documents/UCCS/Combustion_Research/Results/Parameter_Sweep/TB_PS"
+TB_ROOT = "/Users/jenniferbishop/Documents/UCCS/Combustion_Research/Results/Comparison_TBvsTB3/run_2_26/TB_vs_TB3"
 
 # Output CSV (Excel can open this directly)
 OUTPUT_CSV = os.path.join(TB_ROOT, "TB_PS_thrust_max_summary.csv")
 
+H = 0.1880923
+X = 0.3269623
+P_REF_CGS = 1e6 #dyn/cm^2
 
 def parse_geometry_from_rundir(rundir_name):
     """
-    Parse Z, X, H, W from a run directory name like:
-      run_Z0p08_X0p326962268_H0p188092301_W0p084630218
-    Returns (Z, X, H, W) as floats, or (None, None, None, None) if parse fails.
+    Parse branch type Z and W from a run directory name (In this case L = Z in the name) like:
+      run_2B_L0.080_W0.040
+    Returns (branch_type, Z, W) as floats, or (None, None, None, None) if parse fails.
     """
-    pattern = r"run_Z(?P<Z>[^_]+)_X(?P<X>[^_]+)_H(?P<H>[^_]+)_W(?P<W>[^_]+)"
+
+    if "2B" in rundir_name:
+        branch_type = "2B"
+    elif "3B" in rundir_name:
+        branch_type = "3B"
+    else:
+        branch_type = None
+    
+    pattern = r"L(?P<Z>[0-9._]+)_W(?P<W>[^_]+)"
     m = re.search(pattern, rundir_name)
     if not m:
-        return None, None, None, None
+        return branch_type, None, None
 
     def de_p(s):
         # convert "0p08" -> "0.08"
@@ -30,12 +41,12 @@ def parse_geometry_from_rundir(rundir_name):
 
     try:
         Z = de_p(m.group("Z"))
-        X = de_p(m.group("X"))
-        H = de_p(m.group("H"))
         W = de_p(m.group("W"))
-        return Z, X, H, W
+        return branch_type, Z, W
     except Exception:
-        return None, None, None, None
+        return branch_type, None, None
+
+  
 
 
 def get_all_plotfiles(run_dir):
@@ -64,6 +75,7 @@ def extract_thrust_from_plotfile(plotfile_dir, outlet_x=0.9):
     x_cm = ad["x"].to("cm").v
     rho = ad["density"].to("g/cm**3").v
     vx = ad["x_velocity"].to("cm/s").v
+    p_cgs = ad["pressure"].to("dyn/cm**2").v
 
     # Cell sizes
     dx_cm = float((ds.domain_width[0] / ds.domain_dimensions[0]).to("cm"))
@@ -87,13 +99,22 @@ def extract_thrust_from_plotfile(plotfile_dir, outlet_x=0.9):
 
     rho_out = rho[mask]
     vx_out = vx[mask]
+    p_out = p_cgs[mask]
 
-    # F_2D = Σ(ρ u^2) dy   [g/s^2] ~ dyne/cm (per depth)
-    thrust_dyne = float(np.sum(rho_out * vx_out**2) * dy_cm)
+    # Area-averaged outlet pressure (dyn/cm^2)
+    p_bar_out = float(np.mean(p_out))
+
+    
+    # Thrust per unit depth:
+    # F_2D = Σ(ρ u_x^2 + (p - P_ref) dy   [g/s^2] ~ dyne/cm (per depth)
+    integrand = rho_out * vx_out**2 + (p_out - P_REF_CGS)
+    thrust_dyne = float(np.sum(integrand) * dy_cm)
 
     # dyne -> N  (this is effectively N per cm depth)
     thrust_N = thrust_dyne / 1e5
-    return thrust_N
+
+    
+    return thrust_N, p_bar_out
 
 
 def analyze_run_max_thrust(run_dir, outlet_x=0.8):
@@ -106,10 +127,12 @@ def analyze_run_max_thrust(run_dir, outlet_x=0.8):
     plotfiles = get_all_plotfiles(run_dir)
 
     thrust_values = []
+    pout_values = []
     for pf in plotfiles:
         try:
-            F = extract_thrust_from_plotfile(pf, outlet_x=outlet_x)
+            F, p_bar_out = extract_thrust_from_plotfile(pf, outlet_x=outlet_x)
             thrust_values.append(F)
+            pout_values.append(p_bar_out)
         except Exception as e:
             print(f"[WARN] Skipping {pf}: {e}")
             continue
@@ -122,7 +145,12 @@ def analyze_run_max_thrust(run_dir, outlet_x=0.8):
     thrust_avg = float(np.mean(thrust_values))
     thrust_std = float(np.std(thrust_values))
 
-    return thrust_max, thrust_avg, thrust_std, len(thrust_values)
+    # delta_P calculation:
+    deltaP_cgs = np.mean(pout_values) - P_REF_CGS # dyn/cm^2
+    deltaP_Pa = deltaP_cgs * 0.1 # Pa
+    deltaP_kPa = deltaP_cgs * 1e-4 # kPa
+
+    return thrust_max, thrust_avg, thrust_std, deltaP_kPa, len(thrust_values)
 
 
 def main():
@@ -147,7 +175,7 @@ def main():
             "geo.Z", "geo.X", "geo.H", "geo.W",
             "thrust_max_N_per_cm",
             "thrust_avg_N_per_cm",
-            "thrust_std_N_per_cm",
+            "thrust_std_N_per_cm", "deltaP_kPa",
             "num_samples",
         ])
 
@@ -155,19 +183,19 @@ def main():
             run_name = os.path.basename(run_dir)
             print(f"\n[INFO] Processing {run_name} ...")
 
-            Z, X, H, W = parse_geometry_from_rundir(run_name)
+            branch_type, Z, W = parse_geometry_from_rundir(run_name)
             if Z is None:
                 print(f"[WARN] Could not parse geometry from {run_name}, logging as blanks.")
 
             try:
-                thrust_max, thrust_avg, thrust_std, n_samples = analyze_run_max_thrust(run_dir)
+                thrust_max, thrust_avg, thrust_std, deltaP_kPa, n_samples = analyze_run_max_thrust(run_dir)
             except Exception as e:
                 print(f"[ERROR] Failed to analyze {run_name}: {e}")
                 # Log a row with NaNs so you see the failure in the spreadsheet
                 writer.writerow([
                     run_name,
                     Z, X, H, W,
-                    "NaN", "NaN", "NaN", 0,
+                    "NaN", "NaN", "NaN", "NaN", 0,
                 ])
                 continue
 
@@ -176,6 +204,7 @@ def main():
                 f"max={thrust_max:.4f} N/cm, "
                 f"avg={thrust_avg:.4f} N/cm, "
                 f"std={thrust_std:.4f} N/cm, "
+                f"delta_P={deltaP_kPa:.4f} kPa,"
                 f"samples={n_samples}"
             )
 
@@ -185,6 +214,7 @@ def main():
                 thrust_max,
                 thrust_avg,
                 thrust_std,
+                deltaP_kPa,
                 n_samples,
             ])
 
