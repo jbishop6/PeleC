@@ -109,13 +109,22 @@ def make_job_script(path, job_name, input_filename, exe_name):
     with open(script_path, "w") as f:
         f.write(f"""#!/bin/bash
 #SBATCH --job-name={job_name}
+#SBATCH -p compute-long
 #SBATCH --output={job_name}.out
 #SBATCH --error={job_name}.err
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 
-# Executable is local in this run directory
+# Run from the directory containing this script
+cd "$(dirname "$0")"
+
+echo "Job $SLURM_JOB_ID running on $(hostname) in $(pwd)"
+date
+
+echo "Launching ./{exe_name} {input_filename}"
 srun ./{exe_name} {input_filename}
+
+echo "Job $SLURM_JOB_ID finished at $(date)"
 """)
     os.chmod(script_path, 0o755)
 
