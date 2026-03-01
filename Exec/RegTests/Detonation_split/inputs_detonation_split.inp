@@ -8,13 +8,13 @@ pelec.fixed_dt = 2e-9
 amr.plot_files_output = 1
 # amr.plot_file = /home/XXXX...XXXX/output/plt
 # amr.plot_file = ./output_rxn/plt
-amr.plot_file = /mmfs1/home/jquinlan/runs/temp2/plt
+amr.plot_file = /mmfs1/home/jquinlan/runs/temp3/plt
 amr.plot_int          = 50
 
 # CHECKPOINT FILES
 amr.checkpoint_files_output = 0
 # amr.check_file      = ./output/chk        # root name of checkpoint file
-amr.check_file      = /mmfs1/home/jquinlan/runs/temp/chk        # root name of checkpoint file
+amr.check_file      = /mmfs1/home/jquinlan/runs/temp3/chk        # root name of checkpoint file
 amr.check_int       = 1000        # number of timesteps between checkpoints
 
 # ------------------ GEOMETRY (2D) -------------------
@@ -79,6 +79,17 @@ pelec.dt_cutoff   = 5.e-20
 pelec.v      = 1
 amr.v        = 1
 amr.data_log = datlog
+
+# ------------------ DATA PROBING -------------------
+# Enable two probes
+peleC.num_probes = 2
+# Definition for the first probe (Index 0)
+peleC.probe0_pos = 0.6 0.55 0.0
+peleC.probe0_name = ./output/pressure_1
+
+# Definition for the second probe (Index 1)
+peleC.probe1_pos = 0.7 0.55 0.0
+peleC.probe1_name = ./pressure_2
 
 # ------------------ REFINEMENT / GRIDS -------------------
 amr.max_level       = 3

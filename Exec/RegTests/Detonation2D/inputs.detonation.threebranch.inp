@@ -24,17 +24,7 @@ pelec.diffuse_vel  = 0
 pelec.diffuse_temp = 0
 pelec.diffuse_spec = 0
 
-# ------------------ DETONATION WAVE ------------------
-pelec.do_react = 1
-pelec.chem_integrator = "ReactorCvode"
-pelec.use_typ_vals_chem = 1
-cvode.solve_type = "denseAJ_direct"
-ode.rtol = 1.0e-6
-ode.atol = 1.0e-5
-
-pelec.lo_bc = "SlipWall" "SlipWall"
-pelec.hi_bc = "SlipWall"  "SlipWall"
-
+# -------------------PROB SPECIFIC -------------------
 prob.idir  = 1
 prob.frac  = 0.5
 prob.T_l   = 3000.0
@@ -48,8 +38,6 @@ prob.rho_r = 1.2e-4
 
 prob.left_gas  = N2
 prob.right_gas = He
-
-
 
 # ------------------ TIME STEP CONTROL -------------------
 pelec.cfl         = 0.9
@@ -83,20 +71,6 @@ amr.plot_int = -1
 amr.plot_vars         = vfrac density Temp
 amr.derive_plot_vars  = pressure x_velocity y_velocity magvel magvort
 
-# === Pressure probes for wave strength/speed ===
-pelec.num_probes  = 2
-
-# Upstream probe in fresh-reactant channel
-pelec.probe0_pos  = 0.8 1.0 0.0
-pelec.probe0_name = pressure_center
-
-# Downstream probe along same streamline
-pelec.probe1_pos  = 0.9 1.0 0.0
-pelec.probe1_name = pressure_downstream
-
-# Optional: record every N steps instead of every step
-# pelec.probe_int   = 5
-
 # ------------------ EMBEDDED BOUNDARY (EB) -------------------
 pelec.eb_in_domain = 1
 
@@ -110,7 +84,6 @@ eb2.box_hi = 0.60 0.09
 eb2.box_has_fluid_inside = 0
 eb2.box_rotation = 0
 eb2.box_rotation_axe = 2
-
 
 # geo.W  = 0.041015625
 geo.L  = 0.0390625

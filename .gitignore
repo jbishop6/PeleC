@@ -17,6 +17,8 @@ extern_parameters.H
 extern_parameters.cpp
 extern_parameters_F.H
 output/
+*.dat
+*.log
 
 Build/CMakeCache.txt
 Build/CMakeFiles/
