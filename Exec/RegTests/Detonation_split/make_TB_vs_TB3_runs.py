@@ -19,7 +19,7 @@ base_dir = "TB_vs_TB3"
 # Filenames in the *current* Detonation2D directory
 INPUT_FILE_2B = "input_detonation_two_branch.inp"
 INPUT_FILE_3B = "input_detonation_three_branch.inp"
-EXECUTABLE_NAME = "PeleC2d.gnu.ex"   # change if your exe name is different
+EXECUTABLE_NAME = "PeleC2d.gnu.MPI.ex"   # change if your exe name is different
 
 # Any extra static files PeleC needs (add to this list)
 COMMON_FILES = [
