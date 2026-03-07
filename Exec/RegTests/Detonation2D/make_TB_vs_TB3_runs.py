@@ -113,7 +113,7 @@ def make_job_script(path, job_name, input_filename, exe_name):
     with open(script_path, "w") as f:
         f.write(f"""#!/bin/bash
 #SBATCH --job-name={job_name}
-#SBATCH -p compute
+#SBATCH -p compute-long
 #SBATCH --output={job_name}.out
 #SBATCH --error={job_name}.err
 #SBATCH --ntasks=16
@@ -132,7 +132,7 @@ echo "MPI ranks: $SLURM_NTASKS, OMP threads: $OMP_NUM_THREADS"
 date
 
 echo "Launching ./{exe_name} {input_filename}"
-srun --mpi=pmix ./{exe_name} {input_filename}
+srun ./{exe_name} {input_filename}
 
 echo "Job $SLURM_JOB_ID finished at $(date)"
 """)
