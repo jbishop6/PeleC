@@ -117,7 +117,7 @@ def make_job_script(path, job_name, input_filename, exe_name):
 #SBATCH --output={job_name}.out
 #SBATCH --error={job_name}.err
 #SBATCH --ntasks=16
-#SBATCH --cpus-per-task=8
+#SBATCH --cpus-per-task=1
 
 set -x  # echo commands as they run
 
@@ -132,7 +132,7 @@ echo "MPI ranks: $SLURM_NTASKS, OMP threads: $OMP_NUM_THREADS"
 date
 
 echo "Launching ./{exe_name} {input_filename}"
-srun ./{exe_name} {input_filename}
+srun --mpi=pmix ./{exe_name} {input_filename}
 
 echo "Job $SLURM_JOB_ID finished at $(date)"
 """)
