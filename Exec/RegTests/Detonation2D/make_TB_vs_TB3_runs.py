@@ -132,7 +132,9 @@ echo "MPI ranks: $SLURM_NTASKS, OMP threads: $OMP_NUM_THREADS"
 date
 
 echo "Launching ./{exe_name} {input_filename}"
-srun --mpi=pmi2 ./{exe_name} {input_filename}
+# srun ./{exe_name} {input_filename}
+
+mpirun -np 16 ./{exe_name} {input_filename}
 
 echo "Job $SLURM_JOB_ID finished at $(date)"
 """)
