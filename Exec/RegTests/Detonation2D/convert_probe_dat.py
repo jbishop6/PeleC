@@ -2,8 +2,15 @@ import re
 import pandas as pd
 
 # ---------- file names ----------
-input_file  = "probe_data_2d.dat"
-output_file = "probe_data_2d.xlsx"
+import re
+import pandas as pd
+import os
+
+# directory where the script itself lives
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+input_file  = os.path.join(script_dir, "probe_data_2d.dat")
+output_file = os.path.join(script_dir, "probe_data_2d.xlsx")
 
 # ---------- read file ----------
 with open(input_file, "r") as f:
