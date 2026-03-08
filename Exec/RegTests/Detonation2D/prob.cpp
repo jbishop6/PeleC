@@ -156,10 +156,78 @@ void get_interpolated_data(
 // void PeleC::problem_post_timestep(Amr* amrptr)
 void PeleC::problem_post_timestep()
 {
-    const int n_probes = 2;
-    // Define 2D coordinates (X, Y)
-    amrex::Vector<amrex::RealVect> probes = {amrex::RealVect(0.5, 0.55), 
-                                             amrex::RealVect(0.6, 0.55)};
+        // ----------------------------------------
+    // Geometry-based 3-probe placement
+    // P0: upstream main-channel centerline
+    // P1: downstream main-channel centerline
+    // P2: second outlet probe for pressure comparison
+    // ----------------------------------------
+    amrex::ParmParse pp("geo");
+
+    amrex::Real W = 0.04, H = 0.04, L = 0.04, xs = 0.30;
+    amrex::Real X = 0.40;
+    amrex::Real mid = 0.02;
+    amrex::Real cL  = 0.00;
+    amrex::Real cR  = 0.00;
+    amrex::Real y_offset = 0.0;
+    amrex::Real Z = 0.08;
+
+    pp.query("W", W);
+    pp.query("H", H);
+    pp.query("L", L);
+    pp.query("xs", xs);
+    pp.query("X", X);
+    pp.query("mid", mid);
+    pp.query("cL", cL);
+    pp.query("cR", cR);
+    pp.query("y_offset", y_offset);
+    pp.query("Z", Z);
+
+    const amrex::Geometry& geom0 = parent->Geom(0);
+
+    const amrex::Real* problo = geom0.ProbLo();
+    const amrex::Real* probhi = geom0.ProbHi();
+
+    const amrex::Real xlo = problo[0];
+    const amrex::Real xhi = probhi[0];
+    const amrex::Real ylo = problo[1];
+    const amrex::Real yhi = probhi[1];
+
+    const amrex::Real dx = geom0.CellSize(0);
+    const amrex::Real dy = geom0.CellSize(1);
+    const amrex::Real h  = std::max(dx, dy);
+
+    const amrex::Real ymid = 0.5 * (ylo + yhi) + y_offset;
+    const amrex::Real xr   = xs + X;
+    const amrex::Real mw_x1 = xr - cR;
+    const amrex::Real z_x_right = mw_x1 + W;
+
+    // Probe locations:
+    // P0 = upstream main centerline
+    // P1 = downstream main centerline
+    // P2 = farther outlet probe for outlet pressure comparison
+    amrex::Real x_p0 = xs - 6.0*h;
+    amrex::Real x_p1 = z_x_right + 6.0*h;
+    amrex::Real x_p2 = z_x_right + 12.0*h;
+
+    // Keep probes safely inside the domain
+    x_p0 = std::max(x_p0, xlo + 6.0*h);
+    x_p1 = std::min(x_p1, xhi - 12.0*h);
+    x_p2 = std::min(x_p2, xhi - 6.0*h);
+
+    const int n_probes = 3;
+    amrex::Vector<amrex::RealVect> probes = {
+        amrex::RealVect(AMREX_D_DECL(x_p0, ymid, 0.0)),
+        amrex::RealVect(AMREX_D_DECL(x_p1, ymid, 0.0)),
+        amrex::RealVect(AMREX_D_DECL(x_p2, ymid, 0.0))
+    };
+
+    if (amrex::ParallelDescriptor::IOProcessor() && parent->levelSteps(0) == 0) {
+        amrex::Print() << "\n[Probe setup]\n";
+        amrex::Print() << "  P0 (wave-speed upstream) = (" << x_p0 << ", " << ymid << ")\n";
+        amrex::Print() << "  P1 (wave-speed downstream / outlet ref) = (" << x_p1 << ", " << ymid << ")\n";
+        amrex::Print() << "  P2 (outlet comparison) = (" << x_p2 << ", " << ymid << ")\n\n";
+    }
     
     int ncomp = parent->getLevel(0).get_new_data(State_Type).nComp();
     int data_per_probe = ncomp + 1;
