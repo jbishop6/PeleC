@@ -4,8 +4,8 @@
 #SBATCH --error=slurm_error_%j.log
 #SBATCH --partition=compute-long
 #SBATCH --nodes=1
-#SBATCH --ntasks=1
-#SBATCH --cpus-per-task=5
+#SBATCH --ntasks=16
+#SBATCH --cpus-per-task=1
 
 
 echo "================================================="
