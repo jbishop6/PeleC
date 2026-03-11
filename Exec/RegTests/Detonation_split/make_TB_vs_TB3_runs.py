@@ -10,15 +10,12 @@ import subprocess
 lengths = [0.08, 0.12, 0.16]   # Z values (third-branch length)
 widths  = [0.04, 0.08]         # W values (third-branch width)
 
-# Tag so Slurm jobs mark as new config
-CONFIG_TAG = "newconfig"
-
 # Base directory where all runs will be created
 base_dir = "TB_vs_TB3"
 
 # Filenames in the *current* Detonation2D directory
-INPUT_FILE_2B = "input_detonation_two_branch.inp"
-INPUT_FILE_3B = "input_detonation_three_branch.inp"
+INPUT_FILE_2B = "inputs.detonation.twobranch.inp"
+INPUT_FILE_3B = "inputs.detonation.threebranch.inp"
 EXECUTABLE_NAME = "PeleC2d.gnu.MPI.ex"   # change if your exe name is different
 
 # Any extra static files PeleC needs (add to this list)
@@ -29,8 +26,12 @@ COMMON_FILES = [
 ]
 
 # ------------------------------------------------------------------
+# Hard fail early if the executable is missing, instead of silently
+# copying nothing and generating dead run directories.
+if not os.path.exists(EXECUTABLE_NAME):
+    raise SystemExit(f"[FATAL] Executable '{EXECUTABLE_NAME}' not found in {os.getcwd()}")
+# ------------------------------------------------------------------
 os.makedirs(base_dir, exist_ok=True)
-
 
 def get_active_jobnames():
     """
@@ -115,17 +116,25 @@ def make_job_script(path, job_name, input_filename, exe_name):
 #SBATCH -p compute-long
 #SBATCH --output={job_name}.out
 #SBATCH --error={job_name}.err
-#SBATCH --ntasks=1
-#SBATCH --cpus-per-task=8
+#SBATCH --ntasks=16
+#SBATCH --cpus-per-task=1
+
+set -x  # echo commands as they run
 
 # Run from the directory containing this script
-cd "$(dirname "$0")"
+cd "$SLURM_SUBMIT_DIR"
+
+# OpenMP threads: match cpus-per-task
+export OMP_NUM_THREADS=${{SLURM_CPUS_PER_TASK}}
 
 echo "Job $SLURM_JOB_ID running on $(hostname) in $(pwd)"
+echo "MPI ranks: $SLURM_NTASKS, OMP threads: $OMP_NUM_THREADS"
 date
 
 echo "Launching ./{exe_name} {input_filename}"
-srun ./{exe_name} {input_filename}
+# srun ./{exe_name} {input_filename}
+
+mpirun -np 16 ./{exe_name} {input_filename}
 
 echo "Job $SLURM_JOB_ID finished at $(date)"
 """)
@@ -165,8 +174,8 @@ for Z_val, W_val in itertools.product(lengths, widths):
     case_tag = f"L{Z_val:.3f}_W{W_val:.3f}"
 
     # ----------------- 2-branch case -----------------
-    job_name_2b = f"{CONFIG_TAG}_2B_{case_tag}_newconfig"
-    run2 = os.path.join(base_dir, f"run_{CONFIG_TAG}_2B_{case_tag}")
+    job_name_2b = f"2B_{case_tag}_symmetric"
+    run2 = os.path.join(base_dir, f"run_2B_{case_tag}")
 
     if job_running(job_name_2b, active_names):
         print(f"[INFO] {job_name_2b} already has an active job; skipping setup for {job_name_2b}.")
@@ -177,8 +186,8 @@ for Z_val, W_val in itertools.product(lengths, widths):
         all_job_scripts.append((os.path.join(run2, "run_job.sh"), job_name_2b, case_tag))
 
     # ----------------- 3-branch case -----------------
-    job_name_3b = f"{CONFIG_TAG}_3B_{case_tag}_newconfig"
-    run3 = os.path.join(base_dir, f"run_{CONFIG_TAG}_3B_{case_tag}")
+    job_name_3b = f"3B_{case_tag}_symmetric"
+    run3 = os.path.join(base_dir, f"run_3B_{case_tag}")
 
     if job_running(job_name_3b, active_names):
         print(f"[INFO] {job_name_3b} already has an active job; skipping setup for {job_name_3b}.")
