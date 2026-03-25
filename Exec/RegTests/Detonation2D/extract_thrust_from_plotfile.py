@@ -1,103 +1,248 @@
 import os
+import re
+import csv
 from glob import glob
 
-import yt
 import numpy as np
-import matplotlib.pyplot as plt
+import yt
 
+# === CONFIG: change this if your TB_PS path moves ===
+TB_ROOT = "/Users/jenniferbishop/Documents/UCCS/Combustion_Research/Results/Comparison_TBvsTB3/run_3_11/TB_vs_TB3"
 
-RUN_DIR = "."   # or full path to the run folder
+# Output CSV (Excel can open this directly)
+OUTPUT_CSV = os.path.join(TB_ROOT, "TB_PS_thrust_max_summary.csv")
 
+H = 0.1880923
+X = 0.3269623
+P_REF_CGS = 1e6 #dyn/cm^2
 
-def get_all_plotfiles(base_dir):
-    plot_dirs = sorted(glob(os.path.join(base_dir, "plt*")))
-    if not plot_dirs:
-        raise RuntimeError(f"No plotfiles found in {base_dir}.")
-    return plot_dirs
-
-
-def extract_thrust_from_plotfile(plotfile_dir, outlet_x=0.95, tolerance=0.10):
+def parse_geometry_from_rundir(rundir_name):
     """
-    Exact same outlet/mask logic as optimization script.
-    Returns the same numeric value as before, but for a 2D case
-    you will interpret/report it as force per unit depth.
+    Parse branch type Z and W from a run directory name (In this case L = Z in the name) like:
+      run_2B_L0.080_W0.040
+    Returns (branch_type, Z, W) as floats, or (None, None, None, None) if parse fails.
+    """
+
+    if "2B" in rundir_name:
+        branch_type = "2B"
+    elif "3B" in rundir_name:
+        branch_type = "3B"
+    else:
+        branch_type = None
+    
+    pattern = r"L(?P<Z>[0-9._]+)_W(?P<W>[^_]+)"
+    m = re.search(pattern, rundir_name)
+    if not m:
+        return branch_type, None, None
+
+    def de_p(s):
+        # convert "0p08" -> "0.08"
+        return float(s.replace("p", "."))
+
+    try:
+        Z = de_p(m.group("Z"))
+        W = de_p(m.group("W"))
+        return branch_type, Z, W
+    except Exception:
+        return branch_type, None, None
+
+  
+
+
+def get_all_plotfiles(run_dir, max_plt=27000):
+    """
+    Return sorted list of plt* directories inside a run directory,
+    keeping only plotfiles with index <= max_plt.
+    Example: plt00050, plt27000
+    """
+    all_plot_dirs = sorted(glob(os.path.join(run_dir, "plt*")))
+
+    filtered_plot_dirs = []
+    for pf in all_plot_dirs:
+        name = os.path.basename(pf)
+
+        # Match names like plt00010, plt27000, etc.
+        m = re.match(r"^plt(\d+)$", name)
+        if not m:
+            continue
+
+        plt_num = int(m.group(1))
+        if plt_num <= max_plt:
+            filtered_plot_dirs.append(pf)
+
+    if not filtered_plot_dirs:
+        raise RuntimeError(
+            f"No plotfiles found in {run_dir} with plot index <= {max_plt}"
+        )
+
+    return filtered_plot_dirs
+
+
+def extract_thrust_from_plotfile(plotfile_dir, outlet_x=0.95):
+    """
+    Compute thrust from a single plotfile using a plane-like slice:
+
+      - x is streamwise direction
+      - integrate ρ u^2 over y at one x-plane
+      - tolerance in x is ~ one cell (dx)
+      - Result is N per unit depth (per cm) in the out-of-plane direction.
     """
     ds = yt.load(plotfile_dir)
     ad = ds.all_data()
 
+    # Fields in CGS
     x_cm = ad["x"].to("cm").v
-    rho_cgs = ad["density"].to("g/cm**3").v
-    vx_cgs = ad["x_velocity"].to("cm/s").v
+    rho = ad["density"].to("g/cm**3").v
+    vx = ad["x_velocity"].to("cm/s").v
+    p_cgs = ad["pressure"].v
 
+    # Cell sizes
+    dx_cm = float((ds.domain_width[0] / ds.domain_dimensions[0]).to("cm"))
     dy_cm = float((ds.domain_width[1] / ds.domain_dimensions[1]).to("cm"))
 
+    # Domain info
     x_min = float(ds.domain_left_edge[0].to("cm"))
     x_max = float(ds.domain_right_edge[0].to("cm"))
-    domain_length = x_max - x_min
+    Lx = x_max - x_min
 
-    outlet_x_cm = x_min + outlet_x * domain_length
-    tolerance_cm = tolerance * domain_length
+    # Desired plane location
+    outlet_x_cm = x_min + outlet_x * Lx
+
+    # Use ~1 column of cells in x
+    tolerance_cm = 0.51 * dx_cm
 
     mask = np.abs(x_cm - outlet_x_cm) < tolerance_cm
+    n_cells = int(np.sum(mask))
+    if n_cells == 0:
+        raise RuntimeError(f"No cells near x={outlet_x_cm:.3e} cm in {plotfile_dir}")
 
-    if np.sum(mask) == 0:
-        raise RuntimeError(f"No cells found near outlet in {plotfile_dir}")
+    rho_out = rho[mask]
+    vx_out = vx[mask]
+    p_out = p_cgs[mask]
 
-    rho_out = rho_cgs[mask]
-    vx_out = vx_cgs[mask]
+    # Area-averaged outlet pressure (dyn/cm^2)
+    p_bar_out = float(np.mean(p_out))
 
-    thrust_dyne = float(np.sum(rho_out * vx_out**2) * dy_cm)
+    
+    # Thrust per unit depth:
+    # F_2D = Σ(ρ u_x^2 + (p - P_ref) dy   [g/s^2] ~ dyne/cm (per depth)
+    integrand = rho_out * vx_out**2 + (p_out - P_REF_CGS)
+    thrust_dyne = float(np.sum(integrand) * dy_cm)
 
-    # keep exact same numeric conversion as original script
-    thrust_per_unit_depth = thrust_dyne / 1e5
+    # dyne -> N  (this is effectively N per cm depth)
+    thrust_N = thrust_dyne / 1e5
 
-    return thrust_per_unit_depth
+    if not np.isfinite(thrust_N) or not np.isfinite(p_bar_out):
+        print(f"[DEBUG] NaN detected in {plotfile_dir}: thrust_N={thrust_N}, p_bar_out={p_bar_out}")
+    
+    return thrust_N, p_bar_out
+
+
+def analyze_run_max_thrust(run_dir, outlet_x=0.8):
+    """
+    For a given run directory:
+      - loop over all plt* files
+      - compute thrust for each
+      - return max thrust over time, plus avg and std for reference
+    """
+    plotfiles = get_all_plotfiles(run_dir)
+
+    thrust_values = []
+    pout_values = []
+    for pf in plotfiles:
+        try:
+            F, p_bar_out = extract_thrust_from_plotfile(pf, outlet_x=outlet_x)
+            thrust_values.append(F)
+            pout_values.append(p_bar_out)
+        except Exception as e:
+            print(f"[WARN] Skipping {pf}: {e}")
+            continue
+
+    if not thrust_values:
+        raise RuntimeError(f"No thrust values computed for {run_dir}")
+
+    thrust_values = np.array(thrust_values)
+    thrust_max = float(np.max(thrust_values))
+    thrust_avg = float(np.mean(thrust_values))
+    thrust_std = float(np.std(thrust_values))
+
+    # delta_P calculation:
+    deltaP_cgs = np.mean(pout_values) - P_REF_CGS # dyn/cm^2
+    deltaP_Pa = deltaP_cgs * 0.1 # Pa
+    deltaP_kPa = deltaP_cgs * 1e-4 # kPa   
+
+    print(f"[DEBUG] {run_dir}: thrust_max={thrust_max}, thrust_avg={thrust_avg}, thrust_std={thrust_std}, deltaP_kPa={deltaP_kPa}")
+
+    return thrust_max, thrust_avg, thrust_std, deltaP_kPa, len(thrust_values)
 
 
 def main():
-    plotfiles = get_all_plotfiles(RUN_DIR)
+    # Find all run_* directories in TB_ROOT
+    run_dirs = sorted(
+        d for d in glob(os.path.join(TB_ROOT, "run_*"))
+        if os.path.isdir(d)
+    )
 
-    results = []
-    for pf in plotfiles:
-        ds = yt.load(pf)
-        time_s = float(ds.current_time.to("s"))
-        time_us = time_s * 1e6
+    if not run_dirs:
+        print(f"[FATAL] No run_* directories found in {TB_ROOT}")
+        return
 
-        thrust_val = extract_thrust_from_plotfile(pf)
+    print(f"[INFO] Found {len(run_dirs)} run_* directories in TB_ROOT.")
+    print(f"[INFO] Output CSV will be: {OUTPUT_CSV}")
 
-        results.append({
-            "plotfile": os.path.basename(pf),
-            "time_us": time_us,
-            "thrust": thrust_val
-        })
+    # Prepare CSV
+    with open(OUTPUT_CSV, "w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow([
+            "run_dir",
+            "geo.Z", "geo.X", "geo.H", "geo.W",
+            "thrust_max_N_per_cm",
+            "thrust_avg_N_per_cm",
+            "thrust_std_N_per_cm", "deltaP_kPa",
+            "num_samples",
+        ])
 
-        print(f"{os.path.basename(pf):20s}  t={time_us:8.3f} us  thrust={thrust_val:10.5f} N/m")
+        for run_dir in run_dirs:
+            run_name = os.path.basename(run_dir)
+            print(f"\n[INFO] Processing {run_name} ...")
 
-    times = np.array([r["time_us"] for r in results])
-    thrust = np.array([r["thrust"] for r in results])
+            branch_type, Z, W = parse_geometry_from_rundir(run_name)
+            if Z is None:
+                print(f"[WARN] Could not parse geometry from {run_name}, logging as blanks.")
 
-    thrust_avg = np.mean(thrust)
-    thrust_std = np.std(thrust)
+            try:
+                thrust_max, thrust_avg, thrust_std, deltaP_kPa, n_samples = analyze_run_max_thrust(run_dir)
+            except Exception as e:
+                print(f"[ERROR] Failed to analyze {run_name}: {e}")
+                # Log a row with NaNs so you see the failure in the spreadsheet
+                writer.writerow([
+                    run_name,
+                    Z, X, H, W,
+                    "NaN", "NaN", "NaN", "NaN", 0,
+                ])
+                continue
 
-    fig, ax = plt.subplots(figsize=(10, 6))
+            print(
+                f"[RESULT] {run_name}: "
+                f"max={thrust_max:.4f} N/cm, "
+                f"avg={thrust_avg:.4f} N/cm, "
+                f"std={thrust_std:.4f} N/cm, "
+                f"delta_P={deltaP_kPa:.4f} kPa,"
+                f"samples={n_samples}"
+            )
 
-    ax.plot(times, thrust, 'b-', linewidth=2, marker='o',
-            markersize=4, label='Instantaneous Thrust')
-    ax.axhline(thrust_avg, color='r', linestyle='--',
-               linewidth=2, label=f'Average: {thrust_avg:.2f} N/m')
-    ax.fill_between(times, thrust_avg - thrust_std, thrust_avg + thrust_std,
-                    alpha=0.2, color='r', label=f'±1σ: {thrust_std:.2f} N/m')
+            writer.writerow([
+                run_name,
+                Z, X, H, W,
+                thrust_max,
+                thrust_avg,
+                thrust_std,
+                deltaP_kPa,
+                n_samples,
+            ])
 
-    ax.set_xlabel('Time (μs)', fontsize=12, fontweight='bold')
-    ax.set_ylabel('Thrust (N/m)', fontsize=12, fontweight='bold')
-    ax.set_title('Thrust Evolution', fontsize=14, fontweight='bold')
-    ax.grid(True, alpha=0.3)
-    ax.legend(fontsize=10)
-
-    plt.tight_layout()
-    plt.savefig(os.path.join(RUN_DIR, "thrust_evolution_fixed.png"),
-                dpi=150, bbox_inches='tight')
-    plt.show()
+    print("\n[INFO] Done.")
+    print(f"[INFO] Summary written to: {OUTPUT_CSV}")
 
 
 if __name__ == "__main__":
