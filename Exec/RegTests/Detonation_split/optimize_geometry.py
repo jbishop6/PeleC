@@ -25,40 +25,38 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern
 from scipy.stats import norm
 
-# Allow custom output directory via CLI
-#if len(sys.argv) > 1:
-#    SCRATCH_BASE = sys.argv[1]
-#else:
-  #  SCRATCH_BASE = "/mmfs1/scratch/jbishop6/PeleC/Exec/RegTests/Detonation2D/outputs"
-
-# Ensure the base directory exists
-#os.makedirs(SCRATCH_BASE, exist_ok=True)
-
-#os.makedirs("lhs_samples", exist_ok=True)
-#os.makedirs("logs", exist_ok=True)  # If needed
-
 # Shared across all optimization runs
 # Shared input and result files — read-only
-SHARED_BASE = os.path.expanduser("~/PeleC/Exec/RegTests/Detonation2D/outputs_new")
+SHARED_BASE = os.path.expanduser("~/PeleC/Exec/RegTests/Detonation_split/outputs_new")
 LHS_INPUT_CSV = os.path.join(SHARED_BASE, "lhs_samples", "lhs_input.csv")
 LHS_RESULTS_CSV = os.path.join(SHARED_BASE, "results_log.csv")   # <- This is important
 
 # New job-specific scratch output dir
-SCRATCH_BASE = os.path.expanduser("~/PeleC/Exec/RegTests/Detonation2D/outputs_new")
+SCRATCH_BASE = os.path.expanduser("~/PeleC/Exec/RegTests/Detonation_split/outputs_new")
 os.makedirs(SCRATCH_BASE, exist_ok=True)
-
-#os.makedirs(os.path.join(output_base, "lhs_samples"), exist_ok=True)
-
-
-
-
 
 print("[DEBUG] Python script started", file=sys.stderr)
 
 # Setup paths
-INP_FILE = "inputs.detonation.threebranch.inp"
-SIM_EXECUTABLE = "/home/jbishop6/PeleC/Exec/RegTests/Detonation2D/PeleC2d.gnu.ex"
+INP_FILE = "input_detonation_three_branch.inp"
+SIM_EXECUTABLE = "/home/jbishop6/PeleC/Exec/RegTests/Detonation_split/PeleC2d.gnu.MPI.ex"
 RESULTS_LOG = os.path.join(SCRATCH_BASE, "results_log.csv")
+
+def ensure_csv_files_exist():
+    os.makedirs(os.path.dirname(LHS_INPUT_CSV), exist_ok=True)
+
+    if not os.path.exists(LHS_INPUT_CSV):
+        with open(LHS_INPUT_CSV, "w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow(["geo.Z", "geo.X", "geo.H", "geo.W"])
+
+    if not os.path.exists(LHS_RESULTS_CSV):
+        with open(LHS_RESULTS_CSV, "w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow([
+                "iteration", "geo.Z", "geo.X", "geo.H", "geo.W",
+                "thrust_avg", "thrust_std", "thrust_max", "thrust_min"
+            ])
 
 # Create empty results_log.csv with headers (if not already there)
 if not os.path.exists(RESULTS_LOG):
@@ -76,24 +74,24 @@ def generate_valid_lhs_samples(bounds, n_samples=5, max_attempts_per_sample=500)
     valid_samples = []
 
     while len(valid_samples) < n_samples:
-        attempts = 0
         found_valid = False
 
-        while attempts < max_attempts_per_sample:
-            # Generate 1 LHS sample
+        for _ in range(max_attempts_per_sample):
             sampler = LatinHypercube(d=dim)
             lhs_unit = sampler.random(n=1)
-            candidate = bounds[:, 0] + lhs_unit[0] * (bounds[:, 1] - bounds[:,0])
+            candidate = bounds[:, 0] + lhs_unit[0] * (bounds[:, 1] - bounds[:, 0])
 
             if is_valid_input(candidate):
                 valid_samples.append(candidate)
                 found_valid = True
                 break
 
-            attempts += 1
+        if not found_valid:
+            raise RuntimeError(
+                f"Failed to find valid sample after {max_attempts_per_sample} attempts "
+                f"for sample {len(valid_samples)+1} of {n_samples}."
+            )
 
-    if not found_valid:
-        raise RuntimeError(f"Failed to find valid sample after {max_attempts_per_sample} attempts.")
     return np.array(valid_samples)
                            
 # === Modify geometry and plotfile output path in .inp file ===
@@ -159,11 +157,12 @@ def run_simulation(executable, inp_file):
 
 # === Get ALL plotfile directories ===
 def get_all_plotfiles(base_dir):
-    """Get all plotfile directories sorted by time"""
-    plot_dirs = sorted(glob(os.path.join(base_dir, "plt*")))
+    plot_dirs = sorted(
+        d for d in glob(os.path.join(base_dir, "plt*"))
+        if os.path.isdir(d)
+    )
     if not plot_dirs:
-        raise RuntimeError(f"No plotfiles found in {base_dir}.")
-    print(f"[INFO] Found {len(plot_dirs)} plotfiles")
+        raise RuntimeError(f"No plotfiles found in {base_dir}")
     return plot_dirs
 
 
@@ -329,8 +328,8 @@ def create_thrust_plot(results, output_dir, geo_Z=None, geo_X=None, geo_H=None):
     ax.set_ylabel('Thrust (N)', fontsize=12, fontweight='bold')
 
     # Safe title formatting
-    if geo_Z is not None and geo_X is not None and geo_H is not None:
-        title = f'Thrust Evolution (Z={geo_Z:.3f}, X={geo_X:.3f}, H={geo_H:.3f})'
+    if geo_Z is not None and geo_X is not None and geo_H is not None and geo_W is not None:
+      title = f'Thrust Evolution (Z={geo_Z:.3f}, X={geo_X:.3f}, H={geo_H:.3f}, W={geo_W:.3f})'
     else:
         title = "Thrust Evolution"
     
@@ -460,98 +459,82 @@ def extract_thrust_from_existing_output(Z, X, H, W, run_directory):
         print(f"[ERROR] Failed to extract thrust from {run_directory}: {e}")
         return None
 
+def point_key(x):
+    return tuple(round(float(v), 8) for v in x)
 
-# === MAIN WORKFLOW ===
-    # Parameters to optimize
-    # geo_Z = 0.1
-    # geo_X = 0.4
-    # geo_H = 0.1
+# Main workflow
 
-    # Creating initial samples for Bayesian Optimization
-    # In this case there are no prior data points and thus need to generate some
-    # This will be done by using Latin Hypercube Sampling (so random guesses are made within bounds)
-
-   # === MAIN WORKFLOW ===
 def main():
+    ensure_csv_files_exist()
+
     lhs_input_csv = LHS_INPUT_CSV
     lhs_results_csv = LHS_RESULTS_CSV
 
-   # Ensure the lhs_samples directory exists
-    os.makedirs(os.path.dirname(lhs_input_csv), exist_ok=True)
+    bounds = np.array([
+        [0.08, 0.15],   # Z
+        [0.30, 0.50],   # X
+        [0.10, 0.20],   # H
+        [0.08, 0.15]    # W
+    ])
 
-    # Step 0: Create lhs_input.csv if it doesn't exist
-    if not os.path.exists(lhs_input_csv):
-        print("[INFO] lhs_input.csv not found — generating LHS samples...")
-        subprocess.run(["python", "run_lhs_sampling.py"], check=True)
-
-    # Step 1: Parse how many input samples exist
-    with open(lhs_input_csv) as f:
-        input_lines = [line.strip() for line in f if line.strip()]
-        n_input_samples = len(input_lines)
-
-    print(f"[INFO] Found {n_input_samples - 1} samples in lhs_input.csv")
-
-    # Step 2: Check how many results have been processed
-    existing_results = set()
+    # Load existing completed results
     if os.path.exists(lhs_results_csv):
-        df_results = pd.read_csv(lhs_results_csv)
-        for _, row in df_results.iterrows():
-            key = tuple(round(row[c], 8) for c in ["geo.Z", "geo.X", "geo.H", "geo.W"])
-            existing_results.add(key)
+        df = pd.read_csv(lhs_results_csv)
     else:
-        df_results = pd.DataFrame()
+        df = pd.DataFrame(columns=[
+            "iteration", "geo.Z", "geo.X", "geo.H", "geo.W",
+            "thrust_avg", "thrust_std", "thrust_max", "thrust_min"
+        ])
 
-    # Step 3: Search output folders for runs not yet in lhs_results.csv
-    #all_run_dirs = [
-        #d for d in os.listdir(SCRATCH_BASE)
-        #if d.startswith("run_Z") and os.path.isdir(os.path.join(SCRATCH_BASE, d))
-    #]
+    existing_results = set()
+    if not df.empty:
+        for _, row in df.iterrows():
+            existing_results.add(
+                tuple(round(float(row[col]), 8) for col in ["geo.Z", "geo.X", "geo.H", "geo.W"])
+            )
 
-    #new_results_added = 0
-    #for run_dir in all_run_dirs:
-        #match = re.search(r"Z([\d]+p[\d]+)_X([\d]+p[\d]+)_H([\d]+p[\d]+)_W([\d]+p[\d]+)", run_dir)
-        #if not match:
-           # continue
-        #geo_vals = [float(s.replace("p", ".")) for s in match.groups()]
-        #key = tuple(round(x, 8) for x in geo_vals)
-        #if key in existing_results:
-            #continue
+    # Bootstrap with LHS if fewer than 5 completed runs exist
+    if len(existing_results) < 5:
+        n_needed = 5 - len(existing_results)
+        print(f"[INFO] Need {n_needed} new LHS samples to bootstrap BO.")
 
-        #full_path = os.path.join(SCRATCH_BASE, run_dir)
-        #try:
-            #thrust_stats = analyze_thrust_timeseries(get_all_plotfiles(full_path), full_path)
-            #log_results(*geo_vals, thrust_stats)
-            #new_results_added += 1
-        #except Exception as e:
-            #print(f"[WARN] Skipping {run_dir}: {e}")
+        lhs_samples = generate_valid_lhs_samples(bounds, n_samples=n_needed)
 
-    #total_results = len(existing_results) + new_results_added
-    #print(f"[INFO] Total LHS results available: {total_results}")
+        with open(lhs_input_csv, "a", newline="") as f:
+            writer = csv.writer(f)
+            for sample in lhs_samples:
+                writer.writerow(sample)
 
-    total_results = len(existing_results)
+        for i, sample in enumerate(lhs_samples, start=1):
+            geo_Z, geo_X, geo_H, geo_W = sample
+            print(
+                f"[INFO] Running LHS seed sample {i}/{n_needed}: "
+                f"Z={geo_Z:.5f}, X={geo_X:.5f}, H={geo_H:.5f}, W={geo_W:.5f}"
+            )
 
-    if total_results < 5:
-        print(f"[INFO] Not enough LHS results ({total_results}/5). Launching additional sampling...")
-        subprocess.run(["python", "run_lhs_sampling.py"], check=True)
-        subprocess.run(["sbatch", "run_sample.sh"], check=True)
-        print("[INFO] LHS job array submitted. Please rerun this script after jobs complete.")
-        return  #  Exit early
+            thrust_stats = run_pelec_and_extract_thrust(
+                geo_Z, geo_X, geo_H, geo_W,
+                INP_FILE, SIM_EXECUTABLE,
+                iteration=f"LHS_{i}"
+            )
 
-    #  Reload updated results file
-    df = pd.read_csv(lhs_results_csv)
+            if thrust_stats is None:
+                print(f"[WARN] LHS sample {i} failed.")
 
-    #  Now use *all* available data
+        # Reload results after LHS seeding
+        df = pd.read_csv(lhs_results_csv)
+
+    # Use all available completed data
     X_init = df[["geo.Z", "geo.X", "geo.H", "geo.W"]].values
     Y_init = df["thrust_max"].values
 
     if len(Y_init) < 5:
-        raise RuntimeError(" ERROR: Still less than 5 usable LHS samples. Aborting.")
+        raise RuntimeError("Still fewer than 5 usable samples exist after LHS bootstrapping.")
 
-    # === Freeze data here ===
     X_data = X_init.copy()
-    Y_data = list(Y_init.copy())  # Ensure it's mutable
+    Y_data = list(Y_init.copy())
+    evaluated_points = set(point_key(x) for x in X_data)
 
-    # === Bayesian Optimization Loop ===
     def generate_valid_candidates(bounds, n_candidates=1000):
         candidates = []
         while len(candidates) < n_candidates:
@@ -562,52 +545,54 @@ def main():
 
     def expected_improvement(X, gp, Y_best, xi=0.01):
         mu, sigma = gp.predict(X, return_std=True)
-        sigma = sigma.reshape(-1, 1)
         mu = mu.reshape(-1, 1)
-        with np.errstate(divide='warn'):
+        sigma = sigma.reshape(-1, 1)
+
+        with np.errstate(divide="warn"):
             imp = mu - Y_best - xi
             Z = imp / sigma
             ei = imp * norm.cdf(Z) + sigma * norm.pdf(Z)
             ei[sigma == 0.0] = 0.0
+
         return ei.ravel()
 
     max_iters = 15
     tol = 1e-2
-    bounds = np.array([
-        [0.08, 0.15],   # Z
-        [0.30, 0.50],   # X
-        [0.10, 0.20],   # H
-        [0.08, 0.15]    # W
-    ])
 
     try:
         for iteration in range(max_iters):
-            print("\n" + "="*60)
+            print("\n" + "=" * 60)
             print(f"[ITERATION {iteration + 1}/{max_iters}] Starting Bayesian Optimization step")
-            print("="*60)
+            print("=" * 60)
 
-            # Debug shapes
             print(f"[DEBUG] X_data shape: {X_data.shape}")
-            print(f"[DEBUG] Y_data shape: {len(Y_data)}")
+            print(f"[DEBUG] Y_data length: {len(Y_data)}")
+            print(f"[INFO] Current best thrust: {max(Y_data):.6f} N")
 
-            # Print current best
-            print(f"[INFO] Current best thrust: {max(Y_data):.4f} N")
-
-
-            # Sanity check
-            if np.isnan(X_data).any() or np.isnan(Y_data).any():
-                raise ValueError("NaNs found in X_data or Y_data!")
+            if np.isnan(X_data).any() or np.isnan(np.array(Y_data)).any():
+                raise ValueError("NaNs found in X_data or Y_data.")
             if X_data.shape[0] != len(Y_data):
-                raise ValueError("Mismatch between number of samples in X and Y")
+                raise ValueError("Mismatch between number of samples in X_data and Y_data.")
 
             kernel = Matern(nu=2.5)
-            gp = GaussianProcessRegressor(kernel=kernel, alpha=1e-6, normalize_y=True)
+            gp = GaussianProcessRegressor(
+                kernel=kernel,
+                alpha=1e-6,
+                normalize_y=True
+            )
 
             print("[DEBUG] Fitting GP model...")
             gp.fit(X_data, Y_data)
             print("[DEBUG] GP fit complete.")
 
             X_candidates = generate_valid_candidates(bounds, n_candidates=1000)
+            X_candidates = np.array(
+                [x for x in X_candidates if point_key(x) not in evaluated_points]
+            )
+
+            if len(X_candidates) == 0:
+                raise RuntimeError("No unevaluated BO candidates remain.")
+
             Y_best = max(Y_data)
             ei = expected_improvement(X_candidates, gp, Y_best)
 
@@ -615,7 +600,10 @@ def main():
             x_next = X_candidates[best_index]
             geo_Z, geo_X, geo_H, geo_W = x_next
 
-            print(f"[INFO] Running BO sample: Z={geo_Z}, X={geo_X}, H={geo_H}, W={geo_W}")
+            print(
+                f"[INFO] Running BO sample: "
+                f"Z={geo_Z:.5f}, X={geo_X:.5f}, H={geo_H:.5f}, W={geo_W:.5f}"
+            )
 
             try:
                 thrust_stats = run_pelec_and_extract_thrust(
@@ -623,10 +611,16 @@ def main():
                     INP_FILE, SIM_EXECUTABLE,
                     iteration=iteration + 1
                 )
-                y_next = thrust_stats['thrust_max']
+
+                if thrust_stats is None:
+                    print("[WARN] BO sample returned None. Skipping update.")
+                    continue
+
+                y_next = thrust_stats["thrust_max"]
 
                 X_data = np.vstack((X_data, x_next))
                 Y_data.append(y_next)
+                evaluated_points.add(point_key(x_next))
 
                 improvement = abs(y_next - Y_best)
                 print(f"[INFO] Improvement: {improvement:.6f} N")
@@ -634,6 +628,7 @@ def main():
                 if improvement < tol:
                     print("[INFO] Optimization has converged.")
                     break
+
             except Exception as e:
                 print(f"[WARN] BO sample failed: {e}")
 
@@ -641,10 +636,6 @@ def main():
         print(f"[FATAL] Optimization crashed: {fatal}", file=sys.stderr)
         import traceback
         traceback.print_exc()
-
-    print("\n=== Optimization complete ===")
-    print(f"Best thrust achieved: {max(Y_data):.3f} N")
-    print(f"Number of simulations run: {len(Y_data)}")
 
 
 if __name__ == "__main__":
