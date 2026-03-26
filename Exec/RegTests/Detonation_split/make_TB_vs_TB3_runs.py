@@ -14,8 +14,8 @@ widths  = [0.04, 0.08]         # W values (third-branch width)
 base_dir = "TB_vs_TB3"
 
 # Filenames in the *current* Detonation2D directory
-INPUT_FILE_2B = "inputs.detonation.twobranch.inp"
-INPUT_FILE_3B = "inputs.detonation.threebranch.inp"
+INPUT_FILE_2B = "input_detonation_two_branch.inp"
+INPUT_FILE_3B = "input_detonation_three_branch.inp"
 EXECUTABLE_NAME = "PeleC2d.gnu.MPI.ex"   # change if your exe name is different
 
 # Any extra static files PeleC needs (add to this list)
