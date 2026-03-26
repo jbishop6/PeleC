@@ -15,8 +15,8 @@ echo "================================================="
 source ~/miniconda3/etc/profile.d/conda.sh
 conda activate pelecopt
 
-# Go to Detonation2D folder
-cd ~/PeleC/Exec/RegTests/Detonation2D
+# Go to Detonation_split folder
+cd ~/PeleC/Exec/RegTests/Detonation_split
 
 # === Run Python script to generate all run directories + run_job.sh's ===
 echo "[INFO] Running make_TB_vs_TB3_runs.py"
