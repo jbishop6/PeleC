@@ -96,17 +96,32 @@ eb2.box_has_fluid_inside = 0
 eb2.box_rotation = 0
 eb2.box_rotation_axe = 2
 
+# Box separating the upper and lower channel 
+geo.xs = 0.30 # left edge of box
+geo.xr = 0.70 # right edge of box
+geo.mid = 0.02 # thickness of box
+
+# NEW: retract mid-wall from each end to connect branches
+geo.cL = 0.05    # left-side connection length
+geo.cR = 0.05    # right-side connection length
+geo.L  = 0.0390625
+
+# Adjustable parameters of the system
+geo.W = 0.1
+geo.X = 0.4 # Length of channel (circumference of RDE)
+geo.H = 0.15 #Total height from top of upper branch to bottom of lower branch
+
 
 # MQ set input
-geo.W = 0.05;
-geo.H = 0.1
+#geo.W = 0.05;
+#geo.H = 0.1
 #geo.H = 0;
-geo.L = 0.15
-geo.xs = 0.05;
-geo.X = 0.40;
-geo.mid = 0.02;
-geo.cL  = 0.05;
-geo.cR  = 0.05;
-geo.y_offset = 0.15;
-geo.Z = 0.15;
+#geo.L = 0.15
+#geo.xs = 0.05;
+#geo.X = 0.40;
+#geo.mid = 0.02;
+#geo.cL  = 0.05;
+#geo.cR  = 0.05;
+#geo.y_offset = 0.15;
+#geo.Z = 0.15;
 
