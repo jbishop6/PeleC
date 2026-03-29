@@ -423,13 +423,13 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
   const Real y_upper_lo = y_base_hi;       // Upper channel starts at top of separator
   const Real y_upper_hi = y_upper_lo + L;  // Upper channel height = L (independent of H)
   const Real y_lower_hi = y_base_lo;       // Lower channel ends at bottom of separator
-  // const Real y_lower_lo = y_lower_hi - L;  // Lower channel height = L (independent of H)
-  const Real y_lower_lo = y_lower_hi;  // Lower channel height = L (independent of H)
+  const Real y_lower_lo = y_lower_hi - L;  // Lower channel height = L (independent of H)
+  //const Real y_lower_lo = y_lower_hi;  // Lower channel height = L (independent of H)
 
-  // const Real y_mid_lo = ymid - 0.5 * mid;
-  // const Real y_mid_hi = ymid + 0.5 * mid;
-  const Real y_mid_lo = ymid;
-  const Real y_mid_hi = ymid + 0.15;
+  const Real y_mid_lo = ymid - 0.5 * mid;
+  const Real y_mid_hi = ymid + 0.5 * mid;
+  //const Real y_mid_lo = ymid;
+  //const Real y_mid_hi = ymid + 0.15;
 
   const Real mw_x0 = xs + cL;
   const Real mw_x1 = xr - cR;
