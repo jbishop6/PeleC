@@ -116,8 +116,7 @@ geo.cR = 0.05    # right-side connection length
 geo.L  = 0.0390625
 
 # Adjustable parameters of the system
-#geo.W = 0.1
-geo.W = 0
+geo.W = 0.1
 #geo.X = 0.4 # Length of channel (circumference of RDE)
 #geo.H = 0.15 #Total height from top of upper branch to bottom of lower branch
 
