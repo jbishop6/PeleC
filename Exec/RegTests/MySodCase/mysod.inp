@@ -4,12 +4,12 @@ stop_time = 4e-6
 cvode.dt_min = 1e-18
 pelec.fixed_dt = 1e-10
 
-# ------------------ GEOMETRY (1D) -------------------
-geometry.is_periodic = 0
+# ------------------ GEOMETRY (2D quasi-1D) -------------------
+geometry.is_periodic = 0 0
 geometry.coord_sys   = 0
-geometry.prob_lo     = 0.0
-geometry.prob_hi     = 1.0
-amr.n_cell           = 512
+geometry.prob_lo     = 0.0 0.0
+geometry.prob_hi     = 1.0 0.02
+amr.n_cell           = 512 4
 
 # ------------------ BOUNDARY CONDITIONS -------------------
 pelec.lo_bc = "FOExtrap"
