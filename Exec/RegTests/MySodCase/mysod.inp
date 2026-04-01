@@ -6,12 +6,12 @@ ode.rtol = 1e-5
 ode.atol = 1e-4
 pelec.fixed_dt = 1e-10
 
-# ------------------ GEOMETRY (2D) -------------------
-geometry.is_periodic = 0 0
+# ------------------ GEOMETRY (1D) -------------------
+geometry.is_periodic = 0
 geometry.coord_sys   = 0
-geometry.prob_lo     = 0.0  0
-geometry.prob_hi     = 1.0  0.02
-amr.n_cell           = 512  4
+geometry.prob_lo     = 0.0
+geometry.prob_hi     = 1.0
+amr.n_cell           = 512
 
 # ------------------ BOUNDARY CONDITIONS -------------------
 pelec.lo_bc = "FOExtrap" "SlipWall"
