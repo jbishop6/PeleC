@@ -15,7 +15,7 @@ echo "================================================="
 # === Environment Setup ===
 source ~/miniconda3/etc/profile.d/conda.sh
 conda activate pelecopt
-cd ~/PeleC/Exec/RegTests/Detonation2D
+cd ~/PeleC/Exec/RegTests/MySodCase
 
 # === Create output directory ===
 OUTDIR="Sod_outputs"
