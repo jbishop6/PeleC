@@ -9,7 +9,7 @@ geometry.is_periodic = 0 0
 geometry.coord_sys   = 0
 geometry.prob_lo     = 0.0 0.0
 geometry.prob_hi     = 1.0 0.02
-amr.n_cell           = 512 4
+amr.n_cell           = 512 8
 
 # ------------------ BOUNDARY CONDITIONS -------------------
 pelec.lo_bc = "FOExtrap"
