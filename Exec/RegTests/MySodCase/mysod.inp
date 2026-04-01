@@ -14,8 +14,8 @@ geometry.prob_hi     = 1.0
 amr.n_cell           = 512
 
 # ------------------ BOUNDARY CONDITIONS -------------------
-pelec.lo_bc = "FOExtrap" "SlipWall"
-pelec.hi_bc = "FOExtrap" "SlipWall"
+pelec.lo_bc = "FOExtrap"
+pelec.hi_bc = "FOExtrap"
 
 # ------------------ PHYSICS -------------------
 pelec.do_hydro     = 1
