@@ -1,0 +1,296 @@
+Initializing AMReX (463bdf493cd7)...
+Initializing SUNDIALS with 1 threads...
+SUNDIALS initialized.
+AMReX (463bdf493cd7) initialized
+
+Starting run at 05:54:09 UTC on 2025-12-02.
+Successfully read inputs file ... 
+
+PeleC git hash: v23.03-503-gc97e544-dirty
+AMReX git hash: 463bdf493
+PelePhysics git hash: v23.03-119-g29401b65-dirty
+
+0 Advected Variables: 
+
+14 Species: 
+H2  H  AR  N2  HE  O  OH  HCO  HO2  H2O  CO  O2  H2O2  CO2  
+0 Auxiliary Variables: 
+
+Initializing EB2
+Creating Geometry instance: threebranch
+
+=== THREE-BRANCH GEOMETRY ===
+Separator thickness H: 0.1816322735
+Channel height L: 0.0390625 (constant)
+Total system height: 0.2597572735
+Upper channel: y=[1.090816137, 1.129878637], height=0.0390625
+Separator: y=[0.9091838632, 1.090816137], thickness=0.1816322735
+Lower channel: y=[0.8701213632, 0.9091838632], height=0.0390625
+xs=0.3, xr=0.7331518474, X=0.4331518474
+cL=0.05, cR=0.05
+Blue separator: x=[0.35, 0.6831518474]
+Third branch: x=[0.6831518474, 0.773770669], y=[0.727818436, 0.8701213632]
+=============================
+
+[EB] ThreeBranch: H controls separator only, L stays constant
+Successfully read inputs file ... 
+Starting to call amrex_probinit ... 
+Successfully run amrex_probinit
+Initializing EB2 structs
+Using quadratic stencil for the EB gradient
+Creating ReactorBase instance: ReactorCvode
+Initializing CVODE:
+Initializing the data at level 0
+Doing initial redistribution... 
+Done initializing level 0 data 
+... Initializing reactions, using interval dt = 1e-11
+INITIAL GRIDS 
+  Level 0   32 grids  524288 cells  100 % of domain
+            smallest grid: 128 x 128  biggest grid: 128 x 128
+
+PLOTFILE: file = /mmfs1/scratch/jbishop6/PeleC/Exec/RegTests/Detonation2D/outputs_run2/run_Z0p14230292722296242_X0p43315184735160406_H0p1816322735290238_W0p09061882161067422/plt00000
+Write plotfile time = 0.724544902  seconds
+
+[Level 0 step 1] ADVANCE at time 0 with dt = 1e-11
+... Computing Godunov hydro advance
+... Computing reactions for dt = 1e-11
+[Level 0 step 1] Advanced 524288 cells
+
+[STEP 1] Coarse TimeStep time: 4.089470041
+[STEP 1] FAB kilobyte spread across MPI nodes: [929608 ... 929608]
+
+STEP = 1 TIME = 1e-11 DT = 1e-11
+
+[Level 0 step 2] ADVANCE at time 1e-11 with dt = 1e-10
+... Computing Godunov hydro advance
+... Computing reactions for dt = 1e-10
+[Level 0 step 2] Advanced 524288 cells
+
+[STEP 2] Coarse TimeStep time: 4.020919083
+[STEP 2] FAB kilobyte spread across MPI nodes: [929608 ... 929608]
+
+STEP = 2 TIME = 1.1e-10 DT = 1e-10
+
+[Level 0 step 3] ADVANCE at time 1.1e-10 with dt = 1e-10
+... Computing Godunov hydro advance
+... Computing reactions for dt = 1e-10
+[Level 0 step 3] Advanced 524288 cells
+
+[STEP 3] Coarse TimeStep time: 3.999568723
+[STEP 3] FAB kilobyte spread across MPI nodes: [929608 ... 929608]
+
+STEP = 3 TIME = 2.1e-10 DT = 1e-10
+
+[Level 0 step 4] ADVANCE at time 2.1e-10 with dt = 1e-10
+... Computing Godunov hydro advance
+... Computing reactions for dt = 1e-10
+[Level 0 step 4] Advanced 524288 cells
+
+[STEP 4] Coarse TimeStep time: 4.003589982
+[STEP 4] FAB kilobyte spread across MPI nodes: [929608 ... 929608]
+
+STEP = 4 TIME = 3.1e-10 DT = 1e-10
+
+[Level 0 step 5] ADVANCE at time 3.1e-10 with dt = 1e-10
+... Computing Godunov hydro advance
+... Computing reactions for dt = 1e-10
+[Level 0 step 5] Advanced 524288 cells
+
+[STEP 5] Coarse TimeStep time: 3.996073221
+[STEP 5] FAB kilobyte spread across MPI nodes: [929608 ... 929608]
+
+STEP = 5 TIME = 4.1e-10 DT = 1e-10
+
+[Level 0 step 6] ADVANCE at time 4.1e-10 with dt = 1e-10
+... Computing Godunov hydro advance
+... Computing reactions for dt = 1e-10
+[Level 0 step 6] Advanced 524288 cells
+
+[STEP 6] Coarse TimeStep time: 4.0116086
+[STEP 6] FAB kilobyte spread across MPI nodes: [929608 ... 929608]
+
+STEP = 6 TIME = 5.1e-10 DT = 1e-10
+
+[Level 0 step 7] ADVANCE at time 5.1e-10 with dt = 1e-10
+... Computing Godunov hydro advance
+... Computing reactions for dt = 1e-10
+[Level 0 step 7] Advanced 524288 cells
+
+[STEP 7] Coarse TimeStep time: 3.997180346
+[STEP 7] FAB kilobyte spread across MPI nodes: [929608 ... 929608]
+
+STEP = 7 TIME = 6.1e-10 DT = 1e-10
+
+[Level 0 step 8] ADVANCE at time 6.1e-10 with dt = 1e-10
+... Computing Godunov hydro advance
+... Computing reactions for dt = 1e-10
+[Level 0 step 8] Advanced 524288 cells
+
+[STEP 8] Coarse TimeStep time: 4.026375599
+[STEP 8] FAB kilobyte spread across MPI nodes: [929608 ... 929608]
+
+STEP = 8 TIME = 7.1e-10 DT = 1e-10
+
+[Level 0 step 9] ADVANCE at time 7.1e-10 with dt = 1e-10
+... Computing Godunov hydro advance
+... Computing reactions for dt = 1e-10
+[Level 0 step 9] Advanced 524288 cells
+
+[STEP 9] Coarse TimeStep time: 4.016475144
+[STEP 9] FAB kilobyte spread across MPI nodes: [929608 ... 929608]
+
+STEP = 9 TIME = 8.1e-10 DT = 1e-10
+
+[Level 0 step 10] ADVANCE at time 8.1e-10 with dt = 1e-10
+... Computing Godunov hydro advance
+... Computing reactions for dt = 1e-10
+[Level 0 step 10] Advanced 524288 cells
+
+[STEP 10] Coarse TimeStep time: 4.032599615
+[STEP 10] FAB kilobyte spread across MPI nodes: [929608 ... 929608]
+
+STEP = 10 TIME = 9.1e-10 DT = 1e-10
+
+[Level 0 step 11] ADVANCE at time 9.1e-10 with dt = 1e-10
+... Computing Godunov hydro advance
+... Computing reactions for dt = 1e-10
+[Level 0 step 11] Advanced 524288 cells
+
+[STEP 11] Coarse TimeStep time: 4.017649367
+[STEP 11] FAB kilobyte spread across MPI nodes: [929608 ... 929608]
+
+STEP = 11 TIME = 1.01e-09 DT = 1e-10
+
+[Level 0 step 12] ADVANCE at time 1.01e-09 with dt = 1e-10
+... Computing Godunov hydro advance
+... Computing reactions for dt = 1e-10
+[Level 0 step 12] Advanced 524288 cells
+
+[STEP 12] Coarse TimeStep time: 4.024671712
+[STEP 12] FAB kilobyte spread across MPI nodes: [929608 ... 929608]
+
+STEP = 12 TIME = 1.11e-09 DT = 1e-10
+
+[Level 0 step 13] ADVANCE at time 1.11e-09 with dt = 1e-10
+... Computing Godunov hydro advance
+... Computing reactions for dt = 1e-10
+[Level 0 step 13] Advanced 524288 cells
+
+[STEP 13] Coarse TimeStep time: 4.013455289
+[STEP 13] FAB kilobyte spread across MPI nodes: [929608 ... 929608]
+
+STEP = 13 TIME = 1.21e-09 DT = 1e-10
+
+[Level 0 step 14] ADVANCE at time 1.21e-09 with dt = 1e-10
+... Computing Godunov hydro advance
+... Computing reactions for dt = 1e-10
+[Level 0 step 14] Advanced 524288 cells
+
+[STEP 14] Coarse TimeStep time: 4.023941513
+[STEP 14] FAB kilobyte spread across MPI nodes: [929608 ... 929608]
+
+STEP = 14 TIME = 1.31e-09 DT = 1e-10
+
+[Level 0 step 15] ADVANCE at time 1.31e-09 with dt = 1e-10
+... Computing Godunov hydro advance
+... Computing reactions for dt = 1e-10
+[Level 0 step 15] Advanced 524288 cells
+
+[STEP 15] Coarse TimeStep time: 4.012814613
+[STEP 15] FAB kilobyte spread across MPI nodes: [929608 ... 929608]
+
+STEP = 15 TIME = 1.41e-09 DT = 1e-10
+
+[Level 0 step 16] ADVANCE at time 1.41e-09 with dt = 1e-10
+... Computing Godunov hydro advance
+... Computing reactions for dt = 1e-10
+[Level 0 step 16] Advanced 524288 cells
+
+[STEP 16] Coarse TimeStep time: 4.023627873
+[STEP 16] FAB kilobyte spread across MPI nodes: [929608 ... 929608]
+
+STEP = 16 TIME = 1.51e-09 DT = 1e-10
+
+[Level 0 step 17] ADVANCE at time 1.51e-09 with dt = 1e-10
+... Computing Godunov hydro advance
+... Computing reactions for dt = 1e-10
+[Level 0 step 17] Advanced 524288 cells
+
+[STEP 17] Coarse TimeStep time: 4.014538351
+[STEP 17] FAB kilobyte spread across MPI nodes: [929608 ... 929608]
+
+STEP = 17 TIME = 1.61e-09 DT = 1e-10
+
+[Level 0 step 18] ADVANCE at time 1.61e-09 with dt = 1e-10
+... Computing Godunov hydro advance
+... Computing reactions for dt = 1e-10
+[Level 0 step 18] Advanced 524288 cells
+
+[STEP 18] Coarse TimeStep time: 4.022530581
+[STEP 18] FAB kilobyte spread across MPI nodes: [929608 ... 929608]
+
+STEP = 18 TIME = 1.71e-09 DT = 1e-10
+
+[Level 0 step 19] ADVANCE at time 1.71e-09 with dt = 1e-10
+... Computing Godunov hydro advance
+... Computing reactions for dt = 1e-10
+[Level 0 step 19] Advanced 524288 cells
+
+[STEP 19] Coarse TimeStep time: 4.018785823
+[STEP 19] FAB kilobyte spread across MPI nodes: [929608 ... 929608]
+
+STEP = 19 TIME = 1.81e-09 DT = 1e-10
+
+[Level 0 step 20] ADVANCE at time 1.81e-09 with dt = 1e-10
+... Computing Godunov hydro advance
+... Computing reactions for dt = 1e-10
+[Level 0 step 20] Advanced 524288 cells
+
+[STEP 20] Coarse TimeStep time: 4.030666074
+[STEP 20] FAB kilobyte spread across MPI nodes: [929608 ... 929608]
+
+STEP = 20 TIME = 1.91e-09 DT = 1e-10
+
+[Level 0 step 21] ADVANCE at time 1.91e-09 with dt = 1e-10
+... Computing Godunov hydro advance
+... Computing reactions for dt = 1e-10
+[Level 0 step 21] Advanced 524288 cells
+
+[STEP 21] Coarse TimeStep time: 4.012847364
+[STEP 21] FAB kilobyte spread across MPI nodes: [929608 ... 929608]
+
+STEP = 21 TIME = 2.01e-09 DT = 1e-10
+
+[Level 0 step 22] ADVANCE at time 2.01e-09 with dt = 1e-10
+... Computing Godunov hydro advance
+... Computing reactions for dt = 1e-10
+[Level 0 step 22] Advanced 524288 cells
+
+[STEP 22] Coarse TimeStep time: 4.02068612
+[STEP 22] FAB kilobyte spread across MPI nodes: [929608 ... 929608]
+
+STEP = 22 TIME = 2.11e-09 DT = 1e-10
+
+[Level 0 step 23] ADVANCE at time 2.11e-09 with dt = 1e-10
+... Computing Godunov hydro advance
+... Computing reactions for dt = 1e-10
+[Level 0 step 23] Advanced 524288 cells
+
+[STEP 23] Coarse TimeStep time: 4.017025864
+[STEP 23] FAB kilobyte spread across MPI nodes: [929608 ... 929608]
+
+STEP = 23 TIME = 2.21e-09 DT = 1e-10
+
+[Level 0 step 24] ADVANCE at time 2.21e-09 with dt = 1e-10
+... Computing Godunov hydro advance
+... Computing reactions for dt = 1e-10
+[Level 0 step 24] Advanced 524288 cells
+
+[STEP 24] Coarse TimeStep time: 4.02297777
+[STEP 24] FAB kilobyte spread across MPI nodes: [929608 ... 929608]
+
+STEP = 24 TIME = 2.31e-09 DT = 1e-10
+
+[Level 0 step 25] ADVANCE at time 2.31e-09 with dt = 1e-10
+... Computing Godunov hydro advance
+... Computing reactions for dt = 1e-10

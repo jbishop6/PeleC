@@ -1,0 +1,3040 @@
+Started job on c007 at Tue Nov 18 11:57:40 MST 2025
+Initializing AMReX (463bdf493cd7)...
+Initializing SUNDIALS with 1 threads...
+SUNDIALS initialized.
+AMReX (463bdf493cd7) initialized
+
+Starting run at 18:57:57 UTC on 2025-11-18.
+Successfully read inputs file ... 
+
+PeleC git hash: v23.03-503-gc97e544-dirty
+AMReX git hash: 463bdf493
+PelePhysics git hash: v23.03-119-g29401b65-dirty
+
+0 Advected Variables: 
+
+14 Species: 
+H2  H  AR  N2  HE  O  OH  HCO  HO2  H2O  CO  O2  H2O2  CO2  
+0 Auxiliary Variables: 
+
+Initializing EB2
+Creating Geometry instance: threebranch
+
+=== THREE-BRANCH GEOMETRY ===
+Separator thickness H: 0.200331335
+Channel height L: 0.0390625 (constant)
+Total system height: 0.278456335
+Upper channel: y=[1.100165668, 1.139228168], height=0.0390625
+Separator: y=[0.8998343325, 1.100165668], thickness=0.200331335
+Lower channel: y=[0.8607718325, 0.8998343325], height=0.0390625
+xs=0.3, xr=0.6954214425, X=0.3954214425
+cL=0.05, cR=0.05
+Blue separator: x=[0.35, 0.6454214425]
+Third branch: x=[0.6454214425, 0.8159042974], y=[0.7568418366, 0.8607718325]
+=============================
+
+[EB] ThreeBranch: H controls separator only, L stays constant
+Successfully read inputs file ... 
+Starting to call amrex_probinit ... 
+Successfully run amrex_probinit
+Initializing EB2 structs
+Using quadratic stencil for the EB gradient
+Creating ReactorBase instance: ReactorCvode
+Initializing CVODE:
+Initializing the data at level 0
+Doing initial redistribution... 
+Done initializing level 0 data 
+...estimated hydro-limited timestep at level 0: 1.500418624e-08
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 1.500418624e-08
+... Initializing reactions, using interval dt = 1.500418624e-09
+INITIAL GRIDS 
+  Level 0   32 grids  524288 cells  100 % of domain
+            smallest grid: 128 x 128  biggest grid: 128 x 128
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00000
+Write plotfile time = 0.284222726  seconds
+
+...estimated hydro-limited timestep at level 0: 1.500418624e-08
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 1.500418624e-08
+[Level 0 step 1] ADVANCE at time 0 with dt = 1.500418624e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 1.500418624e-09
+[Level 0 step 1] Advanced 524288 cells
+
+[STEP 1] Coarse TimeStep time: 3.485582507
+[STEP 1] FAB kilobyte spread across MPI nodes: [928406 ... 928406]
+
+STEP = 1 TIME = 1.500418624e-09 DT = 1.500418624e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00001
+Write plotfile time = 0.396766507  seconds
+
+...estimated hydro-limited timestep at level 0: 1.216682773e-08
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 1.216682773e-08
+PeleC::compute_new_dt : limiting dt at level 0
+ ... new dt computed: 1.216682773e-08
+ ... but limiting to: 1.575439555e-09 = 1.05 * 1.500418624e-09
+[Level 0 step 2] ADVANCE at time 1.500418624e-09 with dt = 1.575439555e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 1.575439555e-09
+[Level 0 step 2] Advanced 524288 cells
+
+[STEP 2] Coarse TimeStep time: 3.423804959
+[STEP 2] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 2 TIME = 3.075858179e-09 DT = 1.575439555e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00002
+Write plotfile time = 0.396659996  seconds
+
+...estimated hydro-limited timestep at level 0: 1.039095574e-08
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 1.039095574e-08
+PeleC::compute_new_dt : limiting dt at level 0
+ ... new dt computed: 1.039095574e-08
+ ... but limiting to: 1.654211533e-09 = 1.05 * 1.575439555e-09
+[Level 0 step 3] ADVANCE at time 3.075858179e-09 with dt = 1.654211533e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 1.654211533e-09
+[Level 0 step 3] Advanced 524288 cells
+
+[STEP 3] Coarse TimeStep time: 3.430058133
+[STEP 3] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 3 TIME = 4.730069712e-09 DT = 1.654211533e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00003
+Write plotfile time = 0.39520027  seconds
+
+...estimated hydro-limited timestep at level 0: 9.185802793e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 9.185802793e-09
+PeleC::compute_new_dt : limiting dt at level 0
+ ... new dt computed: 9.185802793e-09
+ ... but limiting to: 1.736922109e-09 = 1.05 * 1.654211533e-09
+[Level 0 step 4] ADVANCE at time 4.730069712e-09 with dt = 1.736922109e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 1.736922109e-09
+[Level 0 step 4] Advanced 524288 cells
+
+[STEP 4] Coarse TimeStep time: 3.434212506
+[STEP 4] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 4 TIME = 6.466991821e-09 DT = 1.736922109e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00004
+Write plotfile time = 0.396263009  seconds
+
+...estimated hydro-limited timestep at level 0: 8.421714308e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 8.421714308e-09
+PeleC::compute_new_dt : limiting dt at level 0
+ ... new dt computed: 8.421714308e-09
+ ... but limiting to: 1.823768215e-09 = 1.05 * 1.736922109e-09
+[Level 0 step 5] ADVANCE at time 6.466991821e-09 with dt = 1.823768215e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 1.823768215e-09
+[Level 0 step 5] Advanced 524288 cells
+
+[STEP 5] Coarse TimeStep time: 3.420797561
+[STEP 5] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 5 TIME = 8.290760036e-09 DT = 1.823768215e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00005
+Write plotfile time = 0.398284892  seconds
+
+...estimated hydro-limited timestep at level 0: 7.939126773e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 7.939126773e-09
+PeleC::compute_new_dt : limiting dt at level 0
+ ... new dt computed: 7.939126773e-09
+ ... but limiting to: 1.914956626e-09 = 1.05 * 1.823768215e-09
+[Level 0 step 6] ADVANCE at time 8.290760036e-09 with dt = 1.914956626e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 1.914956626e-09
+[Level 0 step 6] Advanced 524288 cells
+
+[STEP 6] Coarse TimeStep time: 3.427314491
+[STEP 6] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 6 TIME = 1.020571666e-08 DT = 1.914956626e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00006
+Write plotfile time = 0.395511726  seconds
+
+...estimated hydro-limited timestep at level 0: 7.643109176e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 7.643109176e-09
+PeleC::compute_new_dt : limiting dt at level 0
+ ... new dt computed: 7.643109176e-09
+ ... but limiting to: 2.010704457e-09 = 1.05 * 1.914956626e-09
+[Level 0 step 7] ADVANCE at time 1.020571666e-08 with dt = 2.010704457e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 2.010704457e-09
+[Level 0 step 7] Advanced 524288 cells
+
+[STEP 7] Coarse TimeStep time: 3.422357637
+[STEP 7] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 7 TIME = 1.221642112e-08 DT = 2.010704457e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00007
+Write plotfile time = 0.396964698  seconds
+
+...estimated hydro-limited timestep at level 0: 7.467326835e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 7.467326835e-09
+PeleC::compute_new_dt : limiting dt at level 0
+ ... new dt computed: 7.467326835e-09
+ ... but limiting to: 2.11123968e-09 = 1.05 * 2.010704457e-09
+[Level 0 step 8] ADVANCE at time 1.221642112e-08 with dt = 2.11123968e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 2.11123968e-09
+[Level 0 step 8] Advanced 524288 cells
+
+[STEP 8] Coarse TimeStep time: 3.436442888
+[STEP 8] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 8 TIME = 1.43276608e-08 DT = 2.11123968e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00008
+Write plotfile time = 0.397346676  seconds
+
+...estimated hydro-limited timestep at level 0: 7.423035386e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 7.423035386e-09
+PeleC::compute_new_dt : limiting dt at level 0
+ ... new dt computed: 7.423035386e-09
+ ... but limiting to: 2.216801664e-09 = 1.05 * 2.11123968e-09
+[Level 0 step 9] ADVANCE at time 1.43276608e-08 with dt = 2.216801664e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 2.216801664e-09
+[Level 0 step 9] Advanced 524288 cells
+
+[STEP 9] Coarse TimeStep time: 3.436517304
+[STEP 9] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 9 TIME = 1.654446246e-08 DT = 2.216801664e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00009
+Write plotfile time = 0.394829641  seconds
+
+...estimated hydro-limited timestep at level 0: 7.43177645e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 7.43177645e-09
+PeleC::compute_new_dt : limiting dt at level 0
+ ... new dt computed: 7.43177645e-09
+ ... but limiting to: 2.327641747e-09 = 1.05 * 2.216801664e-09
+[Level 0 step 10] ADVANCE at time 1.654446246e-08 with dt = 2.327641747e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 2.327641747e-09
+[Level 0 step 10] Advanced 524288 cells
+
+[STEP 10] Coarse TimeStep time: 3.435283643
+[STEP 10] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 10 TIME = 1.887210421e-08 DT = 2.327641747e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00010
+Write plotfile time = 0.398878949  seconds
+
+...estimated hydro-limited timestep at level 0: 7.473524436e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 7.473524436e-09
+PeleC::compute_new_dt : limiting dt at level 0
+ ... new dt computed: 7.473524436e-09
+ ... but limiting to: 2.444023834e-09 = 1.05 * 2.327641747e-09
+[Level 0 step 11] ADVANCE at time 1.887210421e-08 with dt = 2.444023834e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 2.444023834e-09
+[Level 0 step 11] Advanced 524288 cells
+
+[STEP 11] Coarse TimeStep time: 3.427615507
+[STEP 11] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 11 TIME = 2.131612804e-08 DT = 2.444023834e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00011
+Write plotfile time = 0.396929161  seconds
+
+...estimated hydro-limited timestep at level 0: 7.093397323e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 7.093397323e-09
+PeleC::compute_new_dt : limiting dt at level 0
+ ... new dt computed: 7.093397323e-09
+ ... but limiting to: 2.566225026e-09 = 1.05 * 2.444023834e-09
+[Level 0 step 12] ADVANCE at time 2.131612804e-08 with dt = 2.566225026e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 2.566225026e-09
+[Level 0 step 12] Advanced 524288 cells
+
+[STEP 12] Coarse TimeStep time: 3.44294231
+[STEP 12] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 12 TIME = 2.388235307e-08 DT = 2.566225026e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00012
+Write plotfile time = 0.393908449  seconds
+
+...estimated hydro-limited timestep at level 0: 6.909591536e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.909591536e-09
+PeleC::compute_new_dt : limiting dt at level 0
+ ... new dt computed: 6.909591536e-09
+ ... but limiting to: 2.694536277e-09 = 1.05 * 2.566225026e-09
+[Level 0 step 13] ADVANCE at time 2.388235307e-08 with dt = 2.694536277e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 2.694536277e-09
+[Level 0 step 13] Advanced 524288 cells
+
+[STEP 13] Coarse TimeStep time: 3.43938048
+[STEP 13] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 13 TIME = 2.657688935e-08 DT = 2.694536277e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00013
+Write plotfile time = 0.393541208  seconds
+
+...estimated hydro-limited timestep at level 0: 6.87634917e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.87634917e-09
+PeleC::compute_new_dt : limiting dt at level 0
+ ... new dt computed: 6.87634917e-09
+ ... but limiting to: 2.829263091e-09 = 1.05 * 2.694536277e-09
+[Level 0 step 14] ADVANCE at time 2.657688935e-08 with dt = 2.829263091e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 2.829263091e-09
+[Level 0 step 14] Advanced 524288 cells
+
+[STEP 14] Coarse TimeStep time: 3.45652326
+[STEP 14] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 14 TIME = 2.940615244e-08 DT = 2.829263091e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00014
+Write plotfile time = 0.393881248  seconds
+
+...estimated hydro-limited timestep at level 0: 6.936483681e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.936483681e-09
+PeleC::compute_new_dt : limiting dt at level 0
+ ... new dt computed: 6.936483681e-09
+ ... but limiting to: 2.970726246e-09 = 1.05 * 2.829263091e-09
+[Level 0 step 15] ADVANCE at time 2.940615244e-08 with dt = 2.970726246e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 2.970726246e-09
+[Level 0 step 15] Advanced 524288 cells
+
+[STEP 15] Coarse TimeStep time: 3.440481782
+[STEP 15] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 15 TIME = 3.237687868e-08 DT = 2.970726246e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00015
+Write plotfile time = 0.393349857  seconds
+
+...estimated hydro-limited timestep at level 0: 6.668255243e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.668255243e-09
+PeleC::compute_new_dt : limiting dt at level 0
+ ... new dt computed: 6.668255243e-09
+ ... but limiting to: 3.119262558e-09 = 1.05 * 2.970726246e-09
+[Level 0 step 16] ADVANCE at time 3.237687868e-08 with dt = 3.119262558e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 3.119262558e-09
+[Level 0 step 16] Advanced 524288 cells
+
+[STEP 16] Coarse TimeStep time: 3.444921494
+[STEP 16] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 16 TIME = 3.549614124e-08 DT = 3.119262558e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00016
+Write plotfile time = 0.394691141  seconds
+
+...estimated hydro-limited timestep at level 0: 6.546009257e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.546009257e-09
+PeleC::compute_new_dt : limiting dt at level 0
+ ... new dt computed: 6.546009257e-09
+ ... but limiting to: 3.275225686e-09 = 1.05 * 3.119262558e-09
+[Level 0 step 17] ADVANCE at time 3.549614124e-08 with dt = 3.275225686e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 3.275225686e-09
+[Level 0 step 17] Advanced 524288 cells
+
+[STEP 17] Coarse TimeStep time: 3.446252358
+[STEP 17] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 17 TIME = 3.877136693e-08 DT = 3.275225686e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00017
+Write plotfile time = 0.392296105  seconds
+
+...estimated hydro-limited timestep at level 0: 6.548389538e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.548389538e-09
+PeleC::compute_new_dt : limiting dt at level 0
+ ... new dt computed: 6.548389538e-09
+ ... but limiting to: 3.43898697e-09 = 1.05 * 3.275225686e-09
+[Level 0 step 18] ADVANCE at time 3.877136693e-08 with dt = 3.43898697e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 3.43898697e-09
+[Level 0 step 18] Advanced 524288 cells
+
+[STEP 18] Coarse TimeStep time: 3.446633254
+[STEP 18] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 18 TIME = 4.22103539e-08 DT = 3.43898697e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00018
+Write plotfile time = 0.394808081  seconds
+
+...estimated hydro-limited timestep at level 0: 6.538903016e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.538903016e-09
+PeleC::compute_new_dt : limiting dt at level 0
+ ... new dt computed: 6.538903016e-09
+ ... but limiting to: 3.610936319e-09 = 1.05 * 3.43898697e-09
+[Level 0 step 19] ADVANCE at time 4.22103539e-08 with dt = 3.610936319e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 3.610936319e-09
+[Level 0 step 19] Advanced 524288 cells
+
+[STEP 19] Coarse TimeStep time: 3.915968266
+[STEP 19] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 19 TIME = 4.582129022e-08 DT = 3.610936319e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00019
+Write plotfile time = 0.394949447  seconds
+
+...estimated hydro-limited timestep at level 0: 6.445786294e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.445786294e-09
+PeleC::compute_new_dt : limiting dt at level 0
+ ... new dt computed: 6.445786294e-09
+ ... but limiting to: 3.791483135e-09 = 1.05 * 3.610936319e-09
+[Level 0 step 20] ADVANCE at time 4.582129022e-08 with dt = 3.791483135e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 3.791483135e-09
+[Level 0 step 20] Advanced 524288 cells
+
+[STEP 20] Coarse TimeStep time: 3.459161583
+[STEP 20] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 20 TIME = 4.961277335e-08 DT = 3.791483135e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00020
+Write plotfile time = 0.394380476  seconds
+
+...estimated hydro-limited timestep at level 0: 6.474657456e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.474657456e-09
+PeleC::compute_new_dt : limiting dt at level 0
+ ... new dt computed: 6.474657456e-09
+ ... but limiting to: 3.981057291e-09 = 1.05 * 3.791483135e-09
+[Level 0 step 21] ADVANCE at time 4.961277335e-08 with dt = 3.981057291e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 3.981057291e-09
+[Level 0 step 21] Advanced 524288 cells
+
+[STEP 21] Coarse TimeStep time: 3.448300761
+[STEP 21] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 21 TIME = 5.359383064e-08 DT = 3.981057291e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00021
+Write plotfile time = 0.394579831  seconds
+
+...estimated hydro-limited timestep at level 0: 6.457802866e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.457802866e-09
+PeleC::compute_new_dt : limiting dt at level 0
+ ... new dt computed: 6.457802866e-09
+ ... but limiting to: 4.180110156e-09 = 1.05 * 3.981057291e-09
+[Level 0 step 22] ADVANCE at time 5.359383064e-08 with dt = 4.180110156e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 4.180110156e-09
+[Level 0 step 22] Advanced 524288 cells
+
+[STEP 22] Coarse TimeStep time: 3.467234479
+[STEP 22] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 22 TIME = 5.77739408e-08 DT = 4.180110156e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00022
+Write plotfile time = 0.393561506  seconds
+
+...estimated hydro-limited timestep at level 0: 6.457865248e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.457865248e-09
+PeleC::compute_new_dt : limiting dt at level 0
+ ... new dt computed: 6.457865248e-09
+ ... but limiting to: 4.389115664e-09 = 1.05 * 4.180110156e-09
+[Level 0 step 23] ADVANCE at time 5.77739408e-08 with dt = 4.389115664e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 4.389115664e-09
+[Level 0 step 23] Advanced 524288 cells
+
+[STEP 23] Coarse TimeStep time: 3.45201058
+[STEP 23] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 23 TIME = 6.216305646e-08 DT = 4.389115664e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00023
+Write plotfile time = 0.395181413  seconds
+
+...estimated hydro-limited timestep at level 0: 6.46098733e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.46098733e-09
+PeleC::compute_new_dt : limiting dt at level 0
+ ... new dt computed: 6.46098733e-09
+ ... but limiting to: 4.608571447e-09 = 1.05 * 4.389115664e-09
+[Level 0 step 24] ADVANCE at time 6.216305646e-08 with dt = 4.608571447e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 4.608571447e-09
+[Level 0 step 24] Advanced 524288 cells
+
+[STEP 24] Coarse TimeStep time: 3.475711747
+[STEP 24] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 24 TIME = 6.677162791e-08 DT = 4.608571447e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00024
+Write plotfile time = 0.395937987  seconds
+
+...estimated hydro-limited timestep at level 0: 6.472798681e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.472798681e-09
+PeleC::compute_new_dt : limiting dt at level 0
+ ... new dt computed: 6.472798681e-09
+ ... but limiting to: 4.839000019e-09 = 1.05 * 4.608571447e-09
+[Level 0 step 25] ADVANCE at time 6.677162791e-08 with dt = 4.839000019e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 4.839000019e-09
+[Level 0 step 25] Advanced 524288 cells
+
+[STEP 25] Coarse TimeStep time: 3.455708989
+[STEP 25] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 25 TIME = 7.161062793e-08 DT = 4.839000019e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00025
+Write plotfile time = 0.393276872  seconds
+
+...estimated hydro-limited timestep at level 0: 6.451177276e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.451177276e-09
+PeleC::compute_new_dt : limiting dt at level 0
+ ... new dt computed: 6.451177276e-09
+ ... but limiting to: 5.08095002e-09 = 1.05 * 4.839000019e-09
+[Level 0 step 26] ADVANCE at time 7.161062793e-08 with dt = 5.08095002e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.08095002e-09
+[Level 0 step 26] Advanced 524288 cells
+
+[STEP 26] Coarse TimeStep time: 3.47286652
+[STEP 26] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 26 TIME = 7.669157795e-08 DT = 5.08095002e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00026
+Write plotfile time = 0.392815253  seconds
+
+...estimated hydro-limited timestep at level 0: 6.482825136e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.482825136e-09
+PeleC::compute_new_dt : limiting dt at level 0
+ ... new dt computed: 6.482825136e-09
+ ... but limiting to: 5.334997521e-09 = 1.05 * 5.08095002e-09
+[Level 0 step 27] ADVANCE at time 7.669157795e-08 with dt = 5.334997521e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.334997521e-09
+[Level 0 step 27] Advanced 524288 cells
+
+[STEP 27] Coarse TimeStep time: 3.463343073
+[STEP 27] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 27 TIME = 8.202657547e-08 DT = 5.334997521e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00027
+Write plotfile time = 0.392767623  seconds
+
+...estimated hydro-limited timestep at level 0: 6.471720366e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.471720366e-09
+PeleC::compute_new_dt : limiting dt at level 0
+ ... new dt computed: 6.471720366e-09
+ ... but limiting to: 5.601747397e-09 = 1.05 * 5.334997521e-09
+[Level 0 step 28] ADVANCE at time 8.202657547e-08 with dt = 5.601747397e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.601747397e-09
+[Level 0 step 28] Advanced 524288 cells
+
+[STEP 28] Coarse TimeStep time: 3.478874384
+[STEP 28] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 28 TIME = 8.762832287e-08 DT = 5.601747397e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00028
+Write plotfile time = 0.393210487  seconds
+
+...estimated hydro-limited timestep at level 0: 6.47521357e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.47521357e-09
+PeleC::compute_new_dt : limiting dt at level 0
+ ... new dt computed: 6.47521357e-09
+ ... but limiting to: 5.881834767e-09 = 1.05 * 5.601747397e-09
+[Level 0 step 29] ADVANCE at time 8.762832287e-08 with dt = 5.881834767e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.881834767e-09
+[Level 0 step 29] Advanced 524288 cells
+
+[STEP 29] Coarse TimeStep time: 3.462447808
+[STEP 29] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 29 TIME = 9.351015763e-08 DT = 5.881834767e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00029
+Write plotfile time = 0.392282059  seconds
+
+...estimated hydro-limited timestep at level 0: 6.505342374e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.505342374e-09
+PeleC::compute_new_dt : limiting dt at level 0
+ ... new dt computed: 6.505342374e-09
+ ... but limiting to: 6.175926505e-09 = 1.05 * 5.881834767e-09
+[Level 0 step 30] ADVANCE at time 9.351015763e-08 with dt = 6.175926505e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.175926505e-09
+[Level 0 step 30] Advanced 524288 cells
+
+[STEP 30] Coarse TimeStep time: 3.482149275
+[STEP 30] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 30 TIME = 9.968608414e-08 DT = 6.175926505e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00030
+Write plotfile time = 0.391889821  seconds
+
+...estimated hydro-limited timestep at level 0: 6.490483557e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.490483557e-09
+PeleC::compute_new_dt : limiting dt at level 0
+ ... new dt computed: 6.490483557e-09
+ ... but limiting to: 6.484722831e-09 = 1.05 * 6.175926505e-09
+[Level 0 step 31] ADVANCE at time 9.968608414e-08 with dt = 6.484722831e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.484722831e-09
+[Level 0 step 31] Advanced 524288 cells
+
+[STEP 31] Coarse TimeStep time: 3.469155679
+[STEP 31] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 31 TIME = 1.06170807e-07 DT = 6.484722831e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00031
+Write plotfile time = 0.391818448  seconds
+
+...estimated hydro-limited timestep at level 0: 6.458898431e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.458898431e-09
+[Level 0 step 32] ADVANCE at time 1.06170807e-07 with dt = 6.458898431e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.458898431e-09
+[Level 0 step 32] Advanced 524288 cells
+
+[STEP 32] Coarse TimeStep time: 3.481314946
+[STEP 32] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 32 TIME = 1.126297054e-07 DT = 6.458898431e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00032
+Write plotfile time = 0.39220755  seconds
+
+...estimated hydro-limited timestep at level 0: 6.547352897e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.547352897e-09
+[Level 0 step 33] ADVANCE at time 1.126297054e-07 with dt = 6.547352897e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.547352897e-09
+[Level 0 step 33] Advanced 524288 cells
+
+[STEP 33] Coarse TimeStep time: 3.483066692
+[STEP 33] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 33 TIME = 1.191770583e-07 DT = 6.547352897e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00033
+Write plotfile time = 0.392970205  seconds
+
+...estimated hydro-limited timestep at level 0: 6.491770503e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.491770503e-09
+[Level 0 step 34] ADVANCE at time 1.191770583e-07 with dt = 6.491770503e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.491770503e-09
+[Level 0 step 34] Advanced 524288 cells
+
+[STEP 34] Coarse TimeStep time: 3.50164716
+[STEP 34] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 34 TIME = 1.256688288e-07 DT = 6.491770503e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00034
+Write plotfile time = 0.393264068  seconds
+
+...estimated hydro-limited timestep at level 0: 6.430923242e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.430923242e-09
+[Level 0 step 35] ADVANCE at time 1.256688288e-07 with dt = 6.430923242e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.430923242e-09
+[Level 0 step 35] Advanced 524288 cells
+
+[STEP 35] Coarse TimeStep time: 3.476167331
+[STEP 35] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 35 TIME = 1.32099752e-07 DT = 6.430923242e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00035
+Write plotfile time = 0.39293069  seconds
+
+...estimated hydro-limited timestep at level 0: 6.457868556e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.457868556e-09
+[Level 0 step 36] ADVANCE at time 1.32099752e-07 with dt = 6.457868556e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.457868556e-09
+[Level 0 step 36] Advanced 524288 cells
+
+[STEP 36] Coarse TimeStep time: 3.483957778
+[STEP 36] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 36 TIME = 1.385576206e-07 DT = 6.457868556e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00036
+Write plotfile time = 0.394350161  seconds
+
+...estimated hydro-limited timestep at level 0: 6.544656213e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.544656213e-09
+[Level 0 step 37] ADVANCE at time 1.385576206e-07 with dt = 6.544656213e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.544656213e-09
+[Level 0 step 37] Advanced 524288 cells
+
+[STEP 37] Coarse TimeStep time: 3.485591182
+[STEP 37] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 37 TIME = 1.451022768e-07 DT = 6.544656213e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00037
+Write plotfile time = 0.393619707  seconds
+
+...estimated hydro-limited timestep at level 0: 6.453291441e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.453291441e-09
+[Level 0 step 38] ADVANCE at time 1.451022768e-07 with dt = 6.453291441e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.453291441e-09
+[Level 0 step 38] Advanced 524288 cells
+
+[STEP 38] Coarse TimeStep time: 3.486115467
+[STEP 38] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 38 TIME = 1.515555683e-07 DT = 6.453291441e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00038
+Write plotfile time = 0.392499078  seconds
+
+...estimated hydro-limited timestep at level 0: 6.413688216e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.413688216e-09
+[Level 0 step 39] ADVANCE at time 1.515555683e-07 with dt = 6.413688216e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.413688216e-09
+[Level 0 step 39] Advanced 524288 cells
+
+[STEP 39] Coarse TimeStep time: 3.476876865
+[STEP 39] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 39 TIME = 1.579692565e-07 DT = 6.413688216e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00039
+Write plotfile time = 0.392581793  seconds
+
+...estimated hydro-limited timestep at level 0: 6.554870373e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.554870373e-09
+[Level 0 step 40] ADVANCE at time 1.579692565e-07 with dt = 6.554870373e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.554870373e-09
+[Level 0 step 40] Advanced 524288 cells
+
+[STEP 40] Coarse TimeStep time: 3.514109597
+[STEP 40] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 40 TIME = 1.645241268e-07 DT = 6.554870373e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00040
+Write plotfile time = 0.393547801  seconds
+
+...estimated hydro-limited timestep at level 0: 6.507837314e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.507837314e-09
+[Level 0 step 41] ADVANCE at time 1.645241268e-07 with dt = 6.507837314e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.507837314e-09
+[Level 0 step 41] Advanced 524288 cells
+
+[STEP 41] Coarse TimeStep time: 3.488387205
+[STEP 41] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 41 TIME = 1.710319642e-07 DT = 6.507837314e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00041
+Write plotfile time = 0.393727499  seconds
+
+...estimated hydro-limited timestep at level 0: 6.473844864e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.473844864e-09
+[Level 0 step 42] ADVANCE at time 1.710319642e-07 with dt = 6.473844864e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.473844864e-09
+[Level 0 step 42] Advanced 524288 cells
+
+[STEP 42] Coarse TimeStep time: 3.496497178
+[STEP 42] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 42 TIME = 1.77505809e-07 DT = 6.473844864e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00042
+Write plotfile time = 0.391996601  seconds
+
+...estimated hydro-limited timestep at level 0: 6.534427789e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.534427789e-09
+[Level 0 step 43] ADVANCE at time 1.77505809e-07 with dt = 6.534427789e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.534427789e-09
+[Level 0 step 43] Advanced 524288 cells
+
+[STEP 43] Coarse TimeStep time: 3.488283059
+[STEP 43] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 43 TIME = 1.840402368e-07 DT = 6.534427789e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00043
+Write plotfile time = 0.391402224  seconds
+
+...estimated hydro-limited timestep at level 0: 6.464238363e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.464238363e-09
+[Level 0 step 44] ADVANCE at time 1.840402368e-07 with dt = 6.464238363e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.464238363e-09
+[Level 0 step 44] Advanced 524288 cells
+
+[STEP 44] Coarse TimeStep time: 3.494877109
+[STEP 44] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 44 TIME = 1.905044752e-07 DT = 6.464238363e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00044
+Write plotfile time = 0.392913848  seconds
+
+...estimated hydro-limited timestep at level 0: 6.349541325e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.349541325e-09
+[Level 0 step 45] ADVANCE at time 1.905044752e-07 with dt = 6.349541325e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.349541325e-09
+[Level 0 step 45] Advanced 524288 cells
+
+[STEP 45] Coarse TimeStep time: 3.482929574
+[STEP 45] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 45 TIME = 1.968540165e-07 DT = 6.349541325e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00045
+Write plotfile time = 0.393141486  seconds
+
+...estimated hydro-limited timestep at level 0: 6.366008556e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.366008556e-09
+[Level 0 step 46] ADVANCE at time 1.968540165e-07 with dt = 6.366008556e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.366008556e-09
+[Level 0 step 46] Advanced 524288 cells
+
+[STEP 46] Coarse TimeStep time: 3.492310438
+[STEP 46] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 46 TIME = 2.032200251e-07 DT = 6.366008556e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00046
+Write plotfile time = 0.392875867  seconds
+
+...estimated hydro-limited timestep at level 0: 6.508586703e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.508586703e-09
+[Level 0 step 47] ADVANCE at time 2.032200251e-07 with dt = 6.508586703e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.508586703e-09
+[Level 0 step 47] Advanced 524288 cells
+
+[STEP 47] Coarse TimeStep time: 3.493977947
+[STEP 47] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 47 TIME = 2.097286118e-07 DT = 6.508586703e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00047
+Write plotfile time = 0.391577834  seconds
+
+...estimated hydro-limited timestep at level 0: 6.34064728e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.34064728e-09
+[Level 0 step 48] ADVANCE at time 2.097286118e-07 with dt = 6.34064728e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.34064728e-09
+[Level 0 step 48] Advanced 524288 cells
+
+[STEP 48] Coarse TimeStep time: 3.500752966
+[STEP 48] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 48 TIME = 2.16069259e-07 DT = 6.34064728e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00048
+Write plotfile time = 0.392505449  seconds
+
+...estimated hydro-limited timestep at level 0: 6.282629951e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.282629951e-09
+[Level 0 step 49] ADVANCE at time 2.16069259e-07 with dt = 6.282629951e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.282629951e-09
+[Level 0 step 49] Advanced 524288 cells
+
+[STEP 49] Coarse TimeStep time: 3.483192379
+[STEP 49] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 49 TIME = 2.22351889e-07 DT = 6.282629951e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00049
+Write plotfile time = 0.393322758  seconds
+
+...estimated hydro-limited timestep at level 0: 6.362834685e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.362834685e-09
+[Level 0 step 50] ADVANCE at time 2.22351889e-07 with dt = 6.362834685e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.362834685e-09
+[Level 0 step 50] Advanced 524288 cells
+
+[STEP 50] Coarse TimeStep time: 3.50457553
+[STEP 50] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 50 TIME = 2.287147237e-07 DT = 6.362834685e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00050
+Write plotfile time = 0.393744751  seconds
+
+...estimated hydro-limited timestep at level 0: 6.361777578e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.361777578e-09
+[Level 0 step 51] ADVANCE at time 2.287147237e-07 with dt = 6.361777578e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.361777578e-09
+[Level 0 step 51] Advanced 524288 cells
+
+[STEP 51] Coarse TimeStep time: 3.495673347
+[STEP 51] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 51 TIME = 2.350765012e-07 DT = 6.361777578e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00051
+Write plotfile time = 0.393548652  seconds
+
+...estimated hydro-limited timestep at level 0: 6.330580988e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.330580988e-09
+[Level 0 step 52] ADVANCE at time 2.350765012e-07 with dt = 6.330580988e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.330580988e-09
+[Level 0 step 52] Advanced 524288 cells
+
+[STEP 52] Coarse TimeStep time: 3.501288675
+[STEP 52] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 52 TIME = 2.414070822e-07 DT = 6.330580988e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00052
+Write plotfile time = 0.392361398  seconds
+
+...estimated hydro-limited timestep at level 0: 6.328917608e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.328917608e-09
+[Level 0 step 53] ADVANCE at time 2.414070822e-07 with dt = 6.328917608e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.328917608e-09
+[Level 0 step 53] Advanced 524288 cells
+
+[STEP 53] Coarse TimeStep time: 3.493046965
+[STEP 53] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 53 TIME = 2.477359998e-07 DT = 6.328917608e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00053
+Write plotfile time = 0.391192799  seconds
+
+...estimated hydro-limited timestep at level 0: 6.302665558e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.302665558e-09
+[Level 0 step 54] ADVANCE at time 2.477359998e-07 with dt = 6.302665558e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.302665558e-09
+[Level 0 step 54] Advanced 524288 cells
+
+[STEP 54] Coarse TimeStep time: 3.498246009
+[STEP 54] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 54 TIME = 2.540386654e-07 DT = 6.302665558e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00054
+Write plotfile time = 0.392219772  seconds
+
+...estimated hydro-limited timestep at level 0: 6.243844697e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.243844697e-09
+[Level 0 step 55] ADVANCE at time 2.540386654e-07 with dt = 6.243844697e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.243844697e-09
+[Level 0 step 55] Advanced 524288 cells
+
+[STEP 55] Coarse TimeStep time: 3.486214788
+[STEP 55] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 55 TIME = 2.602825101e-07 DT = 6.243844697e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00055
+Write plotfile time = 0.393863852  seconds
+
+...estimated hydro-limited timestep at level 0: 6.346202433e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.346202433e-09
+[Level 0 step 56] ADVANCE at time 2.602825101e-07 with dt = 6.346202433e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.346202433e-09
+[Level 0 step 56] Advanced 524288 cells
+
+[STEP 56] Coarse TimeStep time: 3.498957576
+[STEP 56] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 56 TIME = 2.666287125e-07 DT = 6.346202433e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00056
+Write plotfile time = 0.392569096  seconds
+
+...estimated hydro-limited timestep at level 0: 6.318567578e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.318567578e-09
+[Level 0 step 57] ADVANCE at time 2.666287125e-07 with dt = 6.318567578e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.318567578e-09
+[Level 0 step 57] Advanced 524288 cells
+
+[STEP 57] Coarse TimeStep time: 3.500440306
+[STEP 57] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 57 TIME = 2.729472801e-07 DT = 6.318567578e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00057
+Write plotfile time = 0.39240079  seconds
+
+...estimated hydro-limited timestep at level 0: 6.190852042e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.190852042e-09
+[Level 0 step 58] ADVANCE at time 2.729472801e-07 with dt = 6.190852042e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.190852042e-09
+[Level 0 step 58] Advanced 524288 cells
+
+[STEP 58] Coarse TimeStep time: 3.506414754
+[STEP 58] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 58 TIME = 2.791381322e-07 DT = 6.190852042e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00058
+Write plotfile time = 0.391879434  seconds
+
+...estimated hydro-limited timestep at level 0: 6.188548428e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.188548428e-09
+[Level 0 step 59] ADVANCE at time 2.791381322e-07 with dt = 6.188548428e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.188548428e-09
+[Level 0 step 59] Advanced 524288 cells
+
+[STEP 59] Coarse TimeStep time: 3.499271637
+[STEP 59] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 59 TIME = 2.853266806e-07 DT = 6.188548428e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00059
+Write plotfile time = 0.391947292  seconds
+
+...estimated hydro-limited timestep at level 0: 6.336553756e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.336553756e-09
+[Level 0 step 60] ADVANCE at time 2.853266806e-07 with dt = 6.336553756e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.336553756e-09
+[Level 0 step 60] Advanced 524288 cells
+
+[STEP 60] Coarse TimeStep time: 3.519978369
+[STEP 60] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 60 TIME = 2.916632343e-07 DT = 6.336553756e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00060
+Write plotfile time = 0.391933937  seconds
+
+...estimated hydro-limited timestep at level 0: 6.262237733e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.262237733e-09
+[Level 0 step 61] ADVANCE at time 2.916632343e-07 with dt = 6.262237733e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.262237733e-09
+[Level 0 step 61] Advanced 524288 cells
+
+[STEP 61] Coarse TimeStep time: 3.495746601
+[STEP 61] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 61 TIME = 2.979254721e-07 DT = 6.262237733e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00061
+Write plotfile time = 0.391744911  seconds
+
+...estimated hydro-limited timestep at level 0: 6.176472805e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.176472805e-09
+[Level 0 step 62] ADVANCE at time 2.979254721e-07 with dt = 6.176472805e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.176472805e-09
+[Level 0 step 62] Advanced 524288 cells
+
+[STEP 62] Coarse TimeStep time: 3.501946062
+[STEP 62] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 62 TIME = 3.041019449e-07 DT = 6.176472805e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00062
+Write plotfile time = 0.39419311  seconds
+
+...estimated hydro-limited timestep at level 0: 6.219946307e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.219946307e-09
+[Level 0 step 63] ADVANCE at time 3.041019449e-07 with dt = 6.219946307e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.219946307e-09
+[Level 0 step 63] Advanced 524288 cells
+
+[STEP 63] Coarse TimeStep time: 3.50451599
+[STEP 63] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 63 TIME = 3.103218912e-07 DT = 6.219946307e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00063
+Write plotfile time = 0.391454314  seconds
+
+...estimated hydro-limited timestep at level 0: 6.212593192e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.212593192e-09
+[Level 0 step 64] ADVANCE at time 3.103218912e-07 with dt = 6.212593192e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.212593192e-09
+[Level 0 step 64] Advanced 524288 cells
+
+[STEP 64] Coarse TimeStep time: 3.508515961
+[STEP 64] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 64 TIME = 3.165344844e-07 DT = 6.212593192e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00064
+Write plotfile time = 0.392409623  seconds
+
+...estimated hydro-limited timestep at level 0: 6.289483577e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.289483577e-09
+[Level 0 step 65] ADVANCE at time 3.165344844e-07 with dt = 6.289483577e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.289483577e-09
+[Level 0 step 65] Advanced 524288 cells
+
+[STEP 65] Coarse TimeStep time: 3.501808904
+[STEP 65] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 65 TIME = 3.22823968e-07 DT = 6.289483577e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00065
+Write plotfile time = 0.392113715  seconds
+
+...estimated hydro-limited timestep at level 0: 6.285442901e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.285442901e-09
+[Level 0 step 66] ADVANCE at time 3.22823968e-07 with dt = 6.285442901e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.285442901e-09
+[Level 0 step 66] Advanced 524288 cells
+
+[STEP 66] Coarse TimeStep time: 3.511694985
+[STEP 66] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 66 TIME = 3.291094109e-07 DT = 6.285442901e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00066
+Write plotfile time = 0.393505134  seconds
+
+...estimated hydro-limited timestep at level 0: 6.140641177e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.140641177e-09
+[Level 0 step 67] ADVANCE at time 3.291094109e-07 with dt = 6.140641177e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.140641177e-09
+[Level 0 step 67] Advanced 524288 cells
+
+[STEP 67] Coarse TimeStep time: 3.515850084
+[STEP 67] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 67 TIME = 3.35250052e-07 DT = 6.140641177e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00067
+Write plotfile time = 0.393667623  seconds
+
+...estimated hydro-limited timestep at level 0: 6.109555648e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.109555648e-09
+[Level 0 step 68] ADVANCE at time 3.35250052e-07 with dt = 6.109555648e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.109555648e-09
+[Level 0 step 68] Advanced 524288 cells
+
+[STEP 68] Coarse TimeStep time: 3.511921873
+[STEP 68] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 68 TIME = 3.413596077e-07 DT = 6.109555648e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00068
+Write plotfile time = 0.394531478  seconds
+
+...estimated hydro-limited timestep at level 0: 6.240366919e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.240366919e-09
+[Level 0 step 69] ADVANCE at time 3.413596077e-07 with dt = 6.240366919e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.240366919e-09
+[Level 0 step 69] Advanced 524288 cells
+
+[STEP 69] Coarse TimeStep time: 3.505134523
+[STEP 69] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 69 TIME = 3.475999746e-07 DT = 6.240366919e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00069
+Write plotfile time = 0.391339353  seconds
+
+...estimated hydro-limited timestep at level 0: 6.177170903e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.177170903e-09
+[Level 0 step 70] ADVANCE at time 3.475999746e-07 with dt = 6.177170903e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.177170903e-09
+[Level 0 step 70] Advanced 524288 cells
+
+[STEP 70] Coarse TimeStep time: 3.525074868
+[STEP 70] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 70 TIME = 3.537771455e-07 DT = 6.177170903e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00070
+Write plotfile time = 0.39220994  seconds
+
+...estimated hydro-limited timestep at level 0: 6.060600344e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.060600344e-09
+[Level 0 step 71] ADVANCE at time 3.537771455e-07 with dt = 6.060600344e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.060600344e-09
+[Level 0 step 71] Advanced 524288 cells
+
+[STEP 71] Coarse TimeStep time: 3.50534594
+[STEP 71] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 71 TIME = 3.598377458e-07 DT = 6.060600344e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00071
+Write plotfile time = 0.391375451  seconds
+
+...estimated hydro-limited timestep at level 0: 6.073985459e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.073985459e-09
+[Level 0 step 72] ADVANCE at time 3.598377458e-07 with dt = 6.073985459e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.073985459e-09
+[Level 0 step 72] Advanced 524288 cells
+
+[STEP 72] Coarse TimeStep time: 3.515086466
+[STEP 72] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 72 TIME = 3.659117313e-07 DT = 6.073985459e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00072
+Write plotfile time = 0.394194234  seconds
+
+...estimated hydro-limited timestep at level 0: 6.21524852e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.21524852e-09
+[Level 0 step 73] ADVANCE at time 3.659117313e-07 with dt = 6.21524852e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.21524852e-09
+[Level 0 step 73] Advanced 524288 cells
+
+[STEP 73] Coarse TimeStep time: 3.520181983
+[STEP 73] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 73 TIME = 3.721269798e-07 DT = 6.21524852e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00073
+Write plotfile time = 0.391630852  seconds
+
+...estimated hydro-limited timestep at level 0: 6.154485594e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.154485594e-09
+[Level 0 step 74] ADVANCE at time 3.721269798e-07 with dt = 6.154485594e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.154485594e-09
+[Level 0 step 74] Advanced 524288 cells
+
+[STEP 74] Coarse TimeStep time: 3.516802399
+[STEP 74] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 74 TIME = 3.782814654e-07 DT = 6.154485594e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00074
+Write plotfile time = 0.392039652  seconds
+
+...estimated hydro-limited timestep at level 0: 6.054504842e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.054504842e-09
+[Level 0 step 75] ADVANCE at time 3.782814654e-07 with dt = 6.054504842e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.054504842e-09
+[Level 0 step 75] Advanced 524288 cells
+
+[STEP 75] Coarse TimeStep time: 3.508791655
+[STEP 75] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 75 TIME = 3.843359703e-07 DT = 6.054504842e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00075
+Write plotfile time = 0.391746621  seconds
+
+...estimated hydro-limited timestep at level 0: 6.073789081e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.073789081e-09
+[Level 0 step 76] ADVANCE at time 3.843359703e-07 with dt = 6.073789081e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.073789081e-09
+[Level 0 step 76] Advanced 524288 cells
+
+[STEP 76] Coarse TimeStep time: 3.523639915
+[STEP 76] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 76 TIME = 3.904097593e-07 DT = 6.073789081e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00076
+Write plotfile time = 0.393931412  seconds
+
+...estimated hydro-limited timestep at level 0: 6.120528113e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.120528113e-09
+[Level 0 step 77] ADVANCE at time 3.904097593e-07 with dt = 6.120528113e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.120528113e-09
+[Level 0 step 77] Advanced 524288 cells
+
+[STEP 77] Coarse TimeStep time: 3.518183067
+[STEP 77] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 77 TIME = 3.965302875e-07 DT = 6.120528113e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00077
+Write plotfile time = 0.39168748  seconds
+
+...estimated hydro-limited timestep at level 0: 6.219855415e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.219855415e-09
+[Level 0 step 78] ADVANCE at time 3.965302875e-07 with dt = 6.219855415e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.219855415e-09
+[Level 0 step 78] Advanced 524288 cells
+
+[STEP 78] Coarse TimeStep time: 3.518622945
+[STEP 78] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 78 TIME = 4.027501429e-07 DT = 6.219855415e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00078
+Write plotfile time = 0.394936874  seconds
+
+...estimated hydro-limited timestep at level 0: 6.070452909e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.070452909e-09
+[Level 0 step 79] ADVANCE at time 4.027501429e-07 with dt = 6.070452909e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.070452909e-09
+[Level 0 step 79] Advanced 524288 cells
+
+[STEP 79] Coarse TimeStep time: 3.51151023
+[STEP 79] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 79 TIME = 4.088205958e-07 DT = 6.070452909e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00079
+Write plotfile time = 0.39369145  seconds
+
+...estimated hydro-limited timestep at level 0: 5.997804193e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.997804193e-09
+[Level 0 step 80] ADVANCE at time 4.088205958e-07 with dt = 5.997804193e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.997804193e-09
+[Level 0 step 80] Advanced 524288 cells
+
+[STEP 80] Coarse TimeStep time: 3.531035101
+[STEP 80] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 80 TIME = 4.148184e-07 DT = 5.997804193e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00080
+Write plotfile time = 0.392961918  seconds
+
+...estimated hydro-limited timestep at level 0: 6.052237151e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.052237151e-09
+[Level 0 step 81] ADVANCE at time 4.148184e-07 with dt = 6.052237151e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.052237151e-09
+[Level 0 step 81] Advanced 524288 cells
+
+[STEP 81] Coarse TimeStep time: 3.510980694
+[STEP 81] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 81 TIME = 4.208706371e-07 DT = 6.052237151e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00081
+Write plotfile time = 0.392837934  seconds
+
+...estimated hydro-limited timestep at level 0: 6.181546656e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.181546656e-09
+[Level 0 step 82] ADVANCE at time 4.208706371e-07 with dt = 6.181546656e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.181546656e-09
+[Level 0 step 82] Advanced 524288 cells
+
+[STEP 82] Coarse TimeStep time: 3.525248742
+[STEP 82] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 82 TIME = 4.270521838e-07 DT = 6.181546656e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00082
+Write plotfile time = 0.392892928  seconds
+
+...estimated hydro-limited timestep at level 0: 6.022288903e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.022288903e-09
+[Level 0 step 83] ADVANCE at time 4.270521838e-07 with dt = 6.022288903e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.022288903e-09
+[Level 0 step 83] Advanced 524288 cells
+
+[STEP 83] Coarse TimeStep time: 3.517522895
+[STEP 83] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 83 TIME = 4.330744727e-07 DT = 6.022288903e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00083
+Write plotfile time = 0.392452941  seconds
+
+...estimated hydro-limited timestep at level 0: 6.002948149e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.002948149e-09
+[Level 0 step 84] ADVANCE at time 4.330744727e-07 with dt = 6.002948149e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.002948149e-09
+[Level 0 step 84] Advanced 524288 cells
+
+[STEP 84] Coarse TimeStep time: 3.528857914
+[STEP 84] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 84 TIME = 4.390774208e-07 DT = 6.002948149e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00084
+Write plotfile time = 0.391921129  seconds
+
+...estimated hydro-limited timestep at level 0: 6.071238352e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.071238352e-09
+[Level 0 step 85] ADVANCE at time 4.390774208e-07 with dt = 6.071238352e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.071238352e-09
+[Level 0 step 85] Advanced 524288 cells
+
+[STEP 85] Coarse TimeStep time: 3.520327041
+[STEP 85] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 85 TIME = 4.451486592e-07 DT = 6.071238352e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00085
+Write plotfile time = 0.393011201  seconds
+
+...estimated hydro-limited timestep at level 0: 6.142509596e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.142509596e-09
+[Level 0 step 86] ADVANCE at time 4.451486592e-07 with dt = 6.142509596e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.142509596e-09
+[Level 0 step 86] Advanced 524288 cells
+
+[STEP 86] Coarse TimeStep time: 3.531013892
+[STEP 86] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 86 TIME = 4.512911688e-07 DT = 6.142509596e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00086
+Write plotfile time = 0.392541256  seconds
+
+...estimated hydro-limited timestep at level 0: 6.182015888e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.182015888e-09
+[Level 0 step 87] ADVANCE at time 4.512911688e-07 with dt = 6.182015888e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.182015888e-09
+[Level 0 step 87] Advanced 524288 cells
+
+[STEP 87] Coarse TimeStep time: 3.524754513
+[STEP 87] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 87 TIME = 4.574731847e-07 DT = 6.182015888e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00087
+Write plotfile time = 0.391815581  seconds
+
+...estimated hydro-limited timestep at level 0: 6.067125213e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.067125213e-09
+[Level 0 step 88] ADVANCE at time 4.574731847e-07 with dt = 6.067125213e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.067125213e-09
+[Level 0 step 88] Advanced 524288 cells
+
+[STEP 88] Coarse TimeStep time: 3.524112565
+[STEP 88] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 88 TIME = 4.635403099e-07 DT = 6.067125213e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00088
+Write plotfile time = 0.392073416  seconds
+
+...estimated hydro-limited timestep at level 0: 6.027384514e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.027384514e-09
+[Level 0 step 89] ADVANCE at time 4.635403099e-07 with dt = 6.027384514e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.027384514e-09
+[Level 0 step 89] Advanced 524288 cells
+
+[STEP 89] Coarse TimeStep time: 3.514714811
+[STEP 89] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 89 TIME = 4.695676944e-07 DT = 6.027384514e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00089
+Write plotfile time = 0.393745092  seconds
+
+...estimated hydro-limited timestep at level 0: 6.098029688e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.098029688e-09
+[Level 0 step 90] ADVANCE at time 4.695676944e-07 with dt = 6.098029688e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.098029688e-09
+[Level 0 step 90] Advanced 524288 cells
+
+[STEP 90] Coarse TimeStep time: 3.532609013
+[STEP 90] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 90 TIME = 4.756657241e-07 DT = 6.098029688e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00090
+Write plotfile time = 0.391872308  seconds
+
+...estimated hydro-limited timestep at level 0: 6.214968166e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.214968166e-09
+[Level 0 step 91] ADVANCE at time 4.756657241e-07 with dt = 6.214968166e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.214968166e-09
+[Level 0 step 91] Advanced 524288 cells
+
+[STEP 91] Coarse TimeStep time: 3.525221547
+[STEP 91] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 91 TIME = 4.818806922e-07 DT = 6.214968166e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00091
+Write plotfile time = 0.393195242  seconds
+
+...estimated hydro-limited timestep at level 0: 6.095354629e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.095354629e-09
+[Level 0 step 92] ADVANCE at time 4.818806922e-07 with dt = 6.095354629e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.095354629e-09
+[Level 0 step 92] Advanced 524288 cells
+
+[STEP 92] Coarse TimeStep time: 3.545757316
+[STEP 92] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 92 TIME = 4.879760469e-07 DT = 6.095354629e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00092
+Write plotfile time = 0.394003813  seconds
+
+...estimated hydro-limited timestep at level 0: 6.009644988e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.009644988e-09
+[Level 0 step 93] ADVANCE at time 4.879760469e-07 with dt = 6.009644988e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.009644988e-09
+[Level 0 step 93] Advanced 524288 cells
+
+[STEP 93] Coarse TimeStep time: 3.521353789
+[STEP 93] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 93 TIME = 4.939856919e-07 DT = 6.009644988e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00093
+Write plotfile time = 0.393815498  seconds
+
+...estimated hydro-limited timestep at level 0: 6.032189105e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.032189105e-09
+[Level 0 step 94] ADVANCE at time 4.939856919e-07 with dt = 6.032189105e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.032189105e-09
+[Level 0 step 94] Advanced 524288 cells
+
+[STEP 94] Coarse TimeStep time: 3.532060605
+[STEP 94] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 94 TIME = 5.00017881e-07 DT = 6.032189105e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00094
+Write plotfile time = 0.393339843  seconds
+
+...estimated hydro-limited timestep at level 0: 6.138085823e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.138085823e-09
+[Level 0 step 95] ADVANCE at time 5.00017881e-07 with dt = 6.138085823e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.138085823e-09
+[Level 0 step 95] Advanced 524288 cells
+
+[STEP 95] Coarse TimeStep time: 3.522177859
+[STEP 95] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 95 TIME = 5.061559668e-07 DT = 6.138085823e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00095
+Write plotfile time = 0.392314664  seconds
+
+...estimated hydro-limited timestep at level 0: 6.139578498e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.139578498e-09
+[Level 0 step 96] ADVANCE at time 5.061559668e-07 with dt = 6.139578498e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.139578498e-09
+[Level 0 step 96] Advanced 524288 cells
+
+[STEP 96] Coarse TimeStep time: 3.531619094
+[STEP 96] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 96 TIME = 5.122955453e-07 DT = 6.139578498e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00096
+Write plotfile time = 0.392629578  seconds
+
+...estimated hydro-limited timestep at level 0: 6.019428541e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.019428541e-09
+[Level 0 step 97] ADVANCE at time 5.122955453e-07 with dt = 6.019428541e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.019428541e-09
+[Level 0 step 97] Advanced 524288 cells
+
+[STEP 97] Coarse TimeStep time: 3.521392272
+[STEP 97] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 97 TIME = 5.183149738e-07 DT = 6.019428541e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00097
+Write plotfile time = 0.393283197  seconds
+
+...estimated hydro-limited timestep at level 0: 5.985737214e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.985737214e-09
+[Level 0 step 98] ADVANCE at time 5.183149738e-07 with dt = 5.985737214e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.985737214e-09
+[Level 0 step 98] Advanced 524288 cells
+
+[STEP 98] Coarse TimeStep time: 3.540147541
+[STEP 98] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 98 TIME = 5.24300711e-07 DT = 5.985737214e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00098
+Write plotfile time = 0.392252278  seconds
+
+...estimated hydro-limited timestep at level 0: 6.064997277e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.064997277e-09
+[Level 0 step 99] ADVANCE at time 5.24300711e-07 with dt = 6.064997277e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.064997277e-09
+[Level 0 step 99] Advanced 524288 cells
+
+[STEP 99] Coarse TimeStep time: 3.52582939
+[STEP 99] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 99 TIME = 5.303657083e-07 DT = 6.064997277e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00099
+Write plotfile time = 0.391914752  seconds
+
+...estimated hydro-limited timestep at level 0: 6.14517306e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.14517306e-09
+[Level 0 step 100] ADVANCE at time 5.303657083e-07 with dt = 6.14517306e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.14517306e-09
+[Level 0 step 100] Advanced 524288 cells
+
+[STEP 100] Coarse TimeStep time: 3.544634865
+[STEP 100] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 100 TIME = 5.365108814e-07 DT = 6.14517306e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00100
+Write plotfile time = 0.393429433  seconds
+
+...estimated hydro-limited timestep at level 0: 6.043851018e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.043851018e-09
+[Level 0 step 101] ADVANCE at time 5.365108814e-07 with dt = 6.043851018e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.043851018e-09
+[Level 0 step 101] Advanced 524288 cells
+
+[STEP 101] Coarse TimeStep time: 3.525135103
+[STEP 101] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 101 TIME = 5.425547324e-07 DT = 6.043851018e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00101
+Write plotfile time = 0.393158944  seconds
+
+...estimated hydro-limited timestep at level 0: 6.006552188e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.006552188e-09
+[Level 0 step 102] ADVANCE at time 5.425547324e-07 with dt = 6.006552188e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.006552188e-09
+[Level 0 step 102] Advanced 524288 cells
+
+[STEP 102] Coarse TimeStep time: 3.536033631
+[STEP 102] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 102 TIME = 5.485612846e-07 DT = 6.006552188e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00102
+Write plotfile time = 0.392894626  seconds
+
+...estimated hydro-limited timestep at level 0: 6.059036239e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.059036239e-09
+[Level 0 step 103] ADVANCE at time 5.485612846e-07 with dt = 6.059036239e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.059036239e-09
+[Level 0 step 103] Advanced 524288 cells
+
+[STEP 103] Coarse TimeStep time: 3.522540091
+[STEP 103] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 103 TIME = 5.546203208e-07 DT = 6.059036239e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00103
+Write plotfile time = 0.391595972  seconds
+
+...estimated hydro-limited timestep at level 0: 6.187733329e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.187733329e-09
+[Level 0 step 104] ADVANCE at time 5.546203208e-07 with dt = 6.187733329e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.187733329e-09
+[Level 0 step 104] Advanced 524288 cells
+
+[STEP 104] Coarse TimeStep time: 3.538453995
+[STEP 104] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 104 TIME = 5.608080542e-07 DT = 6.187733329e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00104
+Write plotfile time = 0.392621612  seconds
+
+...estimated hydro-limited timestep at level 0: 6.108542226e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.108542226e-09
+[Level 0 step 105] ADVANCE at time 5.608080542e-07 with dt = 6.108542226e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.108542226e-09
+[Level 0 step 105] Advanced 524288 cells
+
+[STEP 105] Coarse TimeStep time: 3.531503757
+[STEP 105] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 105 TIME = 5.669165964e-07 DT = 6.108542226e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00105
+Write plotfile time = 0.392907952  seconds
+
+...estimated hydro-limited timestep at level 0: 6.000193919e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.000193919e-09
+[Level 0 step 106] ADVANCE at time 5.669165964e-07 with dt = 6.000193919e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.000193919e-09
+[Level 0 step 106] Advanced 524288 cells
+
+[STEP 106] Coarse TimeStep time: 3.538484873
+[STEP 106] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 106 TIME = 5.729167903e-07 DT = 6.000193919e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00106
+Write plotfile time = 0.395255258  seconds
+
+...estimated hydro-limited timestep at level 0: 6.001908705e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.001908705e-09
+[Level 0 step 107] ADVANCE at time 5.729167903e-07 with dt = 6.001908705e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.001908705e-09
+[Level 0 step 107] Advanced 524288 cells
+
+[STEP 107] Coarse TimeStep time: 3.521639482
+[STEP 107] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 107 TIME = 5.78918699e-07 DT = 6.001908705e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00107
+Write plotfile time = 0.394155655  seconds
+
+...estimated hydro-limited timestep at level 0: 6.074427459e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.074427459e-09
+[Level 0 step 108] ADVANCE at time 5.78918699e-07 with dt = 6.074427459e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.074427459e-09
+[Level 0 step 108] Advanced 524288 cells
+
+[STEP 108] Coarse TimeStep time: 3.537136128
+[STEP 108] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 108 TIME = 5.849931265e-07 DT = 6.074427459e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00108
+Write plotfile time = 0.393529509  seconds
+
+...estimated hydro-limited timestep at level 0: 6.157923013e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.157923013e-09
+[Level 0 step 109] ADVANCE at time 5.849931265e-07 with dt = 6.157923013e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.157923013e-09
+[Level 0 step 109] Advanced 524288 cells
+
+[STEP 109] Coarse TimeStep time: 3.5217532
+[STEP 109] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 109 TIME = 5.911510495e-07 DT = 6.157923013e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00109
+Write plotfile time = 0.392947357  seconds
+
+...estimated hydro-limited timestep at level 0: 6.026343752e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.026343752e-09
+[Level 0 step 110] ADVANCE at time 5.911510495e-07 with dt = 6.026343752e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.026343752e-09
+[Level 0 step 110] Advanced 524288 cells
+
+[STEP 110] Coarse TimeStep time: 3.537726555
+[STEP 110] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 110 TIME = 5.971773932e-07 DT = 6.026343752e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00110
+Write plotfile time = 0.392770791  seconds
+
+...estimated hydro-limited timestep at level 0: 5.977744935e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.977744935e-09
+[Level 0 step 111] ADVANCE at time 5.971773932e-07 with dt = 5.977744935e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.977744935e-09
+[Level 0 step 111] Advanced 524288 cells
+
+[STEP 111] Coarse TimeStep time: 3.530884432
+[STEP 111] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 111 TIME = 6.031551382e-07 DT = 5.977744935e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00111
+Write plotfile time = 0.391825733  seconds
+
+...estimated hydro-limited timestep at level 0: 6.040853221e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.040853221e-09
+[Level 0 step 112] ADVANCE at time 6.031551382e-07 with dt = 6.040853221e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.040853221e-09
+[Level 0 step 112] Advanced 524288 cells
+
+[STEP 112] Coarse TimeStep time: 3.542677079
+[STEP 112] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 112 TIME = 6.091959914e-07 DT = 6.040853221e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00112
+Write plotfile time = 0.39369544  seconds
+
+...estimated hydro-limited timestep at level 0: 6.168712539e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.168712539e-09
+[Level 0 step 113] ADVANCE at time 6.091959914e-07 with dt = 6.168712539e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.168712539e-09
+[Level 0 step 113] Advanced 524288 cells
+
+[STEP 113] Coarse TimeStep time: 3.535099262
+[STEP 113] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 113 TIME = 6.153647039e-07 DT = 6.168712539e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00113
+Write plotfile time = 0.391574079  seconds
+
+...estimated hydro-limited timestep at level 0: 6.109107289e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.109107289e-09
+[Level 0 step 114] ADVANCE at time 6.153647039e-07 with dt = 6.109107289e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.109107289e-09
+[Level 0 step 114] Advanced 524288 cells
+
+[STEP 114] Coarse TimeStep time: 3.534649937
+[STEP 114] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 114 TIME = 6.214738112e-07 DT = 6.109107289e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00114
+Write plotfile time = 0.392617993  seconds
+
+...estimated hydro-limited timestep at level 0: 6.014746873e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.014746873e-09
+[Level 0 step 115] ADVANCE at time 6.214738112e-07 with dt = 6.014746873e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.014746873e-09
+[Level 0 step 115] Advanced 524288 cells
+
+[STEP 115] Coarse TimeStep time: 3.524499911
+[STEP 115] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 115 TIME = 6.274885581e-07 DT = 6.014746873e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00115
+Write plotfile time = 0.392590091  seconds
+
+...estimated hydro-limited timestep at level 0: 6.019873452e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.019873452e-09
+[Level 0 step 116] ADVANCE at time 6.274885581e-07 with dt = 6.019873452e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.019873452e-09
+[Level 0 step 116] Advanced 524288 cells
+
+[STEP 116] Coarse TimeStep time: 3.544771379
+[STEP 116] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 116 TIME = 6.335084315e-07 DT = 6.019873452e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00116
+Write plotfile time = 0.394860292  seconds
+
+...estimated hydro-limited timestep at level 0: 6.097080868e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.097080868e-09
+[Level 0 step 117] ADVANCE at time 6.335084315e-07 with dt = 6.097080868e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.097080868e-09
+[Level 0 step 117] Advanced 524288 cells
+
+[STEP 117] Coarse TimeStep time: 3.535446015
+[STEP 117] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 117 TIME = 6.396055124e-07 DT = 6.097080868e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00117
+Write plotfile time = 0.392384894  seconds
+
+...estimated hydro-limited timestep at level 0: 6.134778768e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.134778768e-09
+[Level 0 step 118] ADVANCE at time 6.396055124e-07 with dt = 6.134778768e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.134778768e-09
+[Level 0 step 118] Advanced 524288 cells
+
+[STEP 118] Coarse TimeStep time: 3.53518868
+[STEP 118] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 118 TIME = 6.457402912e-07 DT = 6.134778768e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00118
+Write plotfile time = 0.394500565  seconds
+
+...estimated hydro-limited timestep at level 0: 6.022051825e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.022051825e-09
+[Level 0 step 119] ADVANCE at time 6.457402912e-07 with dt = 6.022051825e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.022051825e-09
+[Level 0 step 119] Advanced 524288 cells
+
+[STEP 119] Coarse TimeStep time: 3.533659534
+[STEP 119] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 119 TIME = 6.51762343e-07 DT = 6.022051825e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00119
+Write plotfile time = 0.394121212  seconds
+
+...estimated hydro-limited timestep at level 0: 5.991285379e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.991285379e-09
+[Level 0 step 120] ADVANCE at time 6.51762343e-07 with dt = 5.991285379e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.991285379e-09
+[Level 0 step 120] Advanced 524288 cells
+
+[STEP 120] Coarse TimeStep time: 3.540902069
+[STEP 120] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 120 TIME = 6.577536284e-07 DT = 5.991285379e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00120
+Write plotfile time = 0.3961774  seconds
+
+...estimated hydro-limited timestep at level 0: 6.029967301e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.029967301e-09
+[Level 0 step 121] ADVANCE at time 6.577536284e-07 with dt = 6.029967301e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.029967301e-09
+[Level 0 step 121] Advanced 524288 cells
+
+[STEP 121] Coarse TimeStep time: 3.525903763
+[STEP 121] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 121 TIME = 6.637835957e-07 DT = 6.029967301e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00121
+Write plotfile time = 0.39372176  seconds
+
+...estimated hydro-limited timestep at level 0: 6.142241089e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.142241089e-09
+[Level 0 step 122] ADVANCE at time 6.637835957e-07 with dt = 6.142241089e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.142241089e-09
+[Level 0 step 122] Advanced 524288 cells
+
+[STEP 122] Coarse TimeStep time: 3.554683717
+[STEP 122] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 122 TIME = 6.699258368e-07 DT = 6.142241089e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00122
+Write plotfile time = 0.395611465  seconds
+
+...estimated hydro-limited timestep at level 0: 6.056215283e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.056215283e-09
+[Level 0 step 123] ADVANCE at time 6.699258368e-07 with dt = 6.056215283e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.056215283e-09
+[Level 0 step 123] Advanced 524288 cells
+
+[STEP 123] Coarse TimeStep time: 3.528642885
+[STEP 123] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 123 TIME = 6.75982052e-07 DT = 6.056215283e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00123
+Write plotfile time = 0.394869809  seconds
+
+...estimated hydro-limited timestep at level 0: 5.967814549e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.967814549e-09
+[Level 0 step 124] ADVANCE at time 6.75982052e-07 with dt = 5.967814549e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.967814549e-09
+[Level 0 step 124] Advanced 524288 cells
+
+[STEP 124] Coarse TimeStep time: 3.544055001
+[STEP 124] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 124 TIME = 6.819498666e-07 DT = 5.967814549e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00124
+Write plotfile time = 0.394171738  seconds
+
+...estimated hydro-limited timestep at level 0: 5.969954332e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.969954332e-09
+[Level 0 step 125] ADVANCE at time 6.819498666e-07 with dt = 5.969954332e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.969954332e-09
+[Level 0 step 125] Advanced 524288 cells
+
+[STEP 125] Coarse TimeStep time: 3.524284559
+[STEP 125] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 125 TIME = 6.879198209e-07 DT = 5.969954332e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00125
+Write plotfile time = 0.393802644  seconds
+
+...estimated hydro-limited timestep at level 0: 6.079855072e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.079855072e-09
+[Level 0 step 126] ADVANCE at time 6.879198209e-07 with dt = 6.079855072e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.079855072e-09
+[Level 0 step 126] Advanced 524288 cells
+
+[STEP 126] Coarse TimeStep time: 3.539996197
+[STEP 126] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 126 TIME = 6.93999676e-07 DT = 6.079855072e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00126
+Write plotfile time = 0.395845556  seconds
+
+...estimated hydro-limited timestep at level 0: 6.078004229e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.078004229e-09
+[Level 0 step 127] ADVANCE at time 6.93999676e-07 with dt = 6.078004229e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.078004229e-09
+[Level 0 step 127] Advanced 524288 cells
+
+[STEP 127] Coarse TimeStep time: 3.529646503
+[STEP 127] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 127 TIME = 7.000776802e-07 DT = 6.078004229e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00127
+Write plotfile time = 0.393867807  seconds
+
+...estimated hydro-limited timestep at level 0: 5.982955212e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.982955212e-09
+[Level 0 step 128] ADVANCE at time 7.000776802e-07 with dt = 5.982955212e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.982955212e-09
+[Level 0 step 128] Advanced 524288 cells
+
+[STEP 128] Coarse TimeStep time: 3.543123669
+[STEP 128] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 128 TIME = 7.060606354e-07 DT = 5.982955212e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00128
+Write plotfile time = 0.393171407  seconds
+
+...estimated hydro-limited timestep at level 0: 5.983210643e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.983210643e-09
+[Level 0 step 129] ADVANCE at time 7.060606354e-07 with dt = 5.983210643e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.983210643e-09
+[Level 0 step 129] Advanced 524288 cells
+
+[STEP 129] Coarse TimeStep time: 3.533963053
+[STEP 129] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 129 TIME = 7.120438461e-07 DT = 5.983210643e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00129
+Write plotfile time = 0.393604436  seconds
+
+...estimated hydro-limited timestep at level 0: 6.036492521e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.036492521e-09
+[Level 0 step 130] ADVANCE at time 7.120438461e-07 with dt = 6.036492521e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.036492521e-09
+[Level 0 step 130] Advanced 524288 cells
+
+[STEP 130] Coarse TimeStep time: 3.553213098
+[STEP 130] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 130 TIME = 7.180803386e-07 DT = 6.036492521e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00130
+Write plotfile time = 0.394975054  seconds
+
+...estimated hydro-limited timestep at level 0: 6.145300406e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.145300406e-09
+[Level 0 step 131] ADVANCE at time 7.180803386e-07 with dt = 6.145300406e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.145300406e-09
+[Level 0 step 131] Advanced 524288 cells
+
+[STEP 131] Coarse TimeStep time: 3.53281837
+[STEP 131] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 131 TIME = 7.24225639e-07 DT = 6.145300406e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00131
+Write plotfile time = 0.394936011  seconds
+
+...estimated hydro-limited timestep at level 0: 6.054839444e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.054839444e-09
+[Level 0 step 132] ADVANCE at time 7.24225639e-07 with dt = 6.054839444e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.054839444e-09
+[Level 0 step 132] Advanced 524288 cells
+
+[STEP 132] Coarse TimeStep time: 3.552520715
+[STEP 132] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 132 TIME = 7.302804785e-07 DT = 6.054839444e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00132
+Write plotfile time = 0.39405316  seconds
+
+...estimated hydro-limited timestep at level 0: 5.966190046e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.966190046e-09
+[Level 0 step 133] ADVANCE at time 7.302804785e-07 with dt = 5.966190046e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.966190046e-09
+[Level 0 step 133] Advanced 524288 cells
+
+[STEP 133] Coarse TimeStep time: 3.530942941
+[STEP 133] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 133 TIME = 7.362466685e-07 DT = 5.966190046e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00133
+Write plotfile time = 0.393113602  seconds
+
+...estimated hydro-limited timestep at level 0: 5.979209723e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.979209723e-09
+[Level 0 step 134] ADVANCE at time 7.362466685e-07 with dt = 5.979209723e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.979209723e-09
+[Level 0 step 134] Advanced 524288 cells
+
+[STEP 134] Coarse TimeStep time: 3.550044617
+[STEP 134] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 134 TIME = 7.422258782e-07 DT = 5.979209723e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00134
+Write plotfile time = 0.394804694  seconds
+
+...estimated hydro-limited timestep at level 0: 6.063901751e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.063901751e-09
+[Level 0 step 135] ADVANCE at time 7.422258782e-07 with dt = 6.063901751e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.063901751e-09
+[Level 0 step 135] Advanced 524288 cells
+
+[STEP 135] Coarse TimeStep time: 3.534147971
+[STEP 135] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 135 TIME = 7.4828978e-07 DT = 6.063901751e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00135
+Write plotfile time = 0.393004867  seconds
+
+...estimated hydro-limited timestep at level 0: 6.079045379e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 6.079045379e-09
+[Level 0 step 136] ADVANCE at time 7.4828978e-07 with dt = 6.079045379e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 6.079045379e-09
+[Level 0 step 136] Advanced 524288 cells
+
+[STEP 136] Coarse TimeStep time: 3.544825628
+[STEP 136] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 136 TIME = 7.543688254e-07 DT = 6.079045379e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00136
+Write plotfile time = 0.395070744  seconds
+
+...estimated hydro-limited timestep at level 0: 5.951861614e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.951861614e-09
+[Level 0 step 137] ADVANCE at time 7.543688254e-07 with dt = 5.951861614e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.951861614e-09
+[Level 0 step 137] Advanced 524288 cells
+
+[STEP 137] Coarse TimeStep time: 3.535858108
+[STEP 137] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 137 TIME = 7.60320687e-07 DT = 5.951861614e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00137
+Write plotfile time = 0.393837253  seconds
+
+...estimated hydro-limited timestep at level 0: 5.955878796e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.955878796e-09
+[Level 0 step 138] ADVANCE at time 7.60320687e-07 with dt = 5.955878796e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.955878796e-09
+[Level 0 step 138] Advanced 524288 cells
+
+[STEP 138] Coarse TimeStep time: 3.544634108
+[STEP 138] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 138 TIME = 7.662765658e-07 DT = 5.955878796e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00138
+Write plotfile time = 0.395252176  seconds
+
+...estimated hydro-limited timestep at level 0: 5.929616024e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.929616024e-09
+[Level 0 step 139] ADVANCE at time 7.662765658e-07 with dt = 5.929616024e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.929616024e-09
+[Level 0 step 139] Advanced 524288 cells
+
+[STEP 139] Coarse TimeStep time: 3.544440063
+[STEP 139] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 139 TIME = 7.722061818e-07 DT = 5.929616024e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00139
+Write plotfile time = 0.394262193  seconds
+
+...estimated hydro-limited timestep at level 0: 5.820671386e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.820671386e-09
+[Level 0 step 140] ADVANCE at time 7.722061818e-07 with dt = 5.820671386e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.820671386e-09
+[Level 0 step 140] Advanced 524288 cells
+
+[STEP 140] Coarse TimeStep time: 3.547661011
+[STEP 140] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 140 TIME = 7.780268532e-07 DT = 5.820671386e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00140
+Write plotfile time = 0.393188739  seconds
+
+...estimated hydro-limited timestep at level 0: 5.629760899e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.629760899e-09
+[Level 0 step 141] ADVANCE at time 7.780268532e-07 with dt = 5.629760899e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.629760899e-09
+[Level 0 step 141] Advanced 524288 cells
+
+[STEP 141] Coarse TimeStep time: 3.530942728
+[STEP 141] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 141 TIME = 7.836566141e-07 DT = 5.629760899e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00141
+Write plotfile time = 0.394128688  seconds
+
+...estimated hydro-limited timestep at level 0: 5.961379973e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.961379973e-09
+PeleC::compute_new_dt : limiting dt at level 0
+ ... new dt computed: 5.961379973e-09
+ ... but limiting to: 5.911248944e-09 = 1.05 * 5.629760899e-09
+[Level 0 step 142] ADVANCE at time 7.836566141e-07 with dt = 5.911248944e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.911248944e-09
+[Level 0 step 142] Advanced 524288 cells
+
+[STEP 142] Coarse TimeStep time: 3.547888445
+[STEP 142] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 142 TIME = 7.89567863e-07 DT = 5.911248944e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00142
+Write plotfile time = 0.396653137  seconds
+
+...estimated hydro-limited timestep at level 0: 5.941284322e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.941284322e-09
+[Level 0 step 143] ADVANCE at time 7.89567863e-07 with dt = 5.941284322e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.941284322e-09
+[Level 0 step 143] Advanced 524288 cells
+
+[STEP 143] Coarse TimeStep time: 3.541534392
+[STEP 143] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 143 TIME = 7.955091473e-07 DT = 5.941284322e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00143
+Write plotfile time = 0.393105694  seconds
+
+...estimated hydro-limited timestep at level 0: 5.911838865e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.911838865e-09
+[Level 0 step 144] ADVANCE at time 7.955091473e-07 with dt = 5.911838865e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.911838865e-09
+[Level 0 step 144] Advanced 524288 cells
+
+[STEP 144] Coarse TimeStep time: 3.543864816
+[STEP 144] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 144 TIME = 8.014209862e-07 DT = 5.911838865e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00144
+Write plotfile time = 0.394254785  seconds
+
+...estimated hydro-limited timestep at level 0: 5.704379753e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.704379753e-09
+[Level 0 step 145] ADVANCE at time 8.014209862e-07 with dt = 5.704379753e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.704379753e-09
+[Level 0 step 145] Advanced 524288 cells
+
+[STEP 145] Coarse TimeStep time: 3.542009476
+[STEP 145] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 145 TIME = 8.07125366e-07 DT = 5.704379753e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00145
+Write plotfile time = 0.394389388  seconds
+
+...estimated hydro-limited timestep at level 0: 5.526092402e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.526092402e-09
+[Level 0 step 146] ADVANCE at time 8.07125366e-07 with dt = 5.526092402e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.526092402e-09
+[Level 0 step 146] Advanced 524288 cells
+
+[STEP 146] Coarse TimeStep time: 3.543125205
+[STEP 146] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 146 TIME = 8.126514584e-07 DT = 5.526092402e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00146
+Write plotfile time = 0.393564236  seconds
+
+...estimated hydro-limited timestep at level 0: 5.744256348e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.744256348e-09
+[Level 0 step 147] ADVANCE at time 8.126514584e-07 with dt = 5.744256348e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.744256348e-09
+[Level 0 step 147] Advanced 524288 cells
+
+[STEP 147] Coarse TimeStep time: 3.540269594
+[STEP 147] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 147 TIME = 8.183957147e-07 DT = 5.744256348e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00147
+Write plotfile time = 0.395101789  seconds
+
+...estimated hydro-limited timestep at level 0: 5.872689189e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.872689189e-09
+[Level 0 step 148] ADVANCE at time 8.183957147e-07 with dt = 5.872689189e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.872689189e-09
+[Level 0 step 148] Advanced 524288 cells
+
+[STEP 148] Coarse TimeStep time: 3.547138113
+[STEP 148] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 148 TIME = 8.242684039e-07 DT = 5.872689189e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00148
+Write plotfile time = 0.393911199  seconds
+
+...estimated hydro-limited timestep at level 0: 5.88261799e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.88261799e-09
+[Level 0 step 149] ADVANCE at time 8.242684039e-07 with dt = 5.88261799e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.88261799e-09
+[Level 0 step 149] Advanced 524288 cells
+
+[STEP 149] Coarse TimeStep time: 3.538255835
+[STEP 149] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 149 TIME = 8.301510219e-07 DT = 5.88261799e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00149
+Write plotfile time = 0.393239797  seconds
+
+...estimated hydro-limited timestep at level 0: 5.671346625e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.671346625e-09
+[Level 0 step 150] ADVANCE at time 8.301510219e-07 with dt = 5.671346625e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.671346625e-09
+[Level 0 step 150] Advanced 524288 cells
+
+[STEP 150] Coarse TimeStep time: 3.566203197
+[STEP 150] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 150 TIME = 8.358223685e-07 DT = 5.671346625e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00150
+Write plotfile time = 0.395124981  seconds
+
+...estimated hydro-limited timestep at level 0: 5.423104962e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.423104962e-09
+[Level 0 step 151] ADVANCE at time 8.358223685e-07 with dt = 5.423104962e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.423104962e-09
+[Level 0 step 151] Advanced 524288 cells
+
+[STEP 151] Coarse TimeStep time: 3.528511038
+[STEP 151] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 151 TIME = 8.412454735e-07 DT = 5.423104962e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00151
+Write plotfile time = 0.39358806  seconds
+
+...estimated hydro-limited timestep at level 0: 5.465685204e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.465685204e-09
+[Level 0 step 152] ADVANCE at time 8.412454735e-07 with dt = 5.465685204e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.465685204e-09
+[Level 0 step 152] Advanced 524288 cells
+
+[STEP 152] Coarse TimeStep time: 3.542668733
+[STEP 152] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 152 TIME = 8.467111587e-07 DT = 5.465685204e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00152
+Write plotfile time = 0.395806423  seconds
+
+...estimated hydro-limited timestep at level 0: 5.617857951e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.617857951e-09
+[Level 0 step 153] ADVANCE at time 8.467111587e-07 with dt = 5.617857951e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.617857951e-09
+[Level 0 step 153] Advanced 524288 cells
+
+[STEP 153] Coarse TimeStep time: 3.537443182
+[STEP 153] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 153 TIME = 8.523290166e-07 DT = 5.617857951e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00153
+Write plotfile time = 0.394823374  seconds
+
+...estimated hydro-limited timestep at level 0: 5.875217108e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.875217108e-09
+[Level 0 step 154] ADVANCE at time 8.523290166e-07 with dt = 5.875217108e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.875217108e-09
+[Level 0 step 154] Advanced 524288 cells
+
+[STEP 154] Coarse TimeStep time: 3.548830234
+[STEP 154] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 154 TIME = 8.582042337e-07 DT = 5.875217108e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00154
+Write plotfile time = 0.39397087  seconds
+
+...estimated hydro-limited timestep at level 0: 5.800016534e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.800016534e-09
+[Level 0 step 155] ADVANCE at time 8.582042337e-07 with dt = 5.800016534e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.800016534e-09
+[Level 0 step 155] Advanced 524288 cells
+
+[STEP 155] Coarse TimeStep time: 3.540942795
+[STEP 155] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 155 TIME = 8.640042503e-07 DT = 5.800016534e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00155
+Write plotfile time = 0.392407108  seconds
+
+...estimated hydro-limited timestep at level 0: 5.492033286e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.492033286e-09
+[Level 0 step 156] ADVANCE at time 8.640042503e-07 with dt = 5.492033286e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.492033286e-09
+[Level 0 step 156] Advanced 524288 cells
+
+[STEP 156] Coarse TimeStep time: 3.550821702
+[STEP 156] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 156 TIME = 8.694962836e-07 DT = 5.492033286e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00156
+Write plotfile time = 0.394883893  seconds
+
+...estimated hydro-limited timestep at level 0: 5.329872427e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.329872427e-09
+[Level 0 step 157] ADVANCE at time 8.694962836e-07 with dt = 5.329872427e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.329872427e-09
+[Level 0 step 157] Advanced 524288 cells
+
+[STEP 157] Coarse TimeStep time: 3.547241358
+[STEP 157] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 157 TIME = 8.74826156e-07 DT = 5.329872427e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00157
+Write plotfile time = 0.392615326  seconds
+
+...estimated hydro-limited timestep at level 0: 5.568089197e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.568089197e-09
+[Level 0 step 158] ADVANCE at time 8.74826156e-07 with dt = 5.568089197e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.568089197e-09
+[Level 0 step 158] Advanced 524288 cells
+
+[STEP 158] Coarse TimeStep time: 3.541561273
+[STEP 158] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 158 TIME = 8.803942452e-07 DT = 5.568089197e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00158
+Write plotfile time = 0.39385651  seconds
+
+...estimated hydro-limited timestep at level 0: 5.608951998e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.608951998e-09
+[Level 0 step 159] ADVANCE at time 8.803942452e-07 with dt = 5.608951998e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.608951998e-09
+[Level 0 step 159] Advanced 524288 cells
+
+[STEP 159] Coarse TimeStep time: 3.540683812
+[STEP 159] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 159 TIME = 8.860031972e-07 DT = 5.608951998e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00159
+Write plotfile time = 0.393723691  seconds
+
+...estimated hydro-limited timestep at level 0: 5.77202435e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.77202435e-09
+[Level 0 step 160] ADVANCE at time 8.860031972e-07 with dt = 5.77202435e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.77202435e-09
+[Level 0 step 160] Advanced 524288 cells
+
+[STEP 160] Coarse TimeStep time: 3.552140343
+[STEP 160] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 160 TIME = 8.917752215e-07 DT = 5.77202435e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00160
+Write plotfile time = 0.394075081  seconds
+
+...estimated hydro-limited timestep at level 0: 5.764846796e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.764846796e-09
+[Level 0 step 161] ADVANCE at time 8.917752215e-07 with dt = 5.764846796e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.764846796e-09
+[Level 0 step 161] Advanced 524288 cells
+
+[STEP 161] Coarse TimeStep time: 3.539275493
+[STEP 161] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 161 TIME = 8.975400683e-07 DT = 5.764846796e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00161
+Write plotfile time = 0.394224944  seconds
+
+...estimated hydro-limited timestep at level 0: 5.485798993e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.485798993e-09
+[Level 0 step 162] ADVANCE at time 8.975400683e-07 with dt = 5.485798993e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.485798993e-09
+[Level 0 step 162] Advanced 524288 cells
+
+[STEP 162] Coarse TimeStep time: 3.547730919
+[STEP 162] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 162 TIME = 9.030258673e-07 DT = 5.485798993e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00162
+Write plotfile time = 0.394646086  seconds
+
+...estimated hydro-limited timestep at level 0: 5.38791144e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.38791144e-09
+[Level 0 step 163] ADVANCE at time 9.030258673e-07 with dt = 5.38791144e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.38791144e-09
+[Level 0 step 163] Advanced 524288 cells
+
+[STEP 163] Coarse TimeStep time: 3.541009966
+[STEP 163] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 163 TIME = 9.084137788e-07 DT = 5.38791144e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00163
+Write plotfile time = 0.392124973  seconds
+
+...estimated hydro-limited timestep at level 0: 5.499875113e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.499875113e-09
+[Level 0 step 164] ADVANCE at time 9.084137788e-07 with dt = 5.499875113e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.499875113e-09
+[Level 0 step 164] Advanced 524288 cells
+
+[STEP 164] Coarse TimeStep time: 3.548632504
+[STEP 164] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 164 TIME = 9.139136539e-07 DT = 5.499875113e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00164
+Write plotfile time = 0.392779714  seconds
+
+...estimated hydro-limited timestep at level 0: 5.573638943e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.573638943e-09
+[Level 0 step 165] ADVANCE at time 9.139136539e-07 with dt = 5.573638943e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.573638943e-09
+[Level 0 step 165] Advanced 524288 cells
+
+[STEP 165] Coarse TimeStep time: 3.53860914
+[STEP 165] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 165 TIME = 9.194872928e-07 DT = 5.573638943e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00165
+Write plotfile time = 0.39457423  seconds
+
+...estimated hydro-limited timestep at level 0: 5.672197217e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.672197217e-09
+[Level 0 step 166] ADVANCE at time 9.194872928e-07 with dt = 5.672197217e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.672197217e-09
+[Level 0 step 166] Advanced 524288 cells
+
+[STEP 166] Coarse TimeStep time: 3.562135472
+[STEP 166] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 166 TIME = 9.2515949e-07 DT = 5.672197217e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00166
+Write plotfile time = 0.394793076  seconds
+
+...estimated hydro-limited timestep at level 0: 5.842805408e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.842805408e-09
+[Level 0 step 167] ADVANCE at time 9.2515949e-07 with dt = 5.842805408e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.842805408e-09
+[Level 0 step 167] Advanced 524288 cells
+
+[STEP 167] Coarse TimeStep time: 3.555480977
+[STEP 167] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 167 TIME = 9.310022954e-07 DT = 5.842805408e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00167
+Write plotfile time = 0.394057843  seconds
+
+...estimated hydro-limited timestep at level 0: 5.562298008e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.562298008e-09
+[Level 0 step 168] ADVANCE at time 9.310022954e-07 with dt = 5.562298008e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.562298008e-09
+[Level 0 step 168] Advanced 524288 cells
+
+[STEP 168] Coarse TimeStep time: 3.549376193
+[STEP 168] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 168 TIME = 9.365645934e-07 DT = 5.562298008e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00168
+Write plotfile time = 0.394681465  seconds
+
+...estimated hydro-limited timestep at level 0: 5.443598904e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.443598904e-09
+[Level 0 step 169] ADVANCE at time 9.365645934e-07 with dt = 5.443598904e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.443598904e-09
+[Level 0 step 169] Advanced 524288 cells
+
+[STEP 169] Coarse TimeStep time: 3.543011259
+[STEP 169] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 169 TIME = 9.420081924e-07 DT = 5.443598904e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00169
+Write plotfile time = 0.393775742  seconds
+
+...estimated hydro-limited timestep at level 0: 5.50695504e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.50695504e-09
+[Level 0 step 170] ADVANCE at time 9.420081924e-07 with dt = 5.50695504e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.50695504e-09
+[Level 0 step 170] Advanced 524288 cells
+
+[STEP 170] Coarse TimeStep time: 3.559407935
+[STEP 170] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 170 TIME = 9.475151474e-07 DT = 5.50695504e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00170
+Write plotfile time = 0.393540178  seconds
+
+...estimated hydro-limited timestep at level 0: 5.539794943e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.539794943e-09
+[Level 0 step 171] ADVANCE at time 9.475151474e-07 with dt = 5.539794943e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.539794943e-09
+[Level 0 step 171] Advanced 524288 cells
+
+[STEP 171] Coarse TimeStep time: 3.553392319
+[STEP 171] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 171 TIME = 9.530549423e-07 DT = 5.539794943e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00171
+Write plotfile time = 0.39375896  seconds
+
+...estimated hydro-limited timestep at level 0: 5.604727799e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.604727799e-09
+[Level 0 step 172] ADVANCE at time 9.530549423e-07 with dt = 5.604727799e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.604727799e-09
+[Level 0 step 172] Advanced 524288 cells
+
+[STEP 172] Coarse TimeStep time: 3.557413962
+[STEP 172] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 172 TIME = 9.586596701e-07 DT = 5.604727799e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00172
+Write plotfile time = 0.396069086  seconds
+
+...estimated hydro-limited timestep at level 0: 5.762078657e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.762078657e-09
+[Level 0 step 173] ADVANCE at time 9.586596701e-07 with dt = 5.762078657e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.762078657e-09
+[Level 0 step 173] Advanced 524288 cells
+
+[STEP 173] Coarse TimeStep time: 3.55083428
+[STEP 173] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 173 TIME = 9.644217488e-07 DT = 5.762078657e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00173
+Write plotfile time = 0.392846163  seconds
+
+...estimated hydro-limited timestep at level 0: 5.622085416e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.622085416e-09
+[Level 0 step 174] ADVANCE at time 9.644217488e-07 with dt = 5.622085416e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.622085416e-09
+[Level 0 step 174] Advanced 524288 cells
+
+[STEP 174] Coarse TimeStep time: 3.559915663
+[STEP 174] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 174 TIME = 9.700438342e-07 DT = 5.622085416e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00174
+Write plotfile time = 0.393435532  seconds
+
+...estimated hydro-limited timestep at level 0: 5.435647089e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.435647089e-09
+[Level 0 step 175] ADVANCE at time 9.700438342e-07 with dt = 5.435647089e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.435647089e-09
+[Level 0 step 175] Advanced 524288 cells
+
+[STEP 175] Coarse TimeStep time: 3.545498722
+[STEP 175] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 175 TIME = 9.754794813e-07 DT = 5.435647089e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00175
+Write plotfile time = 0.3923395  seconds
+
+...estimated hydro-limited timestep at level 0: 5.548233498e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.548233498e-09
+[Level 0 step 176] ADVANCE at time 9.754794813e-07 with dt = 5.548233498e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.548233498e-09
+[Level 0 step 176] Advanced 524288 cells
+
+[STEP 176] Coarse TimeStep time: 3.553257698
+[STEP 176] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 176 TIME = 9.810277148e-07 DT = 5.548233498e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00176
+Write plotfile time = 0.393726439  seconds
+
+...estimated hydro-limited timestep at level 0: 5.51095054e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.51095054e-09
+[Level 0 step 177] ADVANCE at time 9.810277148e-07 with dt = 5.51095054e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.51095054e-09
+[Level 0 step 177] Advanced 524288 cells
+
+[STEP 177] Coarse TimeStep time: 3.553661138
+[STEP 177] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 177 TIME = 9.865386653e-07 DT = 5.51095054e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00177
+Write plotfile time = 0.394560849  seconds
+
+...estimated hydro-limited timestep at level 0: 5.555031655e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.555031655e-09
+[Level 0 step 178] ADVANCE at time 9.865386653e-07 with dt = 5.555031655e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.555031655e-09
+[Level 0 step 178] Advanced 524288 cells
+
+[STEP 178] Coarse TimeStep time: 3.565496231
+[STEP 178] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 178 TIME = 9.92093697e-07 DT = 5.555031655e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00178
+Write plotfile time = 0.392809544  seconds
+
+...estimated hydro-limited timestep at level 0: 5.665897105e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.665897105e-09
+[Level 0 step 179] ADVANCE at time 9.92093697e-07 with dt = 5.665897105e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.665897105e-09
+[Level 0 step 179] Advanced 524288 cells
+
+[STEP 179] Coarse TimeStep time: 3.55051041
+[STEP 179] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 179 TIME = 9.977595941e-07 DT = 5.665897105e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00179
+Write plotfile time = 0.395261688  seconds
+
+...estimated hydro-limited timestep at level 0: 5.727854555e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.727854555e-09
+[Level 0 step 180] ADVANCE at time 9.977595941e-07 with dt = 5.727854555e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.727854555e-09
+[Level 0 step 180] Advanced 524288 cells
+
+[STEP 180] Coarse TimeStep time: 3.582189273
+[STEP 180] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 180 TIME = 1.003487449e-06 DT = 5.727854555e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00180
+Write plotfile time = 0.394664834  seconds
+
+...estimated hydro-limited timestep at level 0: 5.480247814e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.480247814e-09
+[Level 0 step 181] ADVANCE at time 1.003487449e-06 with dt = 5.480247814e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.480247814e-09
+[Level 0 step 181] Advanced 524288 cells
+
+[STEP 181] Coarse TimeStep time: 3.550479402
+[STEP 181] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 181 TIME = 1.008967696e-06 DT = 5.480247814e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00181
+Write plotfile time = 0.395119249  seconds
+
+...estimated hydro-limited timestep at level 0: 5.591020622e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.591020622e-09
+[Level 0 step 182] ADVANCE at time 1.008967696e-06 with dt = 5.591020622e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.591020622e-09
+[Level 0 step 182] Advanced 524288 cells
+
+[STEP 182] Coarse TimeStep time: 3.56793025
+[STEP 182] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 182 TIME = 1.014558717e-06 DT = 5.591020622e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00182
+Write plotfile time = 0.394009181  seconds
+
+...estimated hydro-limited timestep at level 0: 5.526748825e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.526748825e-09
+[Level 0 step 183] ADVANCE at time 1.014558717e-06 with dt = 5.526748825e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.526748825e-09
+[Level 0 step 183] Advanced 524288 cells
+
+[STEP 183] Coarse TimeStep time: 3.544606554
+[STEP 183] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 183 TIME = 1.020085466e-06 DT = 5.526748825e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00183
+Write plotfile time = 0.393530341  seconds
+
+...estimated hydro-limited timestep at level 0: 5.562073112e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.562073112e-09
+[Level 0 step 184] ADVANCE at time 1.020085466e-06 with dt = 5.562073112e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.562073112e-09
+[Level 0 step 184] Advanced 524288 cells
+
+[STEP 184] Coarse TimeStep time: 3.557946117
+[STEP 184] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 184 TIME = 1.025647539e-06 DT = 5.562073112e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00184
+Write plotfile time = 0.395006998  seconds
+
+...estimated hydro-limited timestep at level 0: 5.652509023e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.652509023e-09
+[Level 0 step 185] ADVANCE at time 1.025647539e-06 with dt = 5.652509023e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.652509023e-09
+[Level 0 step 185] Advanced 524288 cells
+
+[STEP 185] Coarse TimeStep time: 3.552647831
+[STEP 185] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 185 TIME = 1.031300048e-06 DT = 5.652509023e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00185
+Write plotfile time = 0.394505996  seconds
+
+...estimated hydro-limited timestep at level 0: 5.677455526e-09
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.677455526e-09
+[Level 0 step 186] ADVANCE at time 1.031300048e-06 with dt = 5.677455526e-09
+... Computing Godunov hydro advance
+... Computing reactions for dt = 5.677455526e-09
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1503][CVode] Internal t = 3.6635792844689e-10 and h = 6.37041260295102e-28 are such that t + h = t on the next step. The solver will continue anyway.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1503][CVode] Internal t = 3.6635792844689e-10 and h = 6.37041260295102e-28 are such that t + h = t on the next step. The solver will continue anyway.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1503][CVode] Internal t = 3.6635792844689e-10 and h = 6.37041260295102e-27 are such that t + h = t on the next step. The solver will continue anyway.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1503][CVode] Internal t = 3.6635792844689e-10 and h = 2.79848865134822e-27 are such that t + h = t on the next step. The solver will continue anyway.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1503][CVode] Internal t = 3.6635792844689e-10 and h = 2.79848865134822e-27 are such that t + h = t on the next step. The solver will continue anyway.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1503][CVode] Internal t = 3.6635792844689e-10 and h = 2.79848865134822e-27 are such that t + h = t on the next step. The solver will continue anyway.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1503][CVode] Internal t = 3.6635792844689e-10 and h = 2.79848865134822e-27 are such that t + h = t on the next step. The solver will continue anyway.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1503][CVode] Internal t = 3.6635792844689e-10 and h = 2.14243511505194e-27 are such that t + h = t on the next step. The solver will continue anyway.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1503][CVode] Internal t = 3.6635792844689e-10 and h = 2.14243511505194e-27 are such that t + h = t on the next step. The solver will continue anyway.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1503][CVode] Internal t = 3.6635792844689e-10 and h = 2.21358651630041e-28 are such that t + h = t on the next step. The solver will continue anyway.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1508][CVode] The above warning has been issued mxhnil times and will not be issued again for this problem.
+[Level 0 step 186] Advanced 524288 cells
+
+[STEP 186] Coarse TimeStep time: 3.567002655
+[STEP 186] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 186 TIME = 1.036977504e-06 DT = 5.677455526e-09
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00186
+Write plotfile time = 0.394306671  seconds
+
+...estimated hydro-limited timestep at level 0: 2.450766419e-10
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 2.450766419e-10
+[Level 0 step 187] ADVANCE at time 1.036977504e-06 with dt = 2.450766419e-10
+... Computing Godunov hydro advance
+... Computing reactions for dt = 2.450766419e-10
+[Level 0 step 187] Advanced 524288 cells
+
+[STEP 187] Coarse TimeStep time: 3.506917586
+[STEP 187] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 187 TIME = 1.03722258e-06 DT = 2.450766419e-10
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00187
+Write plotfile time = 0.394607657  seconds
+
+...estimated hydro-limited timestep at level 0: 5.02010445e-10
+PeleC::estTimeStep (hydro-limited) at level 0:  estdt = 5.02010445e-10
+PeleC::compute_new_dt : limiting dt at level 0
+ ... new dt computed: 5.02010445e-10
+ ... but limiting to: 2.57330474e-10 = 1.05 * 2.450766419e-10
+[Level 0 step 188] ADVANCE at time 1.03722258e-06 with dt = 2.57330474e-10
+... Computing Godunov hydro advance
+... Computing reactions for dt = 2.57330474e-10
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1503][CVode] Internal t = 5.37538256230944e-13 and h = 4.06223048343656e-29 are such that t + h = t on the next step. The solver will continue anyway.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1503][CVode] Internal t = 5.37538256230944e-13 and h = 4.06223048343656e-29 are such that t + h = t on the next step. The solver will continue anyway.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1503][CVode] Internal t = 5.37538256230944e-13 and h = 2.75237829620442e-29 are such that t + h = t on the next step. The solver will continue anyway.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1503][CVode] Internal t = 5.37538256230944e-13 and h = 2.75237829620442e-29 are such that t + h = t on the next step. The solver will continue anyway.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1503][CVode] Internal t = 5.37538256230944e-13 and h = 1.19858101610119e-29 are such that t + h = t on the next step. The solver will continue anyway.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1503][CVode] Internal t = 5.37538256230944e-13 and h = 1.19858101610119e-29 are such that t + h = t on the next step. The solver will continue anyway.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1503][CVode] Internal t = 5.37538256230944e-13 and h = 2.53196510971086e-29 are such that t + h = t on the next step. The solver will continue anyway.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1503][CVode] Internal t = 5.37538256230944e-13 and h = 1.37376033468809e-29 are such that t + h = t on the next step. The solver will continue anyway.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1503][CVode] Internal t = 5.37538256230944e-13 and h = 1.37376033468809e-29 are such that t + h = t on the next step. The solver will continue anyway.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1503][CVode] Internal t = 5.37538256230944e-13 and h = 5.15456366515565e-30 are such that t + h = t on the next step. The solver will continue anyway.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1508][CVode] The above warning has been issued mxhnil times and will not be issued again for this problem.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1503][CVode] Internal t = 1.18928919642691e-13 and h = 1.14473568988365e-29 are such that t + h = t on the next step. The solver will continue anyway.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1503][CVode] Internal t = 1.18928919642691e-13 and h = 1.14473568988365e-29 are such that t + h = t on the next step. The solver will continue anyway.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1503][CVode] Internal t = 1.18928919642691e-13 and h = 5.62638615456022e-30 are such that t + h = t on the next step. The solver will continue anyway.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1503][CVode] Internal t = 1.18928919642691e-13 and h = 5.62638615456022e-30 are such that t + h = t on the next step. The solver will continue anyway.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1503][CVode] Internal t = 1.18928919642691e-13 and h = 2.90870909530599e-30 are such that t + h = t on the next step. The solver will continue anyway.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1503][CVode] Internal t = 1.18928919642691e-13 and h = 2.90870909530599e-30 are such that t + h = t on the next step. The solver will continue anyway.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1503][CVode] Internal t = 1.18928919642691e-13 and h = 1.6603714543166e-30 are such that t + h = t on the next step. The solver will continue anyway.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1503][CVode] Internal t = 1.18928919642691e-13 and h = 1.6603714543166e-30 are such that t + h = t on the next step. The solver will continue anyway.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1503][CVode] Internal t = 1.18928919642691e-13 and h = 1.1169130107083e-30 are such that t + h = t on the next step. The solver will continue anyway.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1503][CVode] Internal t = 1.18928919642691e-13 and h = 1.1169130107083e-30 are such that t + h = t on the next step. The solver will continue anyway.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1508][CVode] The above warning has been issued mxhnil times and will not be issued again for this problem.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1503][CVode] Internal t = 5.14561094746546e-13 and h = 2.81073406581919e-29 are such that t + h = t on the next step. The solver will continue anyway.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1503][CVode] Internal t = 5.14561094746546e-13 and h = 2.81073406581919e-29 are such that t + h = t on the next step. The solver will continue anyway.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1503][CVode] Internal t = 5.14561094746546e-13 and h = 1.756708791137e-29 are such that t + h = t on the next step. The solver will continue anyway.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1503][CVode] Internal t = 5.14561094746546e-13 and h = 1.756708791137e-29 are such that t + h = t on the next step. The solver will continue anyway.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1503][CVode] Internal t = 5.14561094746546e-13 and h = 4.39177197784249e-29 are such that t + h = t on the next step. The solver will continue anyway.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1503][CVode] Internal t = 5.14561094746546e-13 and h = 4.39177197784249e-29 are such that t + h = t on the next step. The solver will continue anyway.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1503][CVode] Internal t = 5.14561094746546e-13 and h = 2.74485748615156e-29 are such that t + h = t on the next step. The solver will continue anyway.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1503][CVode] Internal t = 5.14561094746546e-13 and h = 2.74485748615156e-29 are such that t + h = t on the next step. The solver will continue anyway.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1503][CVode] Internal t = 5.14561094746546e-13 and h = 1.71553592884472e-29 are such that t + h = t on the next step. The solver will continue anyway.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1503][CVode] Internal t = 5.14561094746546e-13 and h = 1.71553592884472e-29 are such that t + h = t on the next step. The solver will continue anyway.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1508][CVode] The above warning has been issued mxhnil times and will not be issued again for this problem.
+[WARNING][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1503][CVode] Internal t = 0 and h = 0 are such that t + h = t on the next step. The solver will continue anyway.
+[Level 0 step 188] Advanced 524288 cells
+
+[STEP 188] Coarse TimeStep time: 4.120811173
+[STEP 188] FAB kilobyte spread across MPI nodes: [982334 ... 982334]
+
+STEP = 188 TIME = 1.037479911e-06 DT = 2.57330474e-10
+
+PLOTFILE: file = outputs/run_Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303/plt00188
+Write plotfile time = 0.393430242  seconds
+
+ Signalling a stop because NaNs detected in the Solution
+
+Ending run at 19:10:29 UTC on 2025-11-18.
+Run time = 751.7511344
+Run time w/o init = 739.8536257
+Unused ParmParse Variables:
+  [TOP]::pelec.eb_in_domain(nvals = 1)  :: [1]
+  [TOP]::eb2.build_type(nvals = 1)  :: [all]
+  [TOP]::eb2.max_coarsening_level(nvals = 1)  :: [0]
+  [TOP]::eb2.box_lo(nvals = 2)  :: [0.40, 0.03]
+  [TOP]::eb2.box_hi(nvals = 2)  :: [0.60, 0.09]
+  [TOP]::eb2.box_has_fluid_inside(nvals = 1)  :: [0]
+  [TOP]::eb2.box_rotation(nvals = 1)  :: [0]
+  [TOP]::eb2.box_rotation_axe(nvals = 1)  :: [2]
+  [TOP]::geo.xr(nvals = 1)  :: [0.70]
+
+AMReX (463bdf493cd7) finalized
+
+============================================================
+RDE OPTIMIZATION RUN: Z0p10392999587627219_X0p39542144251447003_H0p20033133504952091_W0p17048285485673303
+============================================================
+
+Finished job at Tue Nov 18 12:10:30 MST 2025

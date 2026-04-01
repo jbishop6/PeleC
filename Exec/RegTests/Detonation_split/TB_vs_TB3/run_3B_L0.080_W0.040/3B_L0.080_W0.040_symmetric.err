@@ -1,0 +1,12 @@
++ cd /home/jbishop6/PeleC/Exec/RegTests/Detonation_split/TB_vs_TB3/run_3B_L0.080_W0.040
++ export OMP_NUM_THREADS=1
++ OMP_NUM_THREADS=1
+++ hostname
+++ pwd
++ echo 'Job 44057 running on c016 in /home/jbishop6/PeleC/Exec/RegTests/Detonation_split/TB_vs_TB3/run_3B_L0.080_W0.040'
++ echo 'MPI ranks: 16, OMP threads: 1'
++ date
++ echo 'Launching ./PeleC2d.gnu.MPI.ex input_detonation_three_branch.inp'
++ mpirun -np 16 ./PeleC2d.gnu.MPI.ex input_detonation_three_branch.inp
+++ date
++ echo 'Job 44057 finished at Thu Mar 26 19:58:06 MDT 2026'

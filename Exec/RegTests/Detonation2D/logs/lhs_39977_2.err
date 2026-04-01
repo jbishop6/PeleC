@@ -1,0 +1,15 @@
+[DEBUG] Python script started
+[DEBUG] Absolute output path: /mmfs1/scratch/jbishop6/PeleC/Exec/RegTests/Detonation2D/outputs_run2/run_Z0p14230292722296242_X0p43315184735160406_H0p1816322735290238_W0p09061882161067422
+[DEBUG] Modified /tmp/pelec_run_pb6z72pk/temp_input_6e694e33.inp: 136 -> 136 lines
+[DEBUG] First 10 lines of modified file:
+  1: # ------------------ INPUTS TO MAIN PROGRAM -------------------
+  2: max_step = 100000000
+  3: stop_time = 2.7e-6
+  4: cvode.dt_min = 1e-18
+  5: ode.rtol = 1e-5
+  6: ode.atol = 1e-4
+  7: pelec.fixed_dt = 1e-10
+  8: 
+  9: # ------------------ GEOMETRY (2D) -------------------
+  10: geometry.is_periodic = 0 0
+slurmstepd: error: *** JOB 39987 ON c006 CANCELLED AT 2025-12-01T22:55:59 ***

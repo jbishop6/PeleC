@@ -1,0 +1,17 @@
+THRUST ANALYSIS SUMMARY
+========================================
+
+Geometry Parameters:
+  Z = None
+  X = None
+  H = None
+  W = None
+
+Thrust Statistics:
+  Average:  144.257083 N
+  Std Dev:  155.611798 N
+  Maximum:  512.139469 N
+  Minimum:  0.000000 N
+  CV:       107.87%
+
+Number of samples: 42

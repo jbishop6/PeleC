@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/home/jbishop6/PeleC/Exec/RegTests/Detonation2D/run_lhs_sample.py", line 6, in <module>
+    from optimize_geometry import run_pelec_and_extract_thrust
+  File "/home/jbishop6/PeleC/Exec/RegTests/Detonation2D/optimize_geometry.py", line 550
+    try:
+IndentationError: unexpected indent

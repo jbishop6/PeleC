@@ -3,7 +3,7 @@ namespace amrex {
 
 const char* buildInfoGetBuildDate() {
 
-  static const char BUILD_DATE[] = "2025-08-04 13:52:01.726585";
+  static const char BUILD_DATE[] = "2026-03-31 20:41:01.727954";
   return BUILD_DATE;
 }
 
@@ -15,7 +15,7 @@ const char* buildInfoGetBuildDir() {
 
 const char* buildInfoGetBuildMachine() {
 
-  static const char BUILD_MACHINE[] = "Linux c019 4.18.0-240.el8.x86_64 #1 SMP Wed Sep 23 05:13:10 EDT 2020 x86_64 x86_64 x86_64 GNU/Linux";
+  static const char BUILD_MACHINE[] = "Linux l001 4.18.0-240.el8.x86_64 #1 SMP Wed Sep 23 05:13:10 EDT 2020 x86_64 x86_64 x86_64 GNU/Linux";
   return BUILD_MACHINE;
 }
 
@@ -87,6 +87,12 @@ const char* buildInfoGetLibraries() {
   return libraries;
 }
 
+const char* buildInfoGetMakeFlags() {
+
+  static const char make_flags[] = "";
+  return make_flags;
+}
+
 const char* buildInfoGetAux(int i) {
 
   //static const char AUX1[] = "${AUX[1]}";
@@ -140,10 +146,10 @@ const char* buildInfoGetModuleVal(int i) {
 const char* buildInfoGetGitHash(int i) {
 
   //static const char HASH1[] = "${GIT[1]}";
-  static const char HASH1[] = "v25.04-94-g698bb40-dirty";
-  static const char HASH2[] = "463bdf493";
-  static const char HASH3[] = "29401b65";
-  static const char HASH4[] = "";
+  static const char HASH1[] = "v25.04-845-g15c060f6-dirty";
+  static const char HASH2[] = "26.01-40-gbac2457569";
+  static const char HASH3[] = "v1.0.0";
+  static const char HASH4[] = "v7.0.0-126-g0eff39663";
 
   static const char EMPT[] = "";
 

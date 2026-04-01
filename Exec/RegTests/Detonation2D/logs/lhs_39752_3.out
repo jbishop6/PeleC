@@ -1,0 +1,43 @@
+Initializing AMReX (463bdf493cd7)...
+Initializing SUNDIALS with 1 threads...
+SUNDIALS initialized.
+AMReX (463bdf493cd7) initialized
+
+Starting run at 23:45:26 UTC on 2025-11-30.
+Successfully read inputs file ... 
+
+PeleC git hash: v23.03-503-gc97e544-dirty
+AMReX git hash: 463bdf493
+PelePhysics git hash: v23.03-119-g29401b65-dirty
+
+0 Advected Variables: 
+
+14 Species: 
+H2  H  AR  N2  HE  O  OH  HCO  HO2  H2O  CO  O2  H2O2  CO2  
+0 Auxiliary Variables: 
+
+Initializing EB2
+Creating Geometry instance: threebranch
+
+=== THREE-BRANCH GEOMETRY ===
+Separator thickness H: 0.1894453906
+Channel height L: 0.0390625 (constant)
+Total system height: 0.2675703906
+Upper channel: y=[1.094722695, 1.133785195], height=0.0390625
+Separator: y=[0.9052773047, 1.094722695], thickness=0.1894453906
+Lower channel: y=[0.8662148047, 0.9052773047], height=0.0390625
+xs=0.3, xr=0.6885929909, X=0.3885929909
+cL=0.05, cR=0.05
+Blue separator: x=[0.35, 0.6385929909]
+Third branch: x=[0.6385929909, 0.7189029534], y=[0.7631945646, 0.8662148047]
+=============================
+
+[EB] ThreeBranch: H controls separator only, L stays constant
+Successfully read inputs file ... 
+Starting to call amrex_probinit ... 
+Successfully run amrex_probinit
+Initializing EB2 structs
+Using quadratic stencil for the EB gradient
+Creating ReactorBase instance: ReactorCvode
+Initializing CVODE:
+Initializing the data at level 0

@@ -41,3 +41,10 @@ Docs/sphinx/doctrees/
 Docs/sphinx_doc/
 
 __pycache__
+Exec/RegTests/Detonation2D/outputs/
+*.zip
+build/
+build_dir/
+SodRun/
+Submodules/PelePhysics_broken/
+Submodules/PelePhysics_old/

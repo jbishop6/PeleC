@@ -1,0 +1,28 @@
+[DEBUG] Python script started
+[DEBUG] Modified /tmp/pelec_run_kspfmffb/temp_input_ef3bb70c.inp: 126 -> 126 lines
+[DEBUG] First 10 lines of modified file:
+  1: # ------------------ INPUTS TO MAIN PROGRAM -------------------
+  2: max_step = 10000
+  3: stop_time = 2.7e-6
+  4: 
+  5: # ------------------ GEOMETRY (2D) -------------------
+  6: geometry.is_periodic = 0 0
+  7: geometry.coord_sys   = 0
+  8: geometry.prob_lo     = 0.0  0.0
+  9: geometry.prob_hi     = 1.0  2.0   #0.125
+  10: amr.n_cell           = 512  1024 #64
+[ERROR][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:1474][CVode] At t = 5.20778942170589e-09, mxstep steps taken before reaching tout.
+[ERROR][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:3739][cvHandleFailure] At t = 0 and h = 7.48775192728778e-19, the corrector convergence test failed repeatedly or with |h| = hmin.
+[ERROR][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:3739][cvHandleFailure] At t = 0 and h = 7.48775192728778e-19, the corrector convergence test failed repeatedly or with |h| = hmin.
+[ERROR][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:3739][cvHandleFailure] At t = 0 and h = 7.48775192728778e-19, the corrector convergence test failed repeatedly or with |h| = hmin.
+[ERROR][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:3739][cvHandleFailure] At t = 0 and h = 7.48775192728778e-19, the corrector convergence test failed repeatedly or with |h| = hmin.
+[ERROR][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:3739][cvHandleFailure] At t = 0 and h = 7.48775192728778e-19, the corrector convergence test failed repeatedly or with |h| = hmin.
+[ERROR][rank 0][/home/conda/feedstock_root/build_artifacts/sundials-split_1750742389890/work/sundials/src/cvode/cvode.c:3739][cvHandleFailure] At t = 0 and h = 7.48775192728778e-19, the corrector convergence test failed repeatedly or with |h| = hmin.
+Traceback (most recent call last):
+  File "/home/jbishop6/PeleC/Exec/RegTests/Detonation2D/run_sample_from_file.py", line 10, in <module>
+    run_pelec_and_extract_thrust(
+  File "/home/jbishop6/PeleC/Exec/RegTests/Detonation2D/optimize_geometry.py", line 366, in run_pelec_and_extract_thrust
+    plotfiles = get_all_plotfiles(output_dir)
+  File "/home/jbishop6/PeleC/Exec/RegTests/Detonation2D/optimize_geometry.py", line 135, in get_all_plotfiles
+    raise RuntimeError(f"No plotfiles found in {base_dir}.")
+RuntimeError: No plotfiles found in outputs/run_Z0p3969973100587551_X0p3708326425078265_H0p16083390632129538_W0p24149312837677084.

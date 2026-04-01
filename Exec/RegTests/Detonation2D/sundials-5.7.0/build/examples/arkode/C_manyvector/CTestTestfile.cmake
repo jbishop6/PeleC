@@ -1,0 +1,6 @@
+# CMake generated Testfile for 
+# Source directory: /home/jbishop6/PeleC/Exec/RegTests/Detonation1D/sundials-5.7.0/examples/arkode/C_manyvector
+# Build directory: /home/jbishop6/PeleC/Exec/RegTests/Detonation1D/sundials-5.7.0/build/examples/arkode/C_manyvector
+# 
+# This file includes the relevant testing commands required for 
+# testing this directory and lists subdirectories to be tested as well.

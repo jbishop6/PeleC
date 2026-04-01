@@ -1,0 +1,1 @@
+/usr/bin/cc -O3 -DNDEBUG CMakeFiles/test_nvector_serial.dir/test_nvector_serial.c.o CMakeFiles/test_nvector_serial.dir/__/test_nvector.c.o -o test_nvector_serial  -Wl,-rpath,/home/jbishop6/PeleC/Exec/RegTests/Detonation1D/sundials-5.7.0/build/src/nvector/serial ../../../src/nvector/serial/libsundials_nvecserial.so.5.7.0 -lm /usr/lib64/librt.so 

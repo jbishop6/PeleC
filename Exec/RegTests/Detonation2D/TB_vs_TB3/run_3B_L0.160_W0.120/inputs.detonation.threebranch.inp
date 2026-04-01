@@ -1,0 +1,107 @@
+# ------------------ INPUTS TO MAIN PROGRAM -------------------
+max_step = 100000000
+stop_time = 4e-6
+cvode.dt_min = 1e-18
+ode.rtol = 1e-5
+ode.atol = 1e-4
+pelec.fixed_dt = 1e-10
+
+# ------------------ GEOMETRY (2D) -------------------
+geometry.is_periodic = 0 0
+geometry.coord_sys   = 0
+geometry.prob_lo     = 0.0  0.0
+geometry.prob_hi     = 1.0  2.0   #0.125
+geometry.use_h = 0
+amr.n_cell           = 512  1024 #64
+
+# ------------------ BOUNDARY CONDITIONS -------------------
+pelec.lo_bc = "SlipWall" "SlipWall"
+pelec.hi_bc = "FOExtrap" "SlipWall"
+
+# ------------------ PHYSICS -------------------
+pelec.do_hydro     = 1
+pelec.diffuse_vel  = 0
+pelec.diffuse_temp = 0
+pelec.diffuse_spec = 0
+
+# -------------------PROB SPECIFIC -------------------
+prob.idir  = 1
+prob.frac  = 0.5
+prob.T_l   = 3000.0
+
+prob.p_l   = 1e7
+prob.u_l   = 1e4
+prob.rho_l = 9.6e-4
+prob.p_r   = 1e6
+prob.u_r   = 0.0
+prob.rho_r = 1.2e-4
+
+prob.left_gas  = N2
+prob.right_gas = He
+
+# ------------------ TIME STEP CONTROL -------------------
+pelec.cfl         = 0.9
+pelec.init_shrink = 0.1
+pelec.change_max  = 1.05
+pelec.dt_cutoff   = 5.e-20
+
+# ------------------ DIAGNOSTICS & VERBOSITY -------------------
+pelec.v      = 1
+amr.v        = 1
+amr.data_log = datlog
+
+# ------------------ REFINEMENT / GRIDS -------------------
+amr.max_level       = 0
+amr.blocking_factor = 8
+amr.max_grid_size   = 128
+amr.n_error_buf     = 2
+
+# ------------------ CHECKPOINT FILES -------------------
+amr.checkpoint_files_output = 0
+amr.check_file = chk
+amr.check_int  = 100
+
+# ------------------ PLOTFILES -------------------
+amr.plot_files_output = 1
+amr.plot_file = /home/jbishop6/PeleC/Exec/RegTests/Detonation2D/TB_vs_TB3/run_3B_L0.160_W0.120/plt
+amr.plot_int          = 1000
+#amr.plot_int = -1
+
+# put vfrac in plot_vars (not derive) so it is guaranteed to appear
+amr.plot_vars         = vfrac density Temp
+amr.derive_plot_vars  = pressure x_velocity y_velocity magvel magvort
+
+# ------------------ EMBEDDED BOUNDARY (EB) -------------------
+pelec.eb_in_domain = 1
+
+eb2.build_type = all
+eb2.max_coarsening_level = 0
+eb2.geom_type = threebranch
+
+# same params the rotated_box uses 
+eb2.box_lo = 0.40 0.03
+eb2.box_hi = 0.60 0.09
+eb2.box_has_fluid_inside = 0
+eb2.box_rotation = 0
+eb2.box_rotation_axe = 2
+
+# geo.W = 0.12
+geo.L  = 0.0390625
+
+# Box separating the upper and lower channel 
+geo.xs = 0.30 # left edge of box
+geo.xr = 0.70 # right edge of box
+geo.mid = 0.02 # thickness of box
+
+# NEW: retract mid-wall from each end to connect branches
+geo.cL = 0.05    # left-side connection length
+geo.cR = 0.05    # right-side connection length
+
+# Adjustable parameters of the system
+geo.Z = 0.16 # Length of third branch
+#geo.X = 0.4 # Length of channel (circumference of RDE)
+#geo.H = 0.15 #Total height from top of upper branch to bottom of lower branch
+geo.W = 0.12 # Thickness of the third branch
+geo.H = 0.188092301
+geo.X = 0.326962268
+

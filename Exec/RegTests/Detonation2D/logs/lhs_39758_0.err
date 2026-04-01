@@ -1,0 +1,3 @@
+[DEBUG] Python script started
+[DEBUG] Absolute output path: /mmfs1/scratch/jbishop6/PeleC/Exec/RegTests/Detonation2D/outputs/run_Z0p08306265778065111_X0p3246914290403743_H0p1105751586535463_W0p11619802796751541
+slurmstepd: error: *** JOB 39759 ON c005 CANCELLED AT 2025-11-30T16:50:45 ***
