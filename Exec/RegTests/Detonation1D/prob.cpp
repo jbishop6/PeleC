@@ -54,7 +54,7 @@ void amrex_probinit(const int* /*init*/,
     pp.query("p_r",   P->p_r);
 
     // gas names -> species IDs used by prob.H
-    std::string leftGas = "N2", rightGas = "HE";
+    std::string leftGas = "N2", rightGas = "N2";
     pp.query("left_gas",  leftGas);
     pp.query("right_gas", rightGas);
     P->left_gas_id  = species_id_from_name(leftGas);
