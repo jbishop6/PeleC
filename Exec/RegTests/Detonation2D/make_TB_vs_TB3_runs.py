@@ -7,8 +7,8 @@ import subprocess
 
 # --- user choices -------------------------------------------------
 # geometric sweep for third branch
-lengths = [0.08, 0.12, 0.16]   # Z values (third-branch length)
-widths  = [0.04, 0.08, 0.1, 0.12, 0.14, 0.16]         # W values (third-branch width)
+lengths = [0.18, 0.2, 0.22]   # Z values (third-branch length)
+widths  = [0.18, 0.20, 0.22, 0.24, 0.26, 0.28]         # W values (third-branch width)
 
 # Base directory where all runs will be created
 base_dir = "TB_vs_TB3"
