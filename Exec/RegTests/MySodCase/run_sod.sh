@@ -22,7 +22,7 @@ OUTDIR="Sod_outputs"
 mkdir -p "$OUTDIR"
 
 # === Run PeleC with two-branch input file ===
-./PeleC2d.gnu.MPI.ex mysod.inp
+./PeleC3d.gnu.MPI.ex mysod.inp
 
 # === Move plotfiles to output folder ===
 mv plt* "$OUTDIR"
