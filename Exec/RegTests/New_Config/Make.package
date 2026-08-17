@@ -1,0 +1,5 @@
+# Case sources/headers
+CEXE_sources += prob.cpp
+CEXE_sources += Geometry.cpp
+CEXE_headers += prob.H
+CEXE_headers += prob_parm.H
