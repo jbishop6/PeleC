@@ -1,11 +1,14 @@
 # ------------------ INPUTS TO MAIN PROGRAM -------------------
-max_step = 100000000
-stop_time = 4e-6
+#max_step = 100000000
+#stop_time = 4e-6
 cvode.dt_min = 1e-18
 ode.rtol = 1e-5
 ode.atol = 1e-4
-pelec.fixed_dt = 1e-10
+#pelec.fixed_dt = 1e-10
+max_step = 10
+stop_time = 1e-10
 
+pelec.fixed_dt = 1e-11
 # ------------------ GEOMETRY (2D) -------------------
 geometry.is_periodic = 0 0
 geometry.coord_sys   = 0
