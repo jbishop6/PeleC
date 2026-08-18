@@ -5,6 +5,7 @@
 #include <AMReX_EB2.H>
 #include <AMReX_EB2_IF.H>
 #include <AMReX_EB2_IF_Union.H>
+#include <AMReX_EB2_IF_Intersection.H>
 #include <AMReX_EB2_GeometryShop.H>
 #include <AMReX_ParmParse.H>
 #include <AMReX_Print.H>
@@ -606,6 +607,120 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
 
   auto gshop = makeShop(walls);
   Build(gshop, geom, max_coarsening_level, max_coarsening_level, 128, false);
+}
+
+void
+TwoBranch_NewConfig::build(const amrex::Geometry& geom, const int max_coarsening_level)
+{
+  // --- Read parameters (mirror the prefix convention your Ramp/Combustor
+  //     use in Geometry.cpp -- adjust "twobranch." below if theirs differs)
+  amrex::ParmParse pp("twobranch");
+
+  amrex::Real X = 0.10;   // total primary channel length
+  amrex::Real Y = 0.03;   // secondary branch horizontal run
+  amrex::Real L = 0.02;   // secondary branch vertical rise
+  amrex::Real H = 0.01;   // primary channel height
+  amrex::Real W = 0.01;   // channel depth (z, for 3D)
+  amrex::Real branch_x0 = 0.03; // x-location where branch departs
+  amrex::Real wall_t = 0.002;   // wall/duct thickness for the branch legs
+
+  pp.query("X", X);
+  pp.query("Y", Y);
+  pp.query("L", L);
+  pp.query("H", H);
+  pp.query("W", W);
+  pp.query("branch_x0", branch_x0);
+  pp.query("wall_thickness", wall_t);
+
+  // --- Primary channel: fluid box running the full length in x
+  amrex::EB2::BoxIF primary(
+      {AMREX_D_DECL(0.0, 0.0, 0.0)},
+      {AMREX_D_DECL(X, H, W)},
+      /*inside=*/true);
+
+  // --- Secondary branch: rises L above the primary channel roof,
+  //     runs Y horizontally, forming the loop that departs/rejoins
+  amrex::EB2::BoxIF branch_riser(
+      {AMREX_D_DECL(branch_x0, H, 0.0)},
+      {AMREX_D_DECL(branch_x0 + wall_t, H + L, W)},
+      true);
+
+  amrex::EB2::BoxIF branch_top(
+      {AMREX_D_DECL(branch_x0, H + L - wall_t, 0.0)},
+      {AMREX_D_DECL(branch_x0 + Y, H + L, W)},
+      true);
+
+  amrex::EB2::BoxIF branch_return(
+      {AMREX_D_DECL(branch_x0 + Y - wall_t, H, 0.0)},
+      {AMREX_D_DECL(branch_x0 + Y, H + L, W)},
+      true);
+
+  auto twobranch_geom = amrex::EB2::makeUnion(
+      primary, branch_riser, branch_top, branch_return);
+
+  auto gshop = amrex::EB2::makeShop(twobranch_geom);
+  amrex::EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level);
+}
+
+void
+ThreeBranch_NewConfig::build(const amrex::Geometry& geom, const int max_coarsening_level)
+{
+  amrex::ParmParse pp("threebranch");
+
+  amrex::Real L = 0.02;   // vertical leg length (secondary branch)
+  amrex::Real W = 0.01;   // channel depth
+  amrex::Real H = 0.01;   // primary channel height
+  amrex::Real Y = 0.03;   // secondary branch horizontal run
+  amrex::Real Z = 0.025;  // tertiary branch extent (drop from junction)
+  amrex::Real X = 0.10;   // total primary channel length
+  amrex::Real branch_x0 = 0.03;   // secondary branch departure point
+  amrex::Real tertiary_x0 = 0.06; // tertiary branch junction location
+  amrex::Real wall_t = 0.002;
+
+  pp.query("L", L);
+  pp.query("W", W);
+  pp.query("H", H);
+  pp.query("Y", Y);
+  pp.query("Z", Z);
+  pp.query("X", X);
+  pp.query("branch_x0", branch_x0);
+  pp.query("tertiary_x0", tertiary_x0);
+  pp.query("wall_thickness", wall_t);
+
+  // --- Primary channel (same as TwoBranch)
+  amrex::EB2::BoxIF primary(
+      {AMREX_D_DECL(0.0, 0.0, 0.0)},
+      {AMREX_D_DECL(X, H, W)},
+      true);
+
+  // --- Secondary branch (same loop as TwoBranch)
+  amrex::EB2::BoxIF branch_riser(
+      {AMREX_D_DECL(branch_x0, H, 0.0)},
+      {AMREX_D_DECL(branch_x0 + wall_t, H + L, W)},
+      true);
+
+  amrex::EB2::BoxIF branch_top(
+      {AMREX_D_DECL(branch_x0, H + L - wall_t, 0.0)},
+      {AMREX_D_DECL(branch_x0 + Y, H + L, W)},
+      true);
+
+  amrex::EB2::BoxIF branch_return(
+      {AMREX_D_DECL(branch_x0 + Y - wall_t, H, 0.0)},
+      {AMREX_D_DECL(branch_x0 + Y, H + L, W)},
+      true);
+
+  // --- Tertiary branch: perpendicular branch dropping Z below the
+  //     primary channel at the cross-junction (per Fig. 4.9 description)
+  amrex::EB2::BoxIF tertiary(
+      {AMREX_D_DECL(tertiary_x0, -Z, 0.0)},
+      {AMREX_D_DECL(tertiary_x0 + wall_t * 5.0, 0.0, W)},
+      true);
+
+  auto threebranch_geom = amrex::EB2::makeUnion(
+      primary, branch_riser, branch_top, branch_return, tertiary);
+
+  auto gshop = amrex::EB2::makeShop(threebranch_geom);
+  amrex::EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level);
 }
 
 void
