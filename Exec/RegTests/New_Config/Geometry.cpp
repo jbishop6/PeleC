@@ -619,21 +619,30 @@ TwoBranch_NewConfig::build(
 
     ParmParse pp("twobranch_newconfig");
 
-    // ---- Geometry parameters ----
-    Real X   = 0.10;   // overall horizontal length, point 1 -> point 5
-    Real Y   = 0.06;   // inner horizontal branch length
-    Real H   = 0.03;   // upper-channel height
-    Real L   = 0.02;   // lower-channel height
+    // -------------------------------
+    // TIMING MODEL PARAMETERS
+    // -------------------------------
 
-    Real wall_t = 0.005;   // thickness of solid separator/walls
-    Real x0     = 0.02;    // left edge of raised separator
+    Real X = 0.10;       // point 1 -> point 5
+    Real Y = 0.060;      // inner horizontal length
+    Real H = 0.030;      // vertical separation on right
+    Real L = 0.015;      // lower-channel height
+
+    Real wall_t = 0.004;
+
+    // Horizontal location of left connection
+    Real x_left = 0.020;
+
+    // Width of the right-hand step / connector
+    Real step_w = 0.012;
 
     pp.query("X", X);
     pp.query("Y", Y);
     pp.query("H", H);
     pp.query("L", L);
     pp.query("wall_thickness", wall_t);
-    pp.query("x0", x0);
+    pp.query("x_left", x_left);
+    pp.query("step_width", step_w);
 
     const RealBox& rb = geom.ProbDomain();
 
@@ -642,24 +651,31 @@ TwoBranch_NewConfig::build(
     const Real ylo = rb.lo(1);
     const Real yhi = rb.hi(1);
 
-    // ------------------------------------------------------
-    // Place the horizontal separator near the center
-    // ------------------------------------------------------
+    // --------------------------------------------------
+    // Reference positions
+    // --------------------------------------------------
 
-    const Real y_sep_lo = 0.5 * (ylo + yhi) - 0.5 * wall_t;
-    const Real y_sep_hi = y_sep_lo + wall_t;
+    // Lower branch outer wall
+    const Real y_bottom = ylo + 0.020;
 
-    // Raised "U" separator
-    const Real x_left  = x0;
+    // Lower branch upper wall
+    const Real y_lower_top = y_bottom + L;
+
+    // Top branch outer wall
+    const Real y_top = y_lower_top + H;
+
+    // Right side of the interior branch
     const Real x_right = x_left + Y;
 
-    const Real y_leg_bottom = y_sep_hi;
-    const Real y_leg_top    = y_leg_bottom + H;
+    // Point 4 is slightly left of the final right connection
+    const Real x_step = x_right - step_w;
 
-    // Helper: solid box
-    auto solidBox = [](
-        Real xa, Real ya,
-        Real xb, Real yb)
+    // --------------------------------------------------
+    // Helper: SOLID rectangle
+    // --------------------------------------------------
+
+    auto solidBox =
+      [] (Real xa, Real ya, Real xb, Real yb)
     {
         Array<Real, AMREX_SPACEDIM> lo{
             AMREX_D_DECL(
@@ -676,52 +692,103 @@ TwoBranch_NewConfig::build(
         return BoxIF(lo, hi, false);
     };
 
-    // ------------------------------------------------------
-    // RED SOLID GEOMETRY
-    // ------------------------------------------------------
+    // ==================================================
+    // SOLID WALLS FROM TIMING MODEL
+    // ==================================================
 
-    // Horizontal separator across the whole domain
-    auto separator =
-        solidBox(xlo, y_sep_lo,
-                 xhi, y_sep_hi);
+    // ---- TOP OUTER WALL ----
+    auto top_wall =
+        solidBox(
+            xlo,
+            y_top,
+            xhi,
+            yhi);
 
-    // Left vertical leg of raised branch
-    auto left_leg =
-        solidBox(x_left,
-                 y_leg_bottom,
-                 x_left + wall_t,
-                 y_leg_top);
+    // ---- BOTTOM OUTER WALL ----
+    auto bottom_wall =
+        solidBox(
+            xlo,
+            ylo,
+            xhi,
+            y_bottom);
 
-    // Top horizontal part
-    auto upper_wall =
-        solidBox(x_left,
-                 y_leg_top - wall_t,
-                 x_right,
-                 y_leg_top);
+    // --------------------------------------------------
+    // Interior separator
+    //
+    // This creates the stepped shape visible in your
+    // timing model.
+    // --------------------------------------------------
 
-    // Right vertical leg
-    auto right_leg =
-        solidBox(x_right - wall_t,
-                 y_leg_bottom,
-                 x_right,
-                 y_leg_top);
+    // Upper interior horizontal wall
+    auto upper_inner =
+        solidBox(
+            x_left,
+            y_top - H + L,
+            x_right,
+            y_top - H + L + wall_t);
 
-    // Union all SOLID pieces
-    auto u1 = makeUnion(separator, left_leg);
-    auto u2 = makeUnion(u1, upper_wall);
-    auto walls = makeUnion(u2, right_leg);
+    // Left vertical interior wall
+    auto left_inner =
+        solidBox(
+            x_left,
+            y_lower_top,
+            x_left + wall_t,
+            y_top - H + L + wall_t);
 
-    Print() << "\n=== TWO-BRANCH NEW CONFIG ===\n";
+    // Lower interior horizontal wall
+    auto lower_inner =
+        solidBox(
+            x_left,
+            y_lower_top,
+            x_step,
+            y_lower_top + wall_t);
+
+    // Point-4 downward step
+    auto step_vertical =
+        solidBox(
+            x_step,
+            y_lower_top,
+            x_step + wall_t,
+            y_top - H + L + wall_t);
+
+    // Short ledge from point 4 toward right connection
+    auto step_horizontal =
+        solidBox(
+            x_step,
+            y_top - H,
+            x_right,
+            y_top - H + wall_t);
+
+    // --------------------------------------------------
+    // Union the SOLID pieces
+    // --------------------------------------------------
+
+    auto u1 = makeUnion(top_wall, bottom_wall);
+    auto u2 = makeUnion(u1, upper_inner);
+    auto u3 = makeUnion(u2, left_inner);
+    auto u4 = makeUnion(u3, lower_inner);
+    auto u5 = makeUnion(u4, step_vertical);
+    auto walls = makeUnion(u5, step_horizontal);
+
+    // --------------------------------------------------
+    // Diagnostics
+    // --------------------------------------------------
+
+    Print() << "\n=== TWO-BRANCH TIMING GEOMETRY ===\n";
     Print() << "X = " << X << "\n";
     Print() << "Y = " << Y << "\n";
     Print() << "H = " << H << "\n";
     Print() << "L = " << L << "\n";
-    Print() << "wall thickness = " << wall_t << "\n";
+
     Print() << "x_left  = " << x_left << "\n";
+    Print() << "x_step  = " << x_step << "\n";
     Print() << "x_right = " << x_right << "\n";
-    Print() << "separator y = [" << y_sep_lo
-            << ", " << y_sep_hi << "]\n";
-    Print() << "=============================\n\n";
+
+    Print() << "y_bottom    = " << y_bottom << "\n";
+    Print() << "y_lower_top = " << y_lower_top << "\n";
+    Print() << "y_top       = " << y_top << "\n";
+
+    Print() << "==================================\n\n";
 
     auto gshop = makeShop(walls);
 
