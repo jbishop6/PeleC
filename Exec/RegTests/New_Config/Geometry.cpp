@@ -619,30 +619,48 @@ TwoBranch_NewConfig::build(
 
     ParmParse pp("twobranch_newconfig");
 
-    // -------------------------------
+    // ==========================================================
     // TIMING MODEL PARAMETERS
-    // -------------------------------
+    // ==========================================================
 
-    Real X = 0.10;       // point 1 -> point 5
-    Real Y = 0.060;      // inner horizontal length
-    Real H = 0.030;      // vertical separation on right
-    Real L = 0.015;      // lower-channel height
+    Real X = 0.10;          // point 1 -> point 5
+    Real Y = 0.060;         // inner lower horizontal run -> point 4
+    Real H = 0.030;         // vertical distance from point 5 to lower shelf
+    Real L = 0.015;         // point 2/3 vertical drop
 
-    Real wall_t = 0.004;
+    Real wall_t = 0.002;    // physical wall thickness
 
-    // Horizontal location of left connection
-    Real x_left = 0.020;
+    // Positioning
+    Real x1 = 0.010;        // point 1 x-location
+    Real y2 = 0.020;        // point 2/3 lower level
 
-    // Width of the right-hand step / connector
-    Real step_w = 0.012;
+    // Horizontal offsets visible in your timing sketch
+    Real outer_inset = 0.010;   // point 2 relative to point 1
+    Real inner_inset = 0.010;   // inner-left wall relative to point 2
+    Real step_width  = 0.012;   // point 4 -> inner-right wall
+
+    // Vertical placement of inner passage
+    Real upper_gap   = 0.008;
+    Real lower_gap   = 0.006;
+    Real step_height = 0.010;
 
     pp.query("X", X);
     pp.query("Y", Y);
     pp.query("H", H);
     pp.query("L", L);
+
     pp.query("wall_thickness", wall_t);
-    pp.query("x_left", x_left);
-    pp.query("step_width", step_w);
+
+    pp.query("x1", x1);
+    pp.query("y2", y2);
+
+    pp.query("outer_inset", outer_inset);
+    pp.query("inner_inset", inner_inset);
+    pp.query("step_width", step_width);
+
+    pp.query("upper_gap", upper_gap);
+    pp.query("lower_gap", lower_gap);
+    pp.query("step_height", step_height);
 
     const RealBox& rb = geom.ProbDomain();
 
@@ -651,28 +669,42 @@ TwoBranch_NewConfig::build(
     const Real ylo = rb.lo(1);
     const Real yhi = rb.hi(1);
 
-    // --------------------------------------------------
-    // Reference positions
-    // --------------------------------------------------
+    // ==========================================================
+    // POINT LOCATIONS FROM TIMING MODEL
+    // ==========================================================
 
-    // Lower branch outer wall
-    const Real y_bottom = ylo + 0.020;
+    // Point 5
+    const Real x5 = x1 + X;
 
-    // Lower branch upper wall
-    const Real y_lower_top = y_bottom + L;
+    // Points 2 and 3
+    const Real x2 = x1 + outer_inset;
+    const Real x3 = x5 - outer_inset;
 
-    // Top branch outer wall
-    const Real y_top = y_lower_top + H;
+    // Lower shelf level on left/right
+    const Real y_shelf = y2 + L;
 
-    // Right side of the interior branch
-    const Real x_right = x_left + Y;
+    // Top wall level
+    const Real y_top = y_shelf + H;
 
-    // Point 4 is slightly left of the final right connection
-    const Real x_step = x_right - step_w;
+    // Inner left vertical
+    const Real xi_left = x2 + inner_inset;
 
-    // --------------------------------------------------
-    // Helper: SOLID rectangle
-    // --------------------------------------------------
+    // Point 4 follows directly from Y
+    const Real x4 = xi_left + Y;
+
+    // Inner right vertical
+    const Real xi_right = x4 + step_width;
+
+    // Inner vertical levels
+    const Real yi_top = y_top - upper_gap;
+    const Real yi_low = y2 + lower_gap;
+
+    // Height of little point-4 step
+    const Real yi_step = yi_low + step_height;
+
+    // ==========================================================
+    // SOLID BOX HELPER
+    // ==========================================================
 
     auto solidBox =
       [] (Real xa, Real ya, Real xb, Real yb)
@@ -689,106 +721,159 @@ TwoBranch_NewConfig::build(
                 std::max(ya, yb),
                 0.0)};
 
+        // false = inside of box is covered/solid
         return BoxIF(lo, hi, false);
     };
 
-    // ==================================================
-    // SOLID WALLS FROM TIMING MODEL
-    // ==================================================
+    // ==========================================================
+    // OUTER WALL -- matches black outer path in timing model
+    // ==========================================================
 
-    // ---- TOP OUTER WALL ----
-    auto top_wall =
+    // Top wall, point 1 -> point 5 and across domain
+    auto outer_top =
         solidBox(
             xlo,
             y_top,
             xhi,
-            yhi);
+            y_top + wall_t);
 
-    // ---- BOTTOM OUTER WALL ----
-    auto bottom_wall =
+    // Lower-left horizontal wall
+    auto outer_lower_left =
         solidBox(
             xlo,
-            ylo,
+            y_shelf,
+            x2 + wall_t,
+            y_shelf + wall_t);
+
+    // Point 2 vertical drop
+    auto outer_drop_left =
+        solidBox(
+            x2,
+            y2,
+            x2 + wall_t,
+            y_shelf + wall_t);
+
+    // Point 2 -> point 3 bottom horizontal
+    auto outer_bottom =
+        solidBox(
+            x2,
+            y2,
+            x3 + wall_t,
+            y2 + wall_t);
+
+    // Point 3 vertical rise
+    auto outer_rise_right =
+        solidBox(
+            x3,
+            y2,
+            x3 + wall_t,
+            y_shelf + wall_t);
+
+    // Lower-right horizontal wall
+    auto outer_lower_right =
+        solidBox(
+            x3,
+            y_shelf,
             xhi,
-            y_bottom);
+            y_shelf + wall_t);
 
-    // --------------------------------------------------
-    // Interior separator
-    //
-    // This creates the stepped shape visible in your
-    // timing model.
-    // --------------------------------------------------
+    // ==========================================================
+    // INNER WALL -- follows your timing-model contour exactly
+    // ==========================================================
 
-    // Upper interior horizontal wall
-    auto upper_inner =
+    // Upper inner wall
+    auto inner_top =
         solidBox(
-            x_left,
-            y_top - H + L,
-            x_right,
-            y_top - H + L + wall_t);
+            xi_left,
+            yi_top,
+            xi_right + wall_t,
+            yi_top + wall_t);
 
-    // Left vertical interior wall
-    auto left_inner =
+    // Left vertical drop
+    auto inner_left =
         solidBox(
-            x_left,
-            y_lower_top,
-            x_left + wall_t,
-            y_top - H + L + wall_t);
+            xi_left,
+            yi_low,
+            xi_left + wall_t,
+            yi_top + wall_t);
 
-    // Lower interior horizontal wall
-    auto lower_inner =
+    // Orange Y section
+    auto inner_lower =
         solidBox(
-            x_left,
-            y_lower_top,
-            x_step,
-            y_lower_top + wall_t);
+            xi_left,
+            yi_low,
+            x4 + wall_t,
+            yi_low + wall_t);
 
-    // Point-4 downward step
-    auto step_vertical =
+    // Point 4 step upward
+    auto inner_step_vertical =
         solidBox(
-            x_step,
-            y_lower_top,
-            x_step + wall_t,
-            y_top - H + L + wall_t);
+            x4,
+            yi_low,
+            x4 + wall_t,
+            yi_step + wall_t);
 
-    // Short ledge from point 4 toward right connection
-    auto step_horizontal =
+    // Point 4 short horizontal ledge
+    auto inner_step_horizontal =
         solidBox(
-            x_step,
-            y_top - H,
-            x_right,
-            y_top - H + wall_t);
+            x4,
+            yi_step,
+            xi_right + wall_t,
+            yi_step + wall_t);
 
-    // --------------------------------------------------
-    // Union the SOLID pieces
-    // --------------------------------------------------
+    // Right inner vertical up toward point 5
+    auto inner_right =
+        solidBox(
+            xi_right,
+            yi_step,
+            xi_right + wall_t,
+            yi_top + wall_t);
 
-    auto u1 = makeUnion(top_wall, bottom_wall);
-    auto u2 = makeUnion(u1, upper_inner);
-    auto u3 = makeUnion(u2, left_inner);
-    auto u4 = makeUnion(u3, lower_inner);
-    auto u5 = makeUnion(u4, step_vertical);
-    auto walls = makeUnion(u5, step_horizontal);
+    // ==========================================================
+    // UNION ALL SOLID WALL SEGMENTS
+    // ==========================================================
 
-    // --------------------------------------------------
-    // Diagnostics
-    // --------------------------------------------------
+    auto u1  = makeUnion(outer_top, outer_lower_left);
+    auto u2  = makeUnion(u1, outer_drop_left);
+    auto u3  = makeUnion(u2, outer_bottom);
+    auto u4  = makeUnion(u3, outer_rise_right);
+    auto u5  = makeUnion(u4, outer_lower_right);
 
-    Print() << "\n=== TWO-BRANCH TIMING GEOMETRY ===\n";
+    auto u6  = makeUnion(u5, inner_top);
+    auto u7  = makeUnion(u6, inner_left);
+    auto u8  = makeUnion(u7, inner_lower);
+    auto u9  = makeUnion(u8, inner_step_vertical);
+    auto u10 = makeUnion(u9, inner_step_horizontal);
+
+    auto walls = makeUnion(u10, inner_right);
+
+    // ==========================================================
+    // PRINT COORDINATES FOR DEBUGGING
+    // ==========================================================
+
+    Print() << "\n=== TWO-BRANCH TIMING MODEL ===\n";
+
+    Print() << "Point 1: x=" << x1
+            << ", y=" << y_top << "\n";
+
+    Print() << "Point 2: x=" << x2
+            << ", y=" << y2 << "\n";
+
+    Print() << "Point 3: x=" << x3
+            << ", y=" << y2 << "\n";
+
+    Print() << "Point 4: x=" << x4
+            << ", y=" << yi_low << "\n";
+
+    Print() << "Point 5: x=" << x5
+            << ", y=" << y_top << "\n";
+
     Print() << "X = " << X << "\n";
     Print() << "Y = " << Y << "\n";
     Print() << "H = " << H << "\n";
     Print() << "L = " << L << "\n";
 
-    Print() << "x_left  = " << x_left << "\n";
-    Print() << "x_step  = " << x_step << "\n";
-    Print() << "x_right = " << x_right << "\n";
-
-    Print() << "y_bottom    = " << y_bottom << "\n";
-    Print() << "y_lower_top = " << y_lower_top << "\n";
-    Print() << "y_top       = " << y_top << "\n";
-
-    Print() << "==================================\n\n";
+    Print() << "================================\n\n";
 
     auto gshop = makeShop(walls);
 
