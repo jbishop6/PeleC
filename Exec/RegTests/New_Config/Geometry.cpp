@@ -610,50 +610,128 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
 }
 
 void
-TwoBranch_NewConfig::build(const amrex::Geometry& geom, const int max_coarsening_level)
+TwoBranch_NewConfig::build(
+    const amrex::Geometry& geom,
+    const int max_coarsening_level)
 {
-  amrex::ParmParse pp("twobranch_newconfig");   // <-- also update the ParmParse prefix to match
+    using namespace amrex;
+    using namespace amrex::EB2;
 
-  amrex::Real X = 0.10;
-  amrex::Real H = 0.01;
-  amrex::Real L = 0.02;
-  amrex::Real Y = 0.03;
-  amrex::Real branch_t = 0.005;
-  amrex::Real branch_x0 = 0.03;
-  amrex::Real depth = 0.01;
+    ParmParse pp("twobranch_newconfig");
 
-  pp.query("X", X);
-  pp.query("H", H);
-  pp.query("L", L);
-  pp.query("Y", Y);
-  pp.query("branch_thickness", branch_t);
-  pp.query("branch_x0", branch_x0);
-  pp.query("depth", depth);
+    // ---- Geometry parameters ----
+    Real X   = 0.10;   // overall horizontal length, point 1 -> point 5
+    Real Y   = 0.06;   // inner horizontal branch length
+    Real H   = 0.03;   // upper-channel height
+    Real L   = 0.02;   // lower-channel height
 
-  amrex::EB2::BoxIF primary(
-      {AMREX_D_DECL(0.0, 0.0, 0.0)},
-      {AMREX_D_DECL(X, H, depth)},
-      true);
+    Real wall_t = 0.005;   // thickness of solid separator/walls
+    Real x0     = 0.02;    // left edge of raised separator
 
-  amrex::EB2::BoxIF left_riser(
-      {AMREX_D_DECL(branch_x0, H, 0.0)},
-      {AMREX_D_DECL(branch_x0 + branch_t, H + L, depth)},
-      true);
+    pp.query("X", X);
+    pp.query("Y", Y);
+    pp.query("H", H);
+    pp.query("L", L);
+    pp.query("wall_thickness", wall_t);
+    pp.query("x0", x0);
 
-  amrex::EB2::BoxIF top_branch(
-      {AMREX_D_DECL(branch_x0, H + L - branch_t, 0.0)},
-      {AMREX_D_DECL(branch_x0 + Y, H + L, depth)},
-      true);
+    const RealBox& rb = geom.ProbDomain();
 
-  amrex::EB2::BoxIF right_riser(
-      {AMREX_D_DECL(branch_x0 + Y - branch_t, H, 0.0)},
-      {AMREX_D_DECL(branch_x0 + Y, H + L, depth)},
-      true);
+    const Real xlo = rb.lo(0);
+    const Real xhi = rb.hi(0);
+    const Real ylo = rb.lo(1);
+    const Real yhi = rb.hi(1);
 
-  auto geom_union = amrex::EB2::makeIntersection(
-    primary, left_riser, top_branch, right_riser);
-  auto gshop = amrex::EB2::makeShop(geom_union);
-  amrex::EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level);
+    // ------------------------------------------------------
+    // Place the horizontal separator near the center
+    // ------------------------------------------------------
+
+    const Real y_sep_lo = 0.5 * (ylo + yhi) - 0.5 * wall_t;
+    const Real y_sep_hi = y_sep_lo + wall_t;
+
+    // Raised "U" separator
+    const Real x_left  = x0;
+    const Real x_right = x_left + Y;
+
+    const Real y_leg_bottom = y_sep_hi;
+    const Real y_leg_top    = y_leg_bottom + H;
+
+    // Helper: solid box
+    auto solidBox = [](
+        Real xa, Real ya,
+        Real xb, Real yb)
+    {
+        Array<Real, AMREX_SPACEDIM> lo{
+            AMREX_D_DECL(
+                std::min(xa, xb),
+                std::min(ya, yb),
+                0.0)};
+
+        Array<Real, AMREX_SPACEDIM> hi{
+            AMREX_D_DECL(
+                std::max(xa, xb),
+                std::max(ya, yb),
+                0.0)};
+
+        return BoxIF(lo, hi, false);
+    };
+
+    // ------------------------------------------------------
+    // RED SOLID GEOMETRY
+    // ------------------------------------------------------
+
+    // Horizontal separator across the whole domain
+    auto separator =
+        solidBox(xlo, y_sep_lo,
+                 xhi, y_sep_hi);
+
+    // Left vertical leg of raised branch
+    auto left_leg =
+        solidBox(x_left,
+                 y_leg_bottom,
+                 x_left + wall_t,
+                 y_leg_top);
+
+    // Top horizontal part
+    auto upper_wall =
+        solidBox(x_left,
+                 y_leg_top - wall_t,
+                 x_right,
+                 y_leg_top);
+
+    // Right vertical leg
+    auto right_leg =
+        solidBox(x_right - wall_t,
+                 y_leg_bottom,
+                 x_right,
+                 y_leg_top);
+
+    // Union all SOLID pieces
+    auto u1 = makeUnion(separator, left_leg);
+    auto u2 = makeUnion(u1, upper_wall);
+    auto walls = makeUnion(u2, right_leg);
+
+    Print() << "\n=== TWO-BRANCH NEW CONFIG ===\n";
+    Print() << "X = " << X << "\n";
+    Print() << "Y = " << Y << "\n";
+    Print() << "H = " << H << "\n";
+    Print() << "L = " << L << "\n";
+    Print() << "wall thickness = " << wall_t << "\n";
+    Print() << "x_left  = " << x_left << "\n";
+    Print() << "x_right = " << x_right << "\n";
+    Print() << "separator y = [" << y_sep_lo
+            << ", " << y_sep_hi << "]\n";
+    Print() << "=============================\n\n";
+
+    auto gshop = makeShop(walls);
+
+    Build(
+        gshop,
+        geom,
+        max_coarsening_level,
+        max_coarsening_level,
+        128,
+        false);
 }
 
 void
