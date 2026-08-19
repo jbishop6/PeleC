@@ -655,8 +655,8 @@ TwoBranch_NewConfig::build(const amrex::Geometry& geom, const int max_coarsening
       {AMREX_D_DECL(branch_x0 + Y, H + L, W)},
       true);
 
-  auto twobranch_geom = amrex::EB2::makeUnion(
-      primary, branch_riser, branch_top, branch_return);
+  auto twobranch_geom = amrex::EB2::makeIntersection(
+    primary, branch_riser, branch_top, branch_return);
 
   auto gshop = amrex::EB2::makeShop(twobranch_geom);
   amrex::EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level);
