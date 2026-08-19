@@ -116,20 +116,12 @@ eb2.geom_type             = twobranch_newconfig
 ebd.boundary_grad_stencil_type = 1
 
 # ---- Two-branch geometry knobs ----
-# Box separating the upper and lower channel 
-geo.xs = 0.30 # left edge of box
-geo.xr = 0.70 # right edge of box
-geo.mid = 0.02 # thickness of box
 
-# NEW: retract mid-wall from each end to connect branches
-geo.cL = 0.05    # left-side connection length
-geo.cR = 0.05    # right-side connection length
-geo.L  = 0.0390625
+twobranch_newconfig.X = 0.10
+twobranch_newconfig.Y = 0.060
+twobranch_newconfig.H = 0.030
+twobranch_newconfig.L = 0.015
 
-# Adjustable parameters of the system
-geo.W = 0.1
-#geo.X = 0.4 # Length of channel (circumference of RDE)
-#geo.H = 0.15 #Total height from top of upper branch to bottom of lower branch
-
-geo.H = 0.188092301
-geo.X = 0.326962268
+twobranch_newconfig.wall_thickness = 0.004
+twobranch_newconfig.x_left = 0.020
+twobranch_newconfig.step_width = 0.012
