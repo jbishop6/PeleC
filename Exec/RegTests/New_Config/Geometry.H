@@ -124,14 +124,14 @@ public:
 class TwoBranch_NewConfig : public Geometry::Register<TwoBranch>
 {
 public:
-  static std::string identifier() { return "twobranch"; }
+  static std::string identifier() { return "twobranch_newconfig"; }
   void build(const amrex::Geometry& geom, const int max_coarsening_level) override;
 };
 
 class ThreeBranch_NewConfig : public Geometry::Register<ThreeBranch>
 {
 public:
-  static std::string identifier() { return "threebranch"; }
+  static std::string identifier() { return "threebranch_newconfig"; }
   void build(const amrex::Geometry& geom, const int max_coarsening_level) override;
 };
 
