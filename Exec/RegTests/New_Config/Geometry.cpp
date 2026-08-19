@@ -612,53 +612,46 @@ void ThreeBranch::build(const amrex::Geometry& geom, const int max_coarsening_le
 void
 TwoBranch_NewConfig::build(const amrex::Geometry& geom, const int max_coarsening_level)
 {
-  // --- Read parameters (mirror the prefix convention your Ramp/Combustor
-  //     use in Geometry.cpp -- adjust "twobranch." below if theirs differs)
-  amrex::ParmParse pp("twobranch");
+  amrex::ParmParse pp("twobranch_newconfig");   // <-- also update the ParmParse prefix to match
 
-  amrex::Real X = 0.10;   // total primary channel length
-  amrex::Real Y = 0.03;   // secondary branch horizontal run
-  amrex::Real L = 0.02;   // secondary branch vertical rise
-  amrex::Real H = 0.01;   // primary channel height
-  amrex::Real W = 0.01;   // channel depth (z, for 3D)
-  amrex::Real branch_x0 = 0.03; // x-location where branch departs
-  amrex::Real wall_t = 0.002;   // wall/duct thickness for the branch legs
+  amrex::Real X = 0.10;
+  amrex::Real H = 0.01;
+  amrex::Real L = 0.02;
+  amrex::Real Y = 0.03;
+  amrex::Real branch_t = 0.005;
+  amrex::Real branch_x0 = 0.03;
+  amrex::Real depth = 0.01;
 
   pp.query("X", X);
-  pp.query("Y", Y);
-  pp.query("L", L);
   pp.query("H", H);
-  pp.query("W", W);
+  pp.query("L", L);
+  pp.query("Y", Y);
+  pp.query("branch_thickness", branch_t);
   pp.query("branch_x0", branch_x0);
-  pp.query("wall_thickness", wall_t);
+  pp.query("depth", depth);
 
-  // --- Primary channel: fluid box running the full length in x
   amrex::EB2::BoxIF primary(
       {AMREX_D_DECL(0.0, 0.0, 0.0)},
-      {AMREX_D_DECL(X, H, W)},
-      /*inside=*/true);
+      {AMREX_D_DECL(X, H, depth)},
+      true);
 
-  // --- Secondary branch: rises L above the primary channel roof,
-  //     runs Y horizontally, forming the loop that departs/rejoins
-  amrex::EB2::BoxIF branch_riser(
+  amrex::EB2::BoxIF left_riser(
       {AMREX_D_DECL(branch_x0, H, 0.0)},
-      {AMREX_D_DECL(branch_x0 + wall_t, H + L, W)},
+      {AMREX_D_DECL(branch_x0 + branch_t, H + L, depth)},
       true);
 
-  amrex::EB2::BoxIF branch_top(
-      {AMREX_D_DECL(branch_x0, H + L - wall_t, 0.0)},
-      {AMREX_D_DECL(branch_x0 + Y, H + L, W)},
+  amrex::EB2::BoxIF top_branch(
+      {AMREX_D_DECL(branch_x0, H + L - branch_t, 0.0)},
+      {AMREX_D_DECL(branch_x0 + Y, H + L, depth)},
       true);
 
-  amrex::EB2::BoxIF branch_return(
-      {AMREX_D_DECL(branch_x0 + Y - wall_t, H, 0.0)},
-      {AMREX_D_DECL(branch_x0 + Y, H + L, W)},
+  amrex::EB2::BoxIF right_riser(
+      {AMREX_D_DECL(branch_x0 + Y - branch_t, H, 0.0)},
+      {AMREX_D_DECL(branch_x0 + Y, H + L, depth)},
       true);
 
-  auto twobranch_geom = amrex::EB2::makeIntersection(
-    primary, branch_riser, branch_top, branch_return);
-
-  auto gshop = amrex::EB2::makeShop(twobranch_geom);
+  auto geom_union = amrex::EB2::makeUnion(primary, left_riser, top_branch, right_riser);
+  auto gshop = amrex::EB2::makeShop(geom_union);
   amrex::EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level);
 }
 
