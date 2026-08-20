@@ -697,7 +697,7 @@ TwoBranch_NewConfig::build(
 
     // Inner right wall is placed automatically inside remaining space.
     const Real xi_right =
-        x4 + 0.75 * right_space;
+        x4 + 0.85 * right_space;
 
     // Vertical inner contour.
     const Real yi_low =
