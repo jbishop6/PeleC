@@ -761,11 +761,19 @@ TwoBranch_NewConfig::build(
     // Lower horizontal passage
     // -------------------------------
 
-    auto lower_channel =
+    auto right_lower =
+      fluidBox(
+          x3 - channel_t,
+          y2,
+          x3,
+          y_shelf);
+    
+      // Small bottom-right nub from Point 4 toward Point 3
+    auto right_bottom_nub =
         fluidBox(
-            x2,
-            y2,
             x4,
+            y2,
+            x3,
             yi_low);
 
     // -------------------------------
@@ -825,14 +833,18 @@ const Real connector_overlap = 0.5 * channel_t;
     
     auto f3 = makeIntersection(
         f2,
-        right_lower);
+        right_bottom_nub);
     
     auto f4 = makeIntersection(
         f3,
+        right_lower);
+    
+    auto f5 = makeIntersection(
+        f4,
         right_step);
     
     auto fluid_geometry = makeIntersection(
-        f4,
+        f5,
         right_upper);
     // ============================================================
     // DEBUG OUTPUT
