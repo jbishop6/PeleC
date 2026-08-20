@@ -695,10 +695,8 @@ TwoBranch_NewConfig::build(
         Abort("TwoBranch_NewConfig: increase X or decrease Y");
     }
 
-    // Inner right wall is placed automatically inside remaining space.
-    const Real xi_right =
-        x4 + 0.85 * right_space;
-
+    const Real xi_right = x5 - channel_t;
+  
     // Vertical inner contour.
     const Real yi_low =
         y2 + channel_t;
@@ -787,64 +785,53 @@ TwoBranch_NewConfig::build(
 const Real x_right_leg_left = x3 - channel_t;
 
 // Horizontal bridge from the lower channel into the right leg
-auto right_lower_bridge =
-    fluidBox(
-        x4,
-        y2,
-        x3,
-        yi_low);
-
-// Skinny vertical right leg
-auto right_lower_leg =
-    fluidBox(
-        x_right_leg_left,
-        y2,
-        x3,
-        y_shelf + channel_t);
+// Lower vertical turn from the lower channel
+  auto right_lower =
+      fluidBox(
+          x4,
+          y2,
+          x4 + channel_t,
+          y_shelf);
   
-  // Horizontal/stepped junction
+  // Horizontal step at Point 4
   auto right_step =
       fluidBox(
           x4,
-          yi_step - channel_t,
-          xi_right + channel_t,
-          y_shelf + channel_t);
+          yi_step,
+          xi_right,
+          y_shelf);
   
-  // Upper connector back into the upper branch
+  // Skinny upper-right vertical passage
   auto right_upper =
       fluidBox(
-          xi_right - channel_t,
-          yi_step,
+          xi_right,
+          y_shelf,
           x5,
           y5);
 
     // ============================================================
     // UNION OF ALL FLUID REGIONS
     // ============================================================
-
-  auto f1 = makeIntersection(
-    upper_channel,
-    left_connector);
-
-  auto f2 = makeIntersection(
-    f1,
-    lower_channel);
-
-  auto f3 = makeIntersection(
-    f2,
-    right_lower_bridge);
-
-  auto f4 = makeIntersection(
-      f3,
-      right_lower_leg);
-  
-  auto f5 = makeIntersection(
-      f4,
-      right_step);
-  
-  auto fluid_geometry = makeIntersection(
-      f5,
-      right_upper);
+    
+     auto f1 = makeIntersection(
+        upper_channel,
+        left_connector);
+    
+    auto f2 = makeIntersection(
+        f1,
+        lower_channel);
+    
+    auto f3 = makeIntersection(
+        f2,
+        right_lower);
+    
+    auto f4 = makeIntersection(
+        f3,
+        right_step);
+    
+    auto fluid_geometry = makeIntersection(
+        f4,
+        right_upper);
     // ============================================================
     // DEBUG OUTPUT
     // ============================================================
