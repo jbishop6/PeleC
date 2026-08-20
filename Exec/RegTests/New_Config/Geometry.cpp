@@ -774,34 +774,36 @@ TwoBranch_NewConfig::build(
     // Point-4 / lower-right region
     // -------------------------------
 
-    auto right_lower =
-        fluidBox(
-            x4,
-            y2,
-            x3,
-            yi_step);
-
-    // -------------------------------
-    // Horizontal step
-    // -------------------------------
-
-    auto right_step =
-        fluidBox(
-            x4,
-            yi_step,
-            xi_right,
-            y_shelf);
-
-    // -------------------------------
-    // Right-side connector
-    // -------------------------------
-
-    auto right_upper =
-        fluidBox(
-            xi_right,
-            y_shelf,
-            x5,
-            y5);
+      // ------------------------------------------------------------
+  // Right-hand connection
+  //
+  // Intentionally overlap the three pieces by channel_t so the
+  // EB grid sees one continuous fluid passage.
+  // ------------------------------------------------------------
+  
+  // Lower branch turns upward toward the shelf
+  auto right_lower =
+      fluidBox(
+          x4,
+          y2,
+          x3,
+          y_shelf + channel_t);
+  
+  // Horizontal/stepped junction
+  auto right_step =
+      fluidBox(
+          x4,
+          yi_step - channel_t,
+          xi_right + channel_t,
+          y_shelf + channel_t);
+  
+  // Upper connector back into the upper branch
+  auto right_upper =
+      fluidBox(
+          xi_right - channel_t,
+          yi_step,
+          x5,
+          y5);
 
     // ============================================================
     // UNION OF ALL FLUID REGIONS
