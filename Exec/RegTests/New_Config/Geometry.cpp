@@ -782,12 +782,14 @@ TwoBranch_NewConfig::build(
   // ------------------------------------------------------------
   
   // Lower branch turns upward toward the shelf
+  const Real x_lower_right = x3 - channel_t;
+  
   auto right_lower =
-      fluidBox(
-          x4,
-          y2,
-          x3,
-          y_shelf + channel_t);
+    fluidBox(
+        x_lower_right,
+        y2,
+        x3,
+        y_shelf + channel_t);
   
   // Horizontal/stepped junction
   auto right_step =
