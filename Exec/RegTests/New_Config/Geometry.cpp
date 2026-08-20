@@ -765,7 +765,7 @@ TwoBranch_NewConfig::build(
         fluidBox(
             x2,
             y2,
-            x4 + channel_t,
+            x4,
             yi_low);
 
     // -------------------------------
@@ -790,10 +790,10 @@ const Real connector_overlap = 0.5 * channel_t;
   
   auto right_lower =
     fluidBox(
-        x4 - connector_overlap,
+        x4,
         y2,
-        x4 + channel_t - connector_overlap,
-        y_shelf);
+        x4 + channel_t,
+        y_shelf + channel_t);
   
   // Horizontal step at Point 4
   auto right_step =
