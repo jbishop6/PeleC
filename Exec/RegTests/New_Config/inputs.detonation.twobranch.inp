@@ -20,6 +20,7 @@ geometry.coord_sys   = 0
 
 geometry.prob_lo = 0.0 0.0
 geometry.prob_hi = 0.12 0.08
+
 amr.n_cell = 192 128
 
 
@@ -122,6 +123,15 @@ twobranch_newconfig.Y = 0.060
 twobranch_newconfig.H = 0.030
 twobranch_newconfig.L = 0.015
 
-twobranch_newconfig.wall_thickness = 0.004
-twobranch_newconfig.x_left = 0.020
-twobranch_newconfig.step_width = 0.012
+twobranch_newconfig.wall_thickness = 0.002
+
+twobranch_newconfig.x1 = 0.005
+twobranch_newconfig.y2 = 0.020
+
+twobranch_newconfig.outer_inset = 0.015
+twobranch_newconfig.inner_inset = 0.010
+
+twobranch_newconfig.step_width = 0.010
+twobranch_newconfig.upper_gap = 0.008
+twobranch_newconfig.lower_gap = 0.006
+twobranch_newconfig.step_height = 0.010
