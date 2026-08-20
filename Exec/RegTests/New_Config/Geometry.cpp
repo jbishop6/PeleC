@@ -783,9 +783,21 @@ TwoBranch_NewConfig::build(
   
   // Lower branch turns upward toward the shelf
   
-  auto right_lower =
+  // Keep the right vertical leg about one channel thickness wide
+const Real x_right_leg_left = x3 - channel_t;
+
+// Horizontal bridge from the lower channel into the right leg
+auto right_lower_bridge =
     fluidBox(
         x4,
+        y2,
+        x3,
+        yi_low);
+
+// Skinny vertical right leg
+auto right_lower_leg =
+    fluidBox(
+        x_right_leg_left,
         y2,
         x3,
         y_shelf + channel_t);
@@ -820,16 +832,19 @@ TwoBranch_NewConfig::build(
 
   auto f3 = makeIntersection(
     f2,
-    right_lower);
+    right_lower_bridge);
 
   auto f4 = makeIntersection(
-    f3,
-    right_step);
-
+      f3,
+      right_lower_leg);
+  
+  auto f5 = makeIntersection(
+      f4,
+      right_step);
+  
   auto fluid_geometry = makeIntersection(
-    f4,
-    right_upper);
-
+      f5,
+      right_upper);
     // ============================================================
     // DEBUG OUTPUT
     // ============================================================
