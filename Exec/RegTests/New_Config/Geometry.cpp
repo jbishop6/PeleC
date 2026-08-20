@@ -786,12 +786,14 @@ const Real x_right_leg_left = x3 - channel_t;
 
 // Horizontal bridge from the lower channel into the right leg
 // Lower vertical turn from the lower channel
+const Real connector_overlap = 0.5 * channel_t;
+  
   auto right_lower =
-      fluidBox(
-          x4,
-          y2,
-          x4 + channel_t,
-          y_shelf);
+    fluidBox(
+        x4 - connector_overlap,
+        y2,
+        x4 + channel_t - connector_overlap,
+        y_shelf);
   
   // Horizontal step at Point 4
   auto right_step =
