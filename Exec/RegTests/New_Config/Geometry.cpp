@@ -620,101 +620,98 @@ TwoBranch_NewConfig::build(
     ParmParse pp("twobranch_newconfig");
 
     // ============================================================
-    // TIMING MODEL PARAMETERS
+    // ONLY USER-ADJUSTABLE PARAMETERS
     // ============================================================
 
-    Real X = 0.100;      // Point 1 -> Point 5
-    Real Y = 0.050;      // inner lower horizontal length
-    Real H = 0.030;      // Point 5 -> outer lower shelf
-    Real L = 0.015;      // outer shelf -> Point 2/3
-
-    // Position in domain
-    Real x1 = 0.005;
-    Real y2 = 0.020;
-
-    // Horizontal offsets
-    Real outer_inset = 0.015;
-    Real inner_inset = 0.010;
-    Real step_width  = 0.010;
-
-    // Inner contour offsets
-    Real upper_gap   = 0.008;
-    Real lower_gap   = 0.006;
-    Real step_height = 0.004;
+    Real X = 0.100;   // total horizontal length
+    Real Y = 0.050;   // inner lower horizontal length
+    Real L = 0.015;   // lower vertical offset
+    Real H = 0.030;   // upper vertical offset
 
     pp.query("X", X);
     pp.query("Y", Y);
-    pp.query("H", H);
     pp.query("L", L);
-
-    pp.query("x1", x1);
-    pp.query("y2", y2);
-
-    pp.query("outer_inset", outer_inset);
-    pp.query("inner_inset", inner_inset);
-    pp.query("step_width", step_width);
-
-    pp.query("upper_gap", upper_gap);
-    pp.query("lower_gap", lower_gap);
-    pp.query("step_height", step_height);
+    pp.query("H", H);
 
     // ============================================================
-    // TIMING MODEL COORDINATES
+    // DOMAIN
     // ============================================================
 
-    // Point 5
+    const RealBox& rb = geom.ProbDomain();
+
+    const Real xlo = rb.lo(0);
+    const Real xhi = rb.hi(0);
+    const Real ylo = rb.lo(1);
+    const Real yhi = rb.hi(1);
+
+    // ============================================================
+    // AUTOMATIC / DERIVED DIMENSIONS
+    // ============================================================
+
+    // Channel thickness scales automatically with L and H.
+    const Real channel_t = 0.20 * std::min(L, H);
+
+    // Horizontal placement:
+    // center an X-long geometry in the computational domain.
+    const Real x1 = 0.5 * (xlo + xhi - X);
     const Real x5 = x1 + X;
 
-    // Points 2 and 3
+    // Points 2 and 3 are automatically inset from the ends.
+    const Real outer_inset = 0.15 * X;
+
     const Real x2 = x1 + outer_inset;
     const Real x3 = x5 - outer_inset;
 
-    // Outer vertical coordinates
+    // Vertical placement:
+    // total timing-model height is L + H.
+    const Real total_height = L + H;
+
+    const Real y2 =
+        0.5 * (ylo + yhi - total_height);
+
     const Real y_shelf = y2 + L;
     const Real y5      = y_shelf + H;
 
-    // Inner-left wall
-    const Real xi_left = x2 + inner_inset;
+    // ============================================================
+    // INNER GEOMETRY
+    // ============================================================
 
-    // Point 4
+    // Left inner wall sits one channel thickness inward.
+    const Real xi_left = x2 + channel_t;
+
+    // Y directly controls Point 4.
     const Real x4 = xi_left + Y;
 
-    // Inner-right vertical
-    const Real xi_right = x4 + step_width;
+    // Need room between Point 4 and Point 3 for the right junction.
+    const Real right_space = x3 - x4;
 
-    // Inner vertical coordinates
-    const Real yi_low  = y2 + lower_gap;
-    const Real yi_top  = y5 - upper_gap;
-    const Real yi_step = yi_low + step_height;
-
-    // ============================================================
-    // SANITY CHECKS
-    // ============================================================
-
-    if (x4 >= x3) {
-        Print() << "\nERROR: Point 4 is at or to the right of Point 3.\n";
-        Print() << "x4 = " << x4 << "\n";
-        Print() << "x3 = " << x3 << "\n";
-        Print() << "Decrease Y or change horizontal offsets.\n\n";
-        Abort("Invalid TwoBranch_NewConfig geometry");
+    if (right_space <= 2.0 * channel_t) {
+        Print() << "\nERROR: Y is too large for this X.\n";
+        Print() << "X          = " << X << "\n";
+        Print() << "Y          = " << Y << "\n";
+        Print() << "x4         = " << x4 << "\n";
+        Print() << "x3         = " << x3 << "\n";
+        Print() << "right_space= " << right_space << "\n";
+        Abort("TwoBranch_NewConfig: increase X or decrease Y");
     }
 
-    if (xi_right > x5) {
-        Print() << "\nERROR: Inner right wall extends past Point 5.\n";
-        Abort("Invalid TwoBranch_NewConfig geometry");
-    }
+    // Inner right wall is placed automatically inside remaining space.
+    const Real xi_right =
+        x4 + 0.50 * right_space;
 
-    if (yi_step >= y_shelf) {
-        Print() << "\nERROR: Point-4 step is too high.\n";
-        Print() << "yi_step = " << yi_step << "\n";
-        Print() << "y_shelf = " << y_shelf << "\n";
-        Abort("Invalid TwoBranch_NewConfig geometry");
-    }
+    // Vertical inner contour.
+    const Real yi_low =
+        y2 + channel_t;
+
+    const Real yi_top =
+        y5 - channel_t;
+
+    // Step is automatically one channel thickness below the shelf.
+    const Real yi_step =
+        y_shelf - channel_t;
 
     // ============================================================
-    // FLUID BOX HELPER
-    //
-    // true -> inside of each box is fluid
+    // HELPER: FLUID BOX
     // ============================================================
 
     auto fluidBox =
@@ -732,30 +729,17 @@ TwoBranch_NewConfig::build(
                 std::max(ya, yb),
                 0.0)};
 
+        // true = fluid inside this box
         return BoxIF(lo, hi, true);
     };
 
     // ============================================================
-    // ACTUAL FLUID CHANNEL
-    //
-    //                UPPER CHANNEL
-    //    =================================
-    //          |                       |
-    //          |                 +-----+
-    //          |                 |
-    //          +-----------------+
-    //              LOWER CHANNEL
-    //
+    // FLUID CHANNEL
     // ============================================================
 
-
-    // ------------------------------------------------------------
-    // 1. Upper horizontal channel
-    //
-    // between:
-    //   inner top wall = yi_top
-    //   outer top wall = y5
-    // ------------------------------------------------------------
+    // -------------------------------
+    // Upper horizontal passage
+    // -------------------------------
 
     auto upper_channel =
         fluidBox(
@@ -764,15 +748,9 @@ TwoBranch_NewConfig::build(
             x5,
             y5);
 
-
-    // ------------------------------------------------------------
-    // 2. Left vertical connector
-    //
-    // Outer boundary = x2
-    // Inner boundary = xi_left
-    //
-    // Connects upper and lower passages.
-    // ------------------------------------------------------------
+    // -------------------------------
+    // Left connector
+    // -------------------------------
 
     auto left_connector =
         fluidBox(
@@ -781,15 +759,9 @@ TwoBranch_NewConfig::build(
             xi_left,
             y5);
 
-
-    // ------------------------------------------------------------
-    // 3. Lower horizontal channel
-    //
-    // Outer bottom = y2
-    // Inner bottom = yi_low
-    //
-    // Stops at Point 4.
-    // ------------------------------------------------------------
+    // -------------------------------
+    // Lower horizontal passage
+    // -------------------------------
 
     auto lower_channel =
         fluidBox(
@@ -798,28 +770,20 @@ TwoBranch_NewConfig::build(
             x4,
             yi_low);
 
+    // -------------------------------
+    // Point-4 / lower-right region
+    // -------------------------------
 
-    // ------------------------------------------------------------
-    // 4. Right lower vertical section
-    //
-    // This is the region BETWEEN Point 4 and Point 3.
-    //
-    // THIS was effectively zero-width in the earlier geometry.
-    // ------------------------------------------------------------
-
-    auto right_lower_connector =
+    auto right_lower =
         fluidBox(
             x4,
             y2,
             x3,
             yi_step);
 
-
-    // ------------------------------------------------------------
-    // 5. Right horizontal step
-    //
-    // The little passage at Point 4.
-    // ------------------------------------------------------------
+    // -------------------------------
+    // Horizontal step
+    // -------------------------------
 
     auto right_step =
         fluidBox(
@@ -828,103 +792,74 @@ TwoBranch_NewConfig::build(
             xi_right,
             y_shelf);
 
+    // -------------------------------
+    // Right-side connector
+    // -------------------------------
 
-    // ------------------------------------------------------------
-    // 6. Right upper connector
-    //
-    // Takes the flow from the shelf back into the upper channel.
-    // ------------------------------------------------------------
-
-    auto right_upper_connector =
+    auto right_upper =
         fluidBox(
             xi_right,
             y_shelf,
             x5,
             y5);
 
-
     // ============================================================
-    // COMBINE FLUID REGIONS
-    //
-    // IMPORTANT:
-    // For BoxIF(..., true), each box defines fluid INSIDE.
-    // Using makeIntersection here gives the logical union of the
-    // negative/fluid regions for AMReX's implicit-function sign
-    // convention.
+    // UNION OF ALL FLUID REGIONS
     // ============================================================
 
-    auto f1 =
-        makeIntersection(
-            upper_channel,
-            left_connector);
+    auto f1 = makeUnion(
+        upper_channel,
+        left_connector);
 
-    auto f2 =
-        makeIntersection(
-            f1,
-            lower_channel);
+    auto f2 = makeUnion(
+        f1,
+        lower_channel);
 
-    auto f3 =
-        makeIntersection(
-            f2,
-            right_lower_connector);
+    auto f3 = makeUnion(
+        f2,
+        right_lower);
 
-    auto f4 =
-        makeIntersection(
-            f3,
-            right_step);
+    auto f4 = makeUnion(
+        f3,
+        right_step);
 
-    auto fluid_geometry =
-        makeIntersection(
-            f4,
-            right_upper_connector);
-
+    auto fluid_geometry = makeUnion(
+        f4,
+        right_upper);
 
     // ============================================================
     // DEBUG OUTPUT
     // ============================================================
 
     Print() << "\n========================================\n";
-    Print() << " TWO-BRANCH NEW CONFIG -- FLUID CHANNEL\n";
+    Print() << " TWO-BRANCH NEW CONFIG\n";
     Print() << "========================================\n";
 
-    Print() << "Point 1: (" << x1
-            << ", " << y5 << ")\n";
+    Print() << "INPUT PARAMETERS:\n";
+    Print() << "X = " << X << "\n";
+    Print() << "Y = " << Y << "\n";
+    Print() << "L = " << L << "\n";
+    Print() << "H = " << H << "\n";
 
-    Print() << "Point 2: (" << x2
-            << ", " << y2 << ")\n";
+    Print() << "\nDERIVED PARAMETERS:\n";
+    Print() << "channel_t   = " << channel_t << "\n";
 
-    Print() << "Point 3: (" << x3
-            << ", " << y2 << ")\n";
+    Print() << "\nOUTER POINTS:\n";
+    Print() << "P1 = (" << x1 << ", " << y5 << ")\n";
+    Print() << "P2 = (" << x2 << ", " << y2 << ")\n";
+    Print() << "P3 = (" << x3 << ", " << y2 << ")\n";
+    Print() << "P5 = (" << x5 << ", " << y5 << ")\n";
 
-    Print() << "Point 4: (" << x4
-            << ", " << yi_low << ")\n";
-
-    Print() << "Point 5: (" << x5
-            << ", " << y5 << ")\n";
-
-    Print() << "\nOuter geometry:\n";
-    Print() << "x2      = " << x2 << "\n";
-    Print() << "x3      = " << x3 << "\n";
-    Print() << "y2      = " << y2 << "\n";
-    Print() << "y_shelf = " << y_shelf << "\n";
-    Print() << "y5      = " << y5 << "\n";
-
-    Print() << "\nInner geometry:\n";
+    Print() << "\nINNER GEOMETRY:\n";
     Print() << "xi_left  = " << xi_left << "\n";
     Print() << "x4       = " << x4 << "\n";
     Print() << "xi_right = " << xi_right << "\n";
+
     Print() << "yi_low   = " << yi_low << "\n";
     Print() << "yi_step  = " << yi_step << "\n";
     Print() << "yi_top   = " << yi_top << "\n";
 
-    Print() << "\nTiming parameters:\n";
-    Print() << "X = " << X << "\n";
-    Print() << "Y = " << Y << "\n";
-    Print() << "H = " << H << "\n";
-    Print() << "L = " << L << "\n";
-
     Print() << "========================================\n\n";
-
 
     // ============================================================
     // BUILD EB
@@ -939,67 +874,6 @@ TwoBranch_NewConfig::build(
         max_coarsening_level,
         128,
         false);
-}
-
-void
-ThreeBranch_NewConfig::build(const amrex::Geometry& geom, const int max_coarsening_level)
-{
-  amrex::ParmParse pp("threebranch");
-
-  amrex::Real L = 0.02;   // vertical leg length (secondary branch)
-  amrex::Real W = 0.01;   // channel depth
-  amrex::Real H = 0.01;   // primary channel height
-  amrex::Real Y = 0.03;   // secondary branch horizontal run
-  amrex::Real Z = 0.025;  // tertiary branch extent (drop from junction)
-  amrex::Real X = 0.10;   // total primary channel length
-  amrex::Real branch_x0 = 0.03;   // secondary branch departure point
-  amrex::Real tertiary_x0 = 0.06; // tertiary branch junction location
-  amrex::Real wall_t = 0.002;
-
-  pp.query("L", L);
-  pp.query("W", W);
-  pp.query("H", H);
-  pp.query("Y", Y);
-  pp.query("Z", Z);
-  pp.query("X", X);
-  pp.query("branch_x0", branch_x0);
-  pp.query("tertiary_x0", tertiary_x0);
-  pp.query("wall_thickness", wall_t);
-
-  // --- Primary channel (same as TwoBranch)
-  amrex::EB2::BoxIF primary(
-      {AMREX_D_DECL(0.0, 0.0, 0.0)},
-      {AMREX_D_DECL(X, H, W)},
-      true);
-
-  // --- Secondary branch (same loop as TwoBranch)
-  amrex::EB2::BoxIF branch_riser(
-      {AMREX_D_DECL(branch_x0, H, 0.0)},
-      {AMREX_D_DECL(branch_x0 + wall_t, H + L, W)},
-      true);
-
-  amrex::EB2::BoxIF branch_top(
-      {AMREX_D_DECL(branch_x0, H + L - wall_t, 0.0)},
-      {AMREX_D_DECL(branch_x0 + Y, H + L, W)},
-      true);
-
-  amrex::EB2::BoxIF branch_return(
-      {AMREX_D_DECL(branch_x0 + Y - wall_t, H, 0.0)},
-      {AMREX_D_DECL(branch_x0 + Y, H + L, W)},
-      true);
-
-  // --- Tertiary branch: perpendicular branch dropping Z below the
-  //     primary channel at the cross-junction (per Fig. 4.9 description)
-  amrex::EB2::BoxIF tertiary(
-      {AMREX_D_DECL(tertiary_x0, -Z, 0.0)},
-      {AMREX_D_DECL(tertiary_x0 + wall_t * 5.0, 0.0, W)},
-      true);
-
-  auto threebranch_geom = amrex::EB2::makeUnion(
-      primary, branch_riser, branch_top, branch_return, tertiary);
-
-  auto gshop = amrex::EB2::makeShop(threebranch_geom);
-  amrex::EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level);
 }
 
 void
