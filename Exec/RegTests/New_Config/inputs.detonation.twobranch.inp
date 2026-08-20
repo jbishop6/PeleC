@@ -134,4 +134,4 @@ twobranch_newconfig.inner_inset = 0.010
 twobranch_newconfig.step_width = 0.010
 twobranch_newconfig.upper_gap = 0.008
 twobranch_newconfig.lower_gap = 0.006
-twobranch_newconfig.step_height = 0.010
+twobranch_newconfig.step_height = 0.006
