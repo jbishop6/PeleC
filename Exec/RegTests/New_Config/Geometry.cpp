@@ -807,25 +807,25 @@ TwoBranch_NewConfig::build(
     // UNION OF ALL FLUID REGIONS
     // ============================================================
 
-    auto f1 = makeUnion(
-        upper_channel,
-        left_connector);
+  auto f1 = makeIntersection(
+    upper_channel,
+    left_connector);
 
-    auto f2 = makeUnion(
-        f1,
-        lower_channel);
+  auto f2 = makeIntersection(
+    f1,
+    lower_channel);
 
-    auto f3 = makeUnion(
-        f2,
-        right_lower);
+  auto f3 = makeIntersection(
+    f2,
+    right_lower);
 
-    auto f4 = makeUnion(
-        f3,
-        right_step);
+  auto f4 = makeIntersection(
+    f3,
+    right_step);
 
-    auto fluid_geometry = makeUnion(
-        f4,
-        right_upper);
+  auto fluid_geometry = makeIntersection(
+    f4,
+    right_upper);
 
     // ============================================================
     // DEBUG OUTPUT
