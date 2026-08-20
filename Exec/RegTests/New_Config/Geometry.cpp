@@ -765,7 +765,7 @@ TwoBranch_NewConfig::build(
         fluidBox(
             x2,
             y2,
-            x4,
+            x4 + channel_t,
             yi_low);
 
     // -------------------------------
