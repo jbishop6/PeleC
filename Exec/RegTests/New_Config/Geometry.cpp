@@ -619,31 +619,37 @@ TwoBranch_NewConfig::build(
 
     ParmParse pp("twobranch_newconfig");
 
-    // =========================================================
-    // TIMING MODEL DIMENSIONS
-    // =========================================================
+    // ============================================================
+    // PARAMETERS FROM TIMING MODEL
+    // ============================================================
 
-    Real X = 0.10;      // point 1 -> point 5
-    Real Y = 0.060;     // lower internal horizontal distance
-    Real H = 0.030;     // vertical separation
-    Real L = 0.015;     // branch height
+    Real X = 0.10;       // Point 1 -> Point 5
+    Real Y = 0.060;      // inner lower horizontal length
+    Real H = 0.030;      // Point 5 -> right outer shelf
+    Real L = 0.015;      // outer shelf -> Points 2/3
 
-    Real channel_h = 0.004;   // thickness of fluid passage
+    Real wall_t = 0.002;
 
+    // Position geometry in domain
     Real x1 = 0.005;
     Real y2 = 0.020;
 
+    // Horizontal positioning
     Real outer_inset = 0.015;
     Real inner_inset = 0.010;
     Real step_width  = 0.010;
+
+    // Inner-wall positioning
+    Real upper_gap   = 0.008;
+    Real lower_gap   = 0.006;
+    Real step_height = 0.010;
 
     pp.query("X", X);
     pp.query("Y", Y);
     pp.query("H", H);
     pp.query("L", L);
 
-    pp.query("channel_height", channel_h);
-
+    pp.query("wall_thickness", wall_t);
     pp.query("x1", x1);
     pp.query("y2", y2);
 
@@ -651,135 +657,233 @@ TwoBranch_NewConfig::build(
     pp.query("inner_inset", inner_inset);
     pp.query("step_width", step_width);
 
-    // =========================================================
-    // KEY COORDINATES
-    // =========================================================
+    pp.query("upper_gap", upper_gap);
+    pp.query("lower_gap", lower_gap);
+    pp.query("step_height", step_height);
 
+    const RealBox& rb = geom.ProbDomain();
+
+    const Real xlo = rb.lo(0);
+    const Real xhi = rb.hi(0);
+
+    // ============================================================
+    // OUTER CONTOUR COORDINATES
+    // ============================================================
+
+    // Point 1 and Point 5
     const Real x5 = x1 + X;
 
+    // Points 2 and 3
     const Real x2 = x1 + outer_inset;
     const Real x3 = x5 - outer_inset;
 
+    // Shelf is L above Points 2/3
     const Real y_shelf = y2 + L;
-    const Real y_top   = y_shelf + H;
 
-    const Real xi_left  = x2 + inner_inset;
-    const Real x4       = xi_left + Y;
+    // Point 5 is H above the shelf
+    const Real y5 = y_shelf + H;
+
+    // ============================================================
+    // INNER CONTOUR COORDINATES
+    // ============================================================
+
+    const Real xi_left = x2 + inner_inset;
+
+    // Y is the horizontal timing-model distance
+    const Real x4 = xi_left + Y;
+
+    // Right inner wall lies to the right of Point 4
     const Real xi_right = x4 + step_width;
 
-    // centerlines of upper/lower passages
-    const Real y_upper = y_top - 0.5 * L;
-    const Real y_lower = y2 + 0.5 * L;
+    // Upper and lower inner-wall levels
+    const Real yi_top = y5 - upper_gap;
+    const Real yi_low = y2 + lower_gap;
 
-    // =========================================================
-    // HELPER: FLUID BOX
-    // =========================================================
+    // Point-4 shelf level
+    const Real yi_step = yi_low + step_height;
 
-    auto fluidBox =
+    // ============================================================
+    // SOLID BOX HELPER
+    // ============================================================
+
+    auto solidBox =
       [] (Real xa, Real ya, Real xb, Real yb)
     {
         Array<Real, AMREX_SPACEDIM> lo{
             AMREX_D_DECL(
-                std::min(xa,xb),
-                std::min(ya,yb),
+                std::min(xa, xb),
+                std::min(ya, yb),
                 0.0)};
 
         Array<Real, AMREX_SPACEDIM> hi{
             AMREX_D_DECL(
-                std::max(xa,xb),
-                std::max(ya,yb),
+                std::max(xa, xb),
+                std::max(ya, yb),
                 0.0)};
 
-        // true = fluid inside box
-        return BoxIF(lo, hi, true);
+        // false -> inside rectangle is solid/covered
+        return BoxIF(lo, hi, false);
     };
 
-    const Real hh = 0.5 * channel_h;
+    // ============================================================
+    // OUTER WALL
+    // ============================================================
 
-    // =========================================================
-    // FLUID PASSAGE
-    // =========================================================
+    // Point 1 -> Point 5
+    auto outer_top =
+        solidBox(
+            xlo,
+            y5,
+            xhi,
+            y5 + wall_t);
 
-    // ---- Upper branch: point 1 -> point 5
-    auto upper =
-        fluidBox(
-            x1,
-            y_upper - hh,
-            x5,
-            y_upper + hh);
-
-    // ---- Left connection downward
-    auto left_vertical =
-        fluidBox(
-            x2 - hh,
-            y_lower,
-            x2 + hh,
-            y_upper);
-
-    // ---- Lower branch: point 2 -> point 3
-    auto lower =
-        fluidBox(
-            x2,
-            y_lower - hh,
-            x3,
-            y_lower + hh);
-
-    // ---- Right stepped connector
-    //
-    // lower branch -> point 4
-    auto right_low_vertical =
-        fluidBox(
-            x3 - hh,
-            y_lower,
-            x3 + hh,
-            y_shelf);
-
-    // point 4 horizontal step
-    auto right_step =
-        fluidBox(
-            x3,
-            y_shelf - hh,
-            xi_right,
-            y_shelf + hh);
-
-    // right side up to upper branch
-    auto right_upper_vertical =
-        fluidBox(
-            xi_right - hh,
+    // Left shelf
+    auto outer_left_shelf =
+        solidBox(
+            xlo,
             y_shelf,
-            xi_right + hh,
-            y_upper);
+            x2 + wall_t,
+            y_shelf + wall_t);
 
-    // =========================================================
-    // UNION ALL FLUID SEGMENTS
-    // =========================================================
+    // Left drop -> Point 2
+    auto outer_left_drop =
+        solidBox(
+            x2,
+            y2,
+            x2 + wall_t,
+            y_shelf + wall_t);
 
-    auto f1 = makeUnion(upper, left_vertical);
-    auto f2 = makeUnion(f1, lower);
-    auto f3 = makeUnion(f2, right_low_vertical);
-    auto f4 = makeUnion(f3, right_step);
-    auto fluid_region = makeUnion(f4, right_upper_vertical);
+    // Point 2 -> Point 3
+    auto outer_bottom =
+        solidBox(
+            x2,
+            y2,
+            x3 + wall_t,
+            y2 + wall_t);
 
-    // =========================================================
-    // IMPORTANT:
-    // Convert "fluid passage" into EB geometry where everything
-    // outside the passage is covered/solid.
-    // =========================================================
+    // Point 3 -> right shelf
+    auto outer_right_rise =
+        solidBox(
+            x3,
+            y2,
+            x3 + wall_t,
+            y_shelf + wall_t);
 
-    auto geometry_if = makeComplement(fluid_region);
+    // Right shelf
+    auto outer_right_shelf =
+        solidBox(
+            x3,
+            y_shelf,
+            xhi,
+            y_shelf + wall_t);
 
-    Print() << "\n=== TWO-BRANCH FLUID TIMING MODEL ===\n";
-    Print() << "x1 = " << x1 << "\n";
-    Print() << "x2 = " << x2 << "\n";
-    Print() << "x3 = " << x3 << "\n";
-    Print() << "x4 = " << x4 << "\n";
-    Print() << "x5 = " << x5 << "\n";
-    Print() << "y_upper = " << y_upper << "\n";
-    Print() << "y_lower = " << y_lower << "\n";
-    Print() << "channel height = " << channel_h << "\n";
-    Print() << "======================================\n\n";
+    // ============================================================
+    // INNER WALL
+    //
+    //        +-------------------------+
+    //        |                         |
+    //        |                    +----+
+    //        |                    |
+    //        +--------------------+
+    //
+    // ============================================================
 
-    auto gshop = makeShop(geometry_if);
+    // Upper inner horizontal
+    auto inner_top =
+        solidBox(
+            xi_left,
+            yi_top,
+            xi_right + wall_t,
+            yi_top + wall_t);
+
+    // Left vertical
+    auto inner_left =
+        solidBox(
+            xi_left,
+            yi_low,
+            xi_left + wall_t,
+            yi_top + wall_t);
+
+    // Lower horizontal: left -> Point 4
+    auto inner_bottom =
+        solidBox(
+            xi_left,
+            yi_low,
+            x4 + wall_t,
+            yi_low + wall_t);
+
+    // Point 4 vertical step
+    auto inner_step_up =
+        solidBox(
+            x4,
+            yi_low,
+            x4 + wall_t,
+            yi_step + wall_t);
+
+    // Point 4 -> right vertical
+    auto inner_step_right =
+        solidBox(
+            x4,
+            yi_step,
+            xi_right + wall_t,
+            yi_step + wall_t);
+
+    // Right vertical: step -> upper inner wall
+    auto inner_right =
+        solidBox(
+            xi_right,
+            yi_step,
+            xi_right + wall_t,
+            yi_top + wall_t);
+
+    // ============================================================
+    // UNION ALL SOLID WALLS
+    // ============================================================
+
+    auto g1  = makeUnion(outer_top, outer_left_shelf);
+    auto g2  = makeUnion(g1, outer_left_drop);
+    auto g3  = makeUnion(g2, outer_bottom);
+    auto g4  = makeUnion(g3, outer_right_rise);
+    auto g5  = makeUnion(g4, outer_right_shelf);
+
+    auto g6  = makeUnion(g5, inner_top);
+    auto g7  = makeUnion(g6, inner_left);
+    auto g8  = makeUnion(g7, inner_bottom);
+    auto g9  = makeUnion(g8, inner_step_up);
+    auto g10 = makeUnion(g9, inner_step_right);
+    auto walls = makeUnion(g10, inner_right);
+
+    // ============================================================
+    // DEBUG OUTPUT
+    // ============================================================
+
+    Print() << "\n=====================================\n";
+    Print() << " TWO-BRANCH NEW CONFIG\n";
+    Print() << "=====================================\n";
+
+    Print() << "Point 1 = (" << x1 << ", " << y5 << ")\n";
+    Print() << "Point 2 = (" << x2 << ", " << y2 << ")\n";
+    Print() << "Point 3 = (" << x3 << ", " << y2 << ")\n";
+    Print() << "Point 4 = (" << x4 << ", " << yi_low << ")\n";
+    Print() << "Point 5 = (" << x5 << ", " << y5 << ")\n";
+
+    Print() << "\nTiming dimensions:\n";
+    Print() << "X = " << X << "\n";
+    Print() << "Y = " << Y << "\n";
+    Print() << "H = " << H << "\n";
+    Print() << "L = " << L << "\n";
+
+    Print() << "\nInner geometry:\n";
+    Print() << "xi_left  = " << xi_left << "\n";
+    Print() << "x4       = " << x4 << "\n";
+    Print() << "xi_right = " << xi_right << "\n";
+    Print() << "yi_low   = " << yi_low << "\n";
+    Print() << "yi_step  = " << yi_step << "\n";
+    Print() << "yi_top   = " << yi_top << "\n";
+
+    Print() << "=====================================\n\n";
+
+    auto gshop = makeShop(walls);
 
     Build(
         gshop,
