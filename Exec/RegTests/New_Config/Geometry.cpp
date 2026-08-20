@@ -761,12 +761,12 @@ TwoBranch_NewConfig::build(
     // Lower horizontal passage
     // -------------------------------
 
-    auto right_lower =
+    auto lower_channel =
       fluidBox(
-          x3 - channel_t,
+          x2,
           y2,
-          x3,
-          y_shelf);
+          x4,
+          yi_low);
     
       // Small bottom-right nub from Point 4 toward Point 3
     auto right_bottom_nub =
