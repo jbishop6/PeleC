@@ -762,11 +762,11 @@ TwoBranch_NewConfig::build(
     // -------------------------------
 
     auto lower_channel =
-      fluidBox(
-          x2,
-          y2,
-          x3,
-          yi_low);
+        fluidBox(
+            x2,
+            y2,
+            x4,
+            yi_low);
 
     // -------------------------------
     // Point-4 / lower-right region
@@ -781,11 +781,18 @@ TwoBranch_NewConfig::build(
   
   // Lower branch turns upward toward the shelf
   
+  // Keep the right vertical leg about one channel thickness wide
+const Real x_right_leg_left = x3 - channel_t;
+
+// Horizontal bridge from the lower channel into the right leg
+// Lower vertical turn from the lower channel
+const Real connector_overlap = 0.5 * channel_t;
+  
   auto right_lower =
     fluidBox(
-        x3 - channel_t,
+        x4 - connector_overlap,
         y2,
-        x3,
+        x4 + channel_t - connector_overlap,
         y_shelf);
   
   // Horizontal step at Point 4
