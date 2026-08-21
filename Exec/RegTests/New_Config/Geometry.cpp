@@ -790,9 +790,9 @@ const Real connector_overlap = 0.5 * channel_t;
   
   auto right_lower =
     fluidBox(
-        x3 - channel_t,
+        x4 - connector_overlap,
         y2,
-        x3,
+        x4 + channel_t - connector_overlap,
         y_shelf);
   
   // Horizontal step at Point 4
