@@ -767,6 +767,13 @@ TwoBranch_NewConfig::build(
             y2,
             x4,
             yi_low);
+      // Short lower-right passage from Point 4 to Point 3
+    auto right_bottom =
+        fluidBox(
+            x4,
+            y2,
+            x3,
+            yi_low);
 
     // -------------------------------
     // Point-4 / lower-right region
@@ -788,13 +795,14 @@ const Real x_right_leg_left = x3 - channel_t;
 // Lower vertical turn from the lower channel
 const Real connector_overlap = 0.5 * channel_t;
   
+   // Skinny vertical passage at Point 3
   auto right_lower =
-    fluidBox(
-        x4 - connector_overlap,
-        y2,
-        x4 + channel_t - connector_overlap,
-        y_shelf);
-  
+      fluidBox(
+          x3 - channel_t,
+          y2,
+          x3,
+          y_shelf);
+    
   // Horizontal step at Point 4
   auto right_step =
       fluidBox(
@@ -815,7 +823,7 @@ const Real connector_overlap = 0.5 * channel_t;
     // UNION OF ALL FLUID REGIONS
     // ============================================================
     
-     auto f1 = makeIntersection(
+    auto f1 = makeIntersection(
         upper_channel,
         left_connector);
     
@@ -825,14 +833,18 @@ const Real connector_overlap = 0.5 * channel_t;
     
     auto f3 = makeIntersection(
         f2,
-        right_lower);
+        right_bottom);
     
     auto f4 = makeIntersection(
         f3,
+        right_lower);
+    
+    auto f5 = makeIntersection(
+        f4,
         right_step);
     
     auto fluid_geometry = makeIntersection(
-        f4,
+        f5,
         right_upper);
     // ============================================================
     // DEBUG OUTPUT
