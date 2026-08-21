@@ -788,34 +788,35 @@ TwoBranch_NewConfig::build(
   
   // Lower branch turns upward toward the shelf
   
-  // Keep the right vertical leg about one channel thickness wide
-const Real x_right_leg_left = x3 - channel_t;
-
-// Horizontal bridge from the lower channel into the right leg
-// Lower vertical turn from the lower channel
-const Real connector_overlap = 0.5 * channel_t;
+  const Real eb_overlap =
+    0.5 * std::max(geom.CellSize(0), geom.CellSize(1));
   
-   // Skinny vertical passage at Point 3
+    // ============================================================
+  // RIGHT-HAND TURN
+  // ============================================================
+  
+  // Region between inner Point 4 and outer Point 3.
+  // This continues the lower channel around Point 4.
   auto right_lower =
       fluidBox(
-          x3 - channel_t,
+          x4 - eb_overlap,
           y2,
-          x3,
-          y_shelf);
-    
-  // Horizontal step at Point 4
+          x3 + eb_overlap,
+          yi_step + eb_overlap);
+  
+  // Passage between the Point-4 step and the outer shelf.
   auto right_step =
       fluidBox(
-          x4 - 0.5 * channel_t,
-          yi_step,
-          xi_right,
-          y_shelf);
+          x3 - eb_overlap,
+          yi_step - eb_overlap,
+          xi_right + eb_overlap,
+          y_shelf + eb_overlap);
   
-  // Skinny upper-right vertical passage
+  // Vertical passage back to the upper channel.
   auto right_upper =
       fluidBox(
-          xi_right,
-          y_shelf,
+          xi_right - eb_overlap,
+          y_shelf - eb_overlap,
           x5,
           y5);
 
