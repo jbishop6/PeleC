@@ -660,7 +660,6 @@ TwoBranch_NewConfig::build(
     const Real outer_inset = 0.15 * X;
 
     const Real x2 = x1 + outer_inset;
-    const Real x3 = x5 - outer_inset;
 
     // Vertical placement:
     // total timing-model height is L + H.
@@ -681,19 +680,17 @@ TwoBranch_NewConfig::build(
 
     // Y directly controls Point 4.
     const Real x4 = xi_left + Y;
+        // Point 3 follows Point 4 so the lower-right turn
+    // keeps a consistent width as Y changes.
+    const Real right_turn_width = 2.0 * channel_t;
+    const Real x3 = x4 + right_turn_width;
 
-    // Need room between Point 4 and Point 3 for the right junction.
-    const Real right_space = x3 - x4;
-
-    if (right_space <= 2.0 * channel_t) {
-        Print() << "\nERROR: Y is too large for this X.\n";
-        Print() << "X          = " << X << "\n";
-        Print() << "Y          = " << Y << "\n";
-        Print() << "x4         = " << x4 << "\n";
-        Print() << "x3         = " << x3 << "\n";
-        Print() << "right_space= " << right_space << "\n";
-        Abort("TwoBranch_NewConfig: increase X or decrease Y");
-    }
+     if (x3 >= x5 - channel_t) {
+      Print() << "\nERROR: Geometry does not fit in the domain.\n";
+      Print() << "x3 = " << x3 << "\n";
+      Print() << "x5 = " << x5 << "\n";
+      Abort("TwoBranch_NewConfig: increase X or decrease Y");
+      }
 
     const Real xi_right = x5 - channel_t;
   
