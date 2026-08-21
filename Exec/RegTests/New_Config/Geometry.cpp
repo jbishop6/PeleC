@@ -767,13 +767,6 @@ TwoBranch_NewConfig::build(
             y2,
             x4,
             yi_low);
-      // Short lower-right passage from Point 4 to Point 3
-    auto right_bottom =
-        fluidBox(
-            x4,
-            y2,
-            x3,
-            yi_low);
 
     // -------------------------------
     // Point-4 / lower-right region
@@ -788,35 +781,33 @@ TwoBranch_NewConfig::build(
   
   // Lower branch turns upward toward the shelf
   
-  const Real eb_overlap =
-    0.5 * std::max(geom.CellSize(0), geom.CellSize(1));
+  // Keep the right vertical leg about one channel thickness wide
+const Real x_right_leg_left = x3 - channel_t;
+
+// Horizontal bridge from the lower channel into the right leg
+// Lower vertical turn from the lower channel
+const Real connector_overlap = 0.5 * channel_t;
   
-    // ============================================================
-  // RIGHT-HAND TURN
-  // ============================================================
-  
-  // Region between inner Point 4 and outer Point 3.
-  // This continues the lower channel around Point 4.
   auto right_lower =
-      fluidBox(
-          x4 - eb_overlap,
-          y2,
-          x3 + eb_overlap,
-          yi_step + eb_overlap);
+    fluidBox(
+        x4 - connector_overlap,
+        y2,
+        x4 + channel_t - connector_overlap,
+        y_shelf);
   
-  // Passage between the Point-4 step and the outer shelf.
+  // Horizontal step at Point 4
   auto right_step =
       fluidBox(
-          x3 - eb_overlap,
-          yi_step - eb_overlap,
-          xi_right + eb_overlap,
-          y_shelf + eb_overlap);
+          x4 - 0.5 * channel_t,
+          yi_step,
+          xi_right,
+          y_shelf);
   
-  // Vertical passage back to the upper channel.
+  // Skinny upper-right vertical passage
   auto right_upper =
       fluidBox(
-          xi_right - eb_overlap,
-          y_shelf - eb_overlap,
+          xi_right,
+          y_shelf,
           x5,
           y5);
 
@@ -824,7 +815,7 @@ TwoBranch_NewConfig::build(
     // UNION OF ALL FLUID REGIONS
     // ============================================================
     
-    auto f1 = makeIntersection(
+     auto f1 = makeIntersection(
         upper_channel,
         left_connector);
     
@@ -834,18 +825,14 @@ TwoBranch_NewConfig::build(
     
     auto f3 = makeIntersection(
         f2,
-        right_bottom);
+        right_lower);
     
     auto f4 = makeIntersection(
         f3,
-        right_lower);
-    
-    auto f5 = makeIntersection(
-        f4,
         right_step);
     
     auto fluid_geometry = makeIntersection(
-        f5,
+        f4,
         right_upper);
     // ============================================================
     // DEBUG OUTPUT
