@@ -823,7 +823,7 @@ const Real connector_overlap = 0.5 * channel_t;
       fluidBox(
           xi_right,
           y_shelf,
-          x5,
+          xhi,
           y5);
 
     // ============================================================
