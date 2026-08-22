@@ -81,7 +81,7 @@ pelec.eb_in_domain = 1
 
 eb2.build_type = all
 eb2.max_coarsening_level = 0
-eb2.geom_type = threebranch
+eb2.geom_type = threebranch_newconfig
 
 # same params the rotated_box uses 
 eb2.box_lo = 0.40 0.03
