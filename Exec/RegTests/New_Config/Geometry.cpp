@@ -752,6 +752,15 @@ TwoBranch_NewConfig::build(
             xi_left,
             y_shelf);
 
+    // Fill the gap between the upper and lower left branches
+    // to create one large inlet region.
+    auto left_inlet_slab =
+        fluidBox(
+            x1,
+            y_shelf,
+            xi_left,
+            yi_top);
+
     // -------------------------------
     // Left connector
     // -------------------------------
@@ -827,22 +836,26 @@ const Real connector_overlap = 0.5 * channel_t;
     
     auto f2 = makeIntersection(
         f1,
-        left_connector);
+        left_inlet_slab);
     
     auto f3 = makeIntersection(
         f2,
-        lower_channel);
+        left_connector);
     
     auto f4 = makeIntersection(
         f3,
-        right_lower);
+        lower_channel);
     
     auto f5 = makeIntersection(
         f4,
+        right_lower);
+    
+    auto f6 = makeIntersection(
+        f5,
         right_step);
     
     auto fluid_geometry = makeIntersection(
-        f5,
+        f6,
         right_upper);
     // ============================================================
     // DEBUG OUTPUT
