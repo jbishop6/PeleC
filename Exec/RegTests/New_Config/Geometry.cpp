@@ -1165,7 +1165,7 @@ const Real connector_overlap = 0.5 * channel_t;
           x6,
           y6,
           x7,
-          y7 + third_overlap);
+          y7);
 
     // ============================================================
     // UNION OF ALL FLUID REGIONS
