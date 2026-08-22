@@ -118,7 +118,7 @@ ebd.boundary_grad_stencil_type = 1
 
 # ---- Two-branch geometry knobs ----
 
-twobranch_newconfig.X = 0.0500
+twobranch_newconfig.X = 0.1500
 twobranch_newconfig.Y = 0.050
 twobranch_newconfig.L = 0.015
 twobranch_newconfig.H = 0.030
