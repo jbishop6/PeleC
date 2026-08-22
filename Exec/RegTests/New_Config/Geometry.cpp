@@ -738,7 +738,7 @@ TwoBranch_NewConfig::build(
 
     auto upper_channel =
         fluidBox(
-            x1,
+            xlo,
             yi_top,
             x5,
             y5);
