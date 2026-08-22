@@ -747,7 +747,7 @@ TwoBranch_NewConfig::build(
   
     auto left_inlet =
         fluidBox(
-            x1,
+            xlo,
             y_left_inlet_low,
             xi_left,
             y_shelf);
