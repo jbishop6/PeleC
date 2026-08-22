@@ -907,6 +907,307 @@ const Real connector_overlap = 0.5 * channel_t;
 }
 
 void
+ThreeBranch_NewConfig::build(
+    const amrex::Geometry& geom,
+    const int max_coarsening_level)
+{
+    using namespace amrex;
+    using namespace amrex::EB2;
+
+    ParmParse pp("threebranch_newconfig");
+
+    // ============================================================
+    // ONLY USER-ADJUSTABLE PARAMETERS
+    // ============================================================
+
+    Real X = 0.100;   // total horizontal length
+    Real Y = 0.050;   // inner lower horizontal length
+    Real L = 0.015;   // lower vertical offset
+    Real H = 0.030;   // upper vertical offset
+    Real W = 0.010;   // third-branch width
+    Real Z = 0.030;   // third-branch length
+
+    pp.query("X", X);
+    pp.query("Y", Y);
+    pp.query("L", L);
+    pp.query("H", H);
+    pp.query("W", W);
+    pp.query("Z", Z);
+
+    // ============================================================
+    // DOMAIN
+    // ============================================================
+
+    const RealBox& rb = geom.ProbDomain();
+
+    const Real xlo = rb.lo(0);
+    const Real xhi = rb.hi(0);
+    const Real ylo = rb.lo(1);
+    const Real yhi = rb.hi(1);
+
+    // ============================================================
+    // AUTOMATIC / DERIVED DIMENSIONS
+    // ============================================================
+
+    // Channel thickness 
+    const Real channel_t = 0.005;
+
+    // Horizontal placement:
+    // center an X-long geometry in the computational domain.
+    const Real x1 = 0.5 * (xlo + xhi - X);
+    const Real x5 = x1 + X;
+
+    // Points 2 and 3 are automatically inset from the ends.
+    const Real outer_inset = 0.15 * X;
+
+    const Real x2 = x1 + outer_inset;
+
+    // Vertical placement:
+    // total timing-model height is L + H.
+    const Real total_height = L + H;
+
+    const Real y2 =
+        0.5 * (ylo + yhi - total_height);
+
+    const Real y_shelf = y2 + L;
+    const Real y5      = y_shelf + H;
+
+    // ============================================================
+    // INNER GEOMETRY
+    // ============================================================
+
+    // Left inner wall sits one channel thickness inward.
+    const Real xi_left = x2 + channel_t;
+
+    // Y directly controls Point 4.
+    const Real x4 = xi_left + Y;
+        // Point 3 follows Point 4 so the lower-right turn
+    // keeps a consistent width as Y changes.
+    const Real right_turn_width = 2.0 * channel_t;
+    const Real x3 = x4 + right_turn_width;
+
+     if (x3 >= x5 - channel_t) {
+      Print() << "\nERROR: Geometry does not fit in the domain.\n";
+      Print() << "x3 = " << x3 << "\n";
+      Print() << "x5 = " << x5 << "\n";
+      Abort("TwoBranch_NewConfig: increase X or decrease Y");
+      }
+
+    const Real xi_right = x5 - channel_t;
+  
+    // Vertical inner contour.
+    const Real yi_low =
+        y2 + channel_t;
+
+    const Real yi_top =
+        y5 - channel_t;
+
+    // Step is automatically one channel thickness below the shelf.
+    const Real yi_step =
+        y_shelf - channel_t;
+
+    // ============================================================
+    // HELPER: FLUID BOX
+    // ============================================================
+
+    auto fluidBox =
+      [] (Real xa, Real ya, Real xb, Real yb)
+    {
+        Array<Real, AMREX_SPACEDIM> lo{
+            AMREX_D_DECL(
+                std::min(xa, xb),
+                std::min(ya, yb),
+                0.0)};
+
+        Array<Real, AMREX_SPACEDIM> hi{
+            AMREX_D_DECL(
+                std::max(xa, xb),
+                std::max(ya, yb),
+                0.0)};
+
+        // true = fluid inside this box
+        return BoxIF(lo, hi, true);
+    };
+
+    // ============================================================
+    // FLUID CHANNEL
+    // ============================================================
+
+    // -------------------------------
+    // Upper horizontal passage
+    // -------------------------------
+
+    auto upper_channel =
+        fluidBox(
+            xlo,
+            yi_top,
+            x5,
+            y5);
+
+    const Real y_left_inlet_low = y_shelf - channel_t;
+  
+    auto left_inlet =
+        fluidBox(
+            xlo,
+            y_left_inlet_low,
+            xi_left,
+            y_shelf);
+
+    // Fill the gap between the upper and lower left branches
+    // to create one large inlet region.
+    auto left_inlet_slab =
+        fluidBox(
+            xlo,
+            y_shelf,
+            xi_left,
+            yi_top);
+
+    // -------------------------------
+    // Left connector
+    // -------------------------------
+
+    auto left_connector =
+        fluidBox(
+            x2,
+            y2,
+            xi_left,
+            y_shelf);
+
+    // -------------------------------
+    // Lower horizontal passage
+    // -------------------------------
+
+    auto lower_channel =
+        fluidBox(
+            x2,
+            y2,
+            x4,
+            yi_low);
+
+    // -------------------------------
+    // Point-4 / lower-right region
+    // -------------------------------
+
+      // ------------------------------------------------------------
+  // Right-hand connection
+  //
+  // Intentionally overlap the three pieces by channel_t so the
+  // EB grid sees one continuous fluid passage.
+  // ------------------------------------------------------------
+  
+  // Lower branch turns upward toward the shelf
+  
+  // Keep the right vertical leg about one channel thickness wide
+const Real x_right_leg_left = x3 - channel_t;
+
+// Horizontal bridge from the lower channel into the right leg
+// Lower vertical turn from the lower channel
+const Real connector_overlap = 0.5 * channel_t;
+  
+  auto right_lower =
+    fluidBox(
+        x4 - connector_overlap,
+        y2,
+        x4 + channel_t - connector_overlap,
+        yi_step);
+  
+  // Horizontal step at Point 4
+  auto right_step =
+      fluidBox(
+          x4 - 0.5 * channel_t,
+          yi_step,
+          xhi,
+          y_shelf);
+  
+  // Skinny upper-right vertical passage
+  auto right_upper =
+      fluidBox(
+          xi_right,
+          y_shelf,
+          xhi,
+          y5);
+
+    // ============================================================
+    // UNION OF ALL FLUID REGIONS
+    // ============================================================
+    
+    auto f1 = makeIntersection(
+        upper_channel,
+        left_inlet);
+    
+    auto f2 = makeIntersection(
+        f1,
+        left_inlet_slab);
+    
+    auto f3 = makeIntersection(
+        f2,
+        left_connector);
+    
+    auto f4 = makeIntersection(
+        f3,
+        lower_channel);
+    
+    auto f5 = makeIntersection(
+        f4,
+        right_lower);
+    
+    auto f6 = makeIntersection(
+        f5,
+        right_step);
+    
+    auto fluid_geometry = makeIntersection(
+        f6,
+        right_upper);
+    // ============================================================
+    // DEBUG OUTPUT
+    // ============================================================
+
+    Print() << "\n========================================\n";
+    Print() << " TWO-BRANCH NEW CONFIG\n";
+    Print() << "========================================\n";
+
+    Print() << "INPUT PARAMETERS:\n";
+    Print() << "X = " << X << "\n";
+    Print() << "Y = " << Y << "\n";
+    Print() << "L = " << L << "\n";
+    Print() << "H = " << H << "\n";
+
+    Print() << "\nDERIVED PARAMETERS:\n";
+    Print() << "channel_t   = " << channel_t << "\n";
+
+    Print() << "\nOUTER POINTS:\n";
+    Print() << "P1 = (" << x1 << ", " << y5 << ")\n";
+    Print() << "P2 = (" << x2 << ", " << y2 << ")\n";
+    Print() << "P3 = (" << x3 << ", " << y2 << ")\n";
+    Print() << "P5 = (" << x5 << ", " << y5 << ")\n";
+
+    Print() << "\nINNER GEOMETRY:\n";
+    Print() << "xi_left  = " << xi_left << "\n";
+    Print() << "x4       = " << x4 << "\n";
+    Print() << "xi_right = " << xi_right << "\n";
+
+    Print() << "yi_low   = " << yi_low << "\n";
+    Print() << "yi_step  = " << yi_step << "\n";
+    Print() << "yi_top   = " << yi_top << "\n";
+
+    Print() << "========================================\n\n";
+
+    // ============================================================
+    // BUILD EB
+    // ============================================================
+
+    auto gshop = makeShop(fluid_geometry);
+
+    Build(
+        gshop,
+        geom,
+        max_coarsening_level,
+        max_coarsening_level,
+        128,
+        false);
+}
+
+void
 CheckpointFile::build(
   const amrex::Geometry& geom, const int max_coarsening_level)
 {
