@@ -648,8 +648,8 @@ TwoBranch_NewConfig::build(
     // AUTOMATIC / DERIVED DIMENSIONS
     // ============================================================
 
-    // Channel thickness scales automatically with L and H.
-    const Real channel_t = 0.20 * std::min(L, H);
+    // Channel thickness 
+    const Real channel_t = 0.005;
 
     // Horizontal placement:
     // center an X-long geometry in the computational domain.
