@@ -1007,6 +1007,33 @@ ThreeBranch_NewConfig::build(
         y_shelf - channel_t;
 
     // ============================================================
+    // THIRD BRANCH
+    // ============================================================
+    
+    // Branch begins at the lower-right outlet level.
+    const Real x6 = x3;
+    const Real x7 = x6 + W;
+    
+    const Real y7 = y_shelf;
+    const Real y6 = y7 - Z;
+    
+    // Make sure it remains inside the computational domain.
+    if (x7 >= xhi) {
+        Print() << "\nERROR: W makes third branch too wide.\n";
+        Print() << "x7  = " << x7 << "\n";
+        Print() << "xhi = " << xhi << "\n";
+        Abort("ThreeBranch_NewConfig: decrease W");
+    }
+    
+    if (y6 <= ylo) {
+        Print() << "\nERROR: Z makes third branch too long.\n";
+        Print() << "y6  = " << y6 << "\n";
+        Print() << "ylo = " << ylo << "\n";
+        Abort("ThreeBranch_NewConfig: decrease Z");
+    }
+
+  
+    // ============================================================
     // HELPER: FLUID BOX
     // ============================================================
 
@@ -1127,10 +1154,23 @@ const Real connector_overlap = 0.5 * channel_t;
           xhi,
           y5);
 
+  // -------------------------------
+  // Third downward branch
+  // -------------------------------
+  
+  const Real third_overlap = 0.5 * channel_t;
+  
+  auto third_branch =
+      fluidBox(
+          x6,
+          y6,
+          x7,
+          y7 + third_overlap);
+
     // ============================================================
     // UNION OF ALL FLUID REGIONS
     // ============================================================
-    
+        
     auto f1 = makeIntersection(
         upper_channel,
         left_inlet);
@@ -1155,15 +1195,19 @@ const Real connector_overlap = 0.5 * channel_t;
         f5,
         right_step);
     
-    auto fluid_geometry = makeIntersection(
+    auto f7 = makeIntersection(
         f6,
         right_upper);
+    
+    auto fluid_geometry = makeIntersection(
+        f7,
+        third_branch);
     // ============================================================
     // DEBUG OUTPUT
     // ============================================================
 
     Print() << "\n========================================\n";
-    Print() << " TWO-BRANCH NEW CONFIG\n";
+    Print() << " THREE-BRANCH NEW CONFIG\n";
     Print() << "========================================\n";
 
     Print() << "INPUT PARAMETERS:\n";
@@ -1171,8 +1215,21 @@ const Real connector_overlap = 0.5 * channel_t;
     Print() << "Y = " << Y << "\n";
     Print() << "L = " << L << "\n";
     Print() << "H = " << H << "\n";
+    Print() << "W = " << W << "\n";
+    Print() << "Z = " << Z << "\n";
 
-    Print() << "\nDERIVED PARAMETERS:\n";
+
+    Print() << "\nTHIRD BRANCH:\n";
+    Print() << "P6 = (" << x6 << ", " << y6 << ")\n";
+    Print() << "P7 = (" << x7 << ", " << y7 << ")\n";
+    
+    Print() << "W requested = " << W
+            << " | actual = " << x7 - x6 << "\n";
+    
+    Print() << "Z requested = " << Z
+            << " | actual = " << y7 - y6 << "\n";
+
+    Print() << "\nFIXED PARAMETERS:\n";
     Print() << "channel_t   = " << channel_t << "\n";
 
     Print() << "\nOUTER POINTS:\n";
