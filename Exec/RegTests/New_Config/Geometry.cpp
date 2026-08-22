@@ -692,7 +692,7 @@ TwoBranch_NewConfig::build(
       Abort("TwoBranch_NewConfig: increase X or decrease Y");
       }
 
-    const Real xi_right = x5 - 0.5 * channel_t;
+    const Real xi_right = x5 - channel_t;
   
     // Vertical inner contour.
     const Real yi_low =
@@ -803,7 +803,7 @@ const Real connector_overlap = 0.5 * channel_t;
   // Skinny upper-right vertical passage
   auto right_upper =
       fluidBox(
-          xi_right,
+          x4,
           y_shelf,
           x5,
           y5);
