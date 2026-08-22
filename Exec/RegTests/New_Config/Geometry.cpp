@@ -756,7 +756,7 @@ TwoBranch_NewConfig::build(
     // to create one large inlet region.
     auto left_inlet_slab =
         fluidBox(
-            x1,
+            xlo,
             y_shelf,
             xi_left,
             yi_top);
