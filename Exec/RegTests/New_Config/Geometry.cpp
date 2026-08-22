@@ -743,6 +743,15 @@ TwoBranch_NewConfig::build(
             x5,
             y5);
 
+    const Real y_left_inlet_low = y_shelf - channel_t;
+  
+    auto left_inlet =
+        fluidBox(
+            x1,
+            y_left_inlet_low,
+            xi_left,
+            y_shelf);
+
     // -------------------------------
     // Left connector
     // -------------------------------
@@ -752,7 +761,7 @@ TwoBranch_NewConfig::build(
             x2,
             y2,
             xi_left,
-            y5);
+            y_shelf);
 
     // -------------------------------
     // Lower horizontal passage
@@ -803,7 +812,7 @@ const Real connector_overlap = 0.5 * channel_t;
   // Skinny upper-right vertical passage
   auto right_upper =
       fluidBox(
-          x4,
+          xi_right,
           y_shelf,
           x5,
           y5);
@@ -812,24 +821,28 @@ const Real connector_overlap = 0.5 * channel_t;
     // UNION OF ALL FLUID REGIONS
     // ============================================================
     
-     auto f1 = makeIntersection(
+    auto f1 = makeIntersection(
         upper_channel,
-        left_connector);
+        left_inlet);
     
     auto f2 = makeIntersection(
         f1,
-        lower_channel);
+        left_connector);
     
     auto f3 = makeIntersection(
         f2,
-        right_lower);
+        lower_channel);
     
     auto f4 = makeIntersection(
         f3,
+        right_lower);
+    
+    auto f5 = makeIntersection(
+        f4,
         right_step);
     
     auto fluid_geometry = makeIntersection(
-        f4,
+        f5,
         right_upper);
     // ============================================================
     // DEBUG OUTPUT
