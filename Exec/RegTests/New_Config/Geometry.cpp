@@ -826,6 +826,13 @@ const Real connector_overlap = 0.5 * channel_t;
           x5,
           y5);
 
+  auto right_outlet_slab =
+    fluidBox(
+        xi_right,
+        y_shelf,
+        xhi,
+        yi_top);
+
     // ============================================================
     // UNION OF ALL FLUID REGIONS
     // ============================================================
@@ -848,15 +855,15 @@ const Real connector_overlap = 0.5 * channel_t;
     
     auto f5 = makeIntersection(
         f4,
-        right_lower);
+        right_step);
     
     auto f6 = makeIntersection(
         f5,
-        right_step);
+        right_upper);
     
     auto fluid_geometry = makeIntersection(
         f6,
-        right_upper);
+        right_outlet_slab);
     // ============================================================
     // DEBUG OUTPUT
     // ============================================================
