@@ -815,7 +815,7 @@ const Real connector_overlap = 0.5 * channel_t;
       fluidBox(
           x4 - 0.5 * channel_t,
           yi_step,
-          xi_right,
+          xhi,
           y_shelf);
   
   // Skinny upper-right vertical passage
