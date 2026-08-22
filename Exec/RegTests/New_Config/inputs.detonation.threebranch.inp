@@ -111,6 +111,6 @@ geo.cR = 0.05    # right-side connection length
 geo.Z = 0.1 # Length of third branch
 #geo.X = 0.4 # Length of channel (circumference of RDE)
 #geo.H = 0.15 #Total height from top of upper branch to bottom of lower branch
-geo.W = 0.1 # Thickness of the third branch
+geo.W = 0.05 # Thickness of the third branch
 geo.H = 0.188092301
 geo.X = 0.326962268
