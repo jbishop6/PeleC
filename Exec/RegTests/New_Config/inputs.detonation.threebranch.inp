@@ -15,9 +15,14 @@ pelec.fixed_dt = 1e-11
 geometry.is_periodic = 0 0
 geometry.coord_sys   = 0
 geometry.prob_lo     = 0.0  0.0
-geometry.prob_hi     = 1.0  2.0   #0.125
-geometry.use_h = 0
-amr.n_cell           = 512  1024 #64
+#geometry.prob_hi     = 1.0  2.0   #0.125
+#geometry.use_h = 0
+#amr.n_cell           = 512  1024 #64
+
+geometry.prob_lo = 0.0 0.0
+geometry.prob_hi = 0.12 0.08
+
+amr.n_cell = 192 128
 
 # ------------------ BOUNDARY CONDITIONS -------------------
 pelec.lo_bc = "SlipWall" "SlipWall"
