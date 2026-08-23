@@ -1018,7 +1018,7 @@ ThreeBranch_NewConfig::build(
     const Real y6 = y7 - Z;
     
     // Make sure it remains inside the computational domain.
-    if (x7 >= xhi) {
+    if (x7 > xhi) {
         Print() << "\nERROR: W makes third branch too wide.\n";
         Print() << "x7  = " << x7 << "\n";
         Print() << "xhi = " << xhi << "\n";
