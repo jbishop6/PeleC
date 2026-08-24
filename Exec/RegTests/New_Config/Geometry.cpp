@@ -954,7 +954,7 @@ ThreeBranch_NewConfig::build(
 
     // Horizontal placement:
     // center an X-long geometry in the computational domain.
-    const Real x1 = 0.5 * (xlo + xhi - X);
+    const Real x1 = xlo + 0.01;
     const Real x5 = x1 + X;
 
     // Points 2 and 3 are automatically inset from the ends.
