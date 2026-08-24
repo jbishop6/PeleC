@@ -25,7 +25,7 @@ echo "========================================"
 # ------------------------------------------------------------
 # Run PeleC
 # ------------------------------------------------------------
-srun ./PeleC2d.gnu.MPI.ex input.detonation1D.inp
+mpirun -np "$SLURM_NTASKS" ./PeleC2d.gnu.MPI.ex input.detonation1D.inp
 
 run_status=$?
 
