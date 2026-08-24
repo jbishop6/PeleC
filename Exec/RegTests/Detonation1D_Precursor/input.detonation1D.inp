@@ -21,6 +21,7 @@ pelec.dt_cutoff   = 5.0e-20
 # ------------------ CHEMISTRY SOLVER ------------------
 
 cvode.dt_min = 1.0e-18
+cvode.solve_type = dense_direct
 ode.rtol     = 1.0e-6
 ode.atol     = 1.0e-10
 
