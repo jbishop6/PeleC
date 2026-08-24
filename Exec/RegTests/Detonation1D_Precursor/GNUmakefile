@@ -1,5 +1,5 @@
 # AMReX
-DIM = 2
+DIM = 1
 COMP = gnu
 PRECISION = DOUBLE
 
@@ -21,7 +21,7 @@ USE_OMP = FALSE
 USE_CUDA = FALSE
 USE_HIP = FALSE
 USE_SYCL = FALSE
-USE_EB = TRUE
+USE_EB = FALSE
 
 # Debugging
 DEBUG = FALSE
@@ -40,7 +40,6 @@ Transport_Model := Simple
 Bpack := ./Make.package
 Blocs := .
 PELE_HOME := ../../..
-PROB_SRC += prob.cpp
 
 include $(PELE_HOME)/Exec/Make.PeleC
 
