@@ -7,10 +7,9 @@
 
 # First run: keep this short just to verify initialization
 max_step = 20
-stop_time = 1.0e-7
+stop_time = 5.e-6
 
-# Let CFL determine the timestep initially
-# pelec.fixed_dt = 1.0e-10
+pelec.fixed_dt = 1.e-11
 
 pelec.cfl         = 0.5
 pelec.init_shrink = 0.1
@@ -119,7 +118,7 @@ amr.plot_files_output = 1
 amr.plot_file = plt
 
 # Frequent output while debugging
-amr.plot_int = 1
+amr.plot_int = 50
 
 amr.plot_vars = density Temp
 
