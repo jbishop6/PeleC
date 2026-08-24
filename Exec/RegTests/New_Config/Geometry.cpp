@@ -1011,7 +1011,7 @@ ThreeBranch_NewConfig::build(
     // ============================================================
     
     // Branch begins at the lower-right outlet level.
-    const Real x6 = x5;
+    const Real x6 = xi_right;
     const Real x7 = x6 + W;
     
     const Real y7 = y_shelf;
