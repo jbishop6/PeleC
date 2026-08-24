@@ -7,27 +7,32 @@
 
 struct ProbParmDevice
 {
-  amrex::Real p_l = -1.0;  // left pressure (erg/cc)
-  amrex::Real u_l = 0.0;   // left velocity (cm/s)
-  amrex::Real rho_l = 0.0; // left density (g/cc)
-  amrex::Real rhoe_l;
-  amrex::Real T_l = -1.0;
-  amrex::Real p_r = -1.0;    // right pressure (erg/cc)
-  amrex::Real u_r = 0.0;     // right velocity (cm/s)
-  amrex::Real rho_r = 0.125; // right density (g/cc)
-  amrex::Real rhoe_r;
-  amrex::Real T_r = -1.0;
-  amrex::Real frac = 0.5; // fraction of the domain for the interface
-  int idir = 1;           // direction across which to jump
+  // Left / ignition state
+  amrex::Real p_l   = -1.0;
+  amrex::Real u_l   = 0.0;
+  amrex::Real rho_l = 0.0;
+  amrex::Real rhoe_l = 0.0;
+  amrex::Real T_l   = -1.0;
+
+  // Right / fresh-reactant state
+  amrex::Real p_r   = -1.0;
+  amrex::Real u_r   = 0.0;
+  amrex::Real rho_r = 0.0;
+  amrex::Real rhoe_r = 0.0;
+  amrex::Real T_r   = -1.0;
+
+  // Fraction of domain occupied by the ignition/driver region
+  amrex::Real frac = 0.05;
+
+  // In 1-D this will be x-direction
+  int idir = 0;
+
   amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> split;
-  int left_gas_id = N2_ID;
-  int right_gas_id = HE_ID;
 };
 
 struct ProbParmHost
 {
-  std::string gasL = "N2";
-  std::string gasR = "HE";
   ProbParmHost() = default;
 };
+
 #endif
