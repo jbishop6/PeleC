@@ -25,7 +25,20 @@ echo "========================================"
 # ------------------------------------------------------------
 # Run PeleC
 # ------------------------------------------------------------
-mpirun -np "$SLURM_NTASKS" ./PeleC2d.gnu.MPI.ex input.detonation1D.inp
+echo "Hostname: $(hostname)"
+echo "SLURM_JOB_ID=$SLURM_JOB_ID"
+echo "SLURM_NODELIST=$SLURM_NODELIST"
+echo "SLURM_NTASKS=$SLURM_NTASKS"
+echo "SLURM_TASKS_PER_NODE=$SLURM_TASKS_PER_NODE"
+
+echo "mpirun: $(which mpirun)"
+mpirun --version
+
+mpirun \
+    --mca plm slurm \
+    --mca ras slurm \
+    -np "$SLURM_NTASKS" \
+    ./PeleC2d.gnu.MPI.ex input.detonation1D.inp
 
 run_status=$?
 
