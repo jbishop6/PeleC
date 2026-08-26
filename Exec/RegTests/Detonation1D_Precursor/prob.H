@@ -99,12 +99,11 @@ pc_initdata(
     state(i, j, k, UTEMP) =
       prob_parm.T_l;
 
-    // Species densities: rho * Y_k
-    state(i, j, k, UFS + H2_ID) =
-      rho * Y_H2;
-
-    state(i, j, k, UFS + O2_ID) =
-      rho * Y_O2;
+    // Burned-product approximation
+    constexpr amrex::Real Y_H2O_prod = 1.0;
+    
+    state(i, j, k, UFS + H2O_ID) =
+      rho * Y_H2O_prod;
   }
 
   // ============================================================
