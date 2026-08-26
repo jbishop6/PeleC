@@ -73,20 +73,30 @@ amrex_probinit(
     P->split[0] =
         problo[0] + P->frac * (probhi[0] - problo[0]);
 
-    // ============================================================
-    // STOICHIOMETRIC H2/O2 MIXTURE
-    //
-    // 2 H2 + O2
-    //
-    // mass fractions approximately:
-    // Y_H2 = 0.1119
-    // Y_O2 = 0.8881
-    // ============================================================
+// ============================================================
+// LEFT STATE COMPOSITION: BURNED PRODUCTS
+// ============================================================
+    
+amrex::Real Yl[NUM_SPECIES] = {0.0};
+    
+// Simple burned-product approximation for first test
+Yl[H2O_ID] = 1.0;
 
-    amrex::Real Y[NUM_SPECIES] = {0.0};
 
-    Y[H2_ID] = 0.1119;
-    Y[O2_ID] = 0.8881;
+// ============================================================
+// RIGHT STATE COMPOSITION: FRESH STOICHIOMETRIC H2/O2
+//
+// 2 H2 + O2
+//
+// mass fractions approximately:
+// Y_H2 = 0.1119
+// Y_O2 = 0.8881
+// ============================================================
+
+amrex::Real Yr[NUM_SPECIES] = {0.0};
+
+Yr[H2_ID] = 0.1119;
+Yr[O2_ID] = 0.8881;
 
     // ============================================================
     // COMPUTE CONSISTENT LEFT STATE
@@ -96,14 +106,14 @@ amrex_probinit(
 
     eos.PYT2R(
         P->p_l,
-        Y,
+        Yl,
         P->T_l,
         P->rho_l);
-
+    
     eos.RTY2E(
         P->rho_l,
         P->T_l,
-        Y,
+        Yl,
         e_l);
 
     P->rhoe_l = P->rho_l * e_l;
@@ -116,14 +126,14 @@ amrex_probinit(
 
     eos.PYT2R(
         P->p_r,
-        Y,
+        Yr,
         P->T_r,
         P->rho_r);
-
+    
     eos.RTY2E(
         P->rho_r,
         P->T_r,
-        Y,
+        Yr,
         e_r);
 
     P->rhoe_r = P->rho_r * e_r;
@@ -137,7 +147,7 @@ amrex_probinit(
         << " 1-D DETONATION PRECURSOR INITIALIZATION\n"
         << "========================================\n"
         << "split x = " << P->split[0] << "\n"
-        << "\nLEFT DRIVER:\n"
+        << "\nLEFT BURNED PRODUCTS:\n"
         << "T   = " << P->T_l << "\n"
         << "p   = " << P->p_l << "\n"
         << "rho = " << P->rho_l << "\n"
@@ -147,9 +157,12 @@ amrex_probinit(
         << "p   = " << P->p_r << "\n"
         << "rho = " << P->rho_r << "\n"
         << "u   = " << P->u_r << "\n"
-        << "\nMIXTURE:\n"
-        << "Y_H2 = " << Y[H2_ID] << "\n"
-        << "Y_O2 = " << Y[O2_ID] << "\n"
+        << "\nLEFT PRODUCTS:\n"
+        << "Y_H2O = " << Yl[H2O_ID] << "\n"
+        
+        << "\nRIGHT REACTANTS:\n"
+        << "Y_H2 = " << Yr[H2_ID] << "\n"
+        << "Y_O2 = " << Yr[O2_ID] << "\n"
         << "========================================\n\n";
 }
 
