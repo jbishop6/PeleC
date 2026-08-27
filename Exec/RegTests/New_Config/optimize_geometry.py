@@ -25,51 +25,34 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern
 from scipy.stats import norm
 
-# Allow custom output directory via CLI
-#if len(sys.argv) > 1:
-#    SCRATCH_BASE = sys.argv[1]
-#else:
-  #  SCRATCH_BASE = "/mmfs1/scratch/jbishop6/PeleC/Exec/RegTests/Detonation2D/outputs"
-
-# Ensure the base directory exists
-#os.makedirs(SCRATCH_BASE, exist_ok=True)
-
-#os.makedirs("lhs_samples", exist_ok=True)
-#os.makedirs("logs", exist_ok=True)  # If needed
-
 # Shared across all optimization runs
 # Shared input and result files — read-only
-SHARED_BASE = os.path.expanduser("~/PeleC/Exec/RegTests/Detonation2D/outputs_new")
+SHARED_BASE = os.path.expanduser("~/PeleC/Exec/RegTests/New_Config/outputs")
 LHS_INPUT_CSV = os.path.join(SHARED_BASE, "lhs_samples", "lhs_input.csv")
 LHS_RESULTS_CSV = os.path.join(SHARED_BASE, "results_log.csv")   # <- This is important
 
 # New job-specific scratch output dir
-SCRATCH_BASE = os.path.expanduser("~/PeleC/Exec/RegTests/Detonation2D/outputs_new")
+SCRATCH_BASE = os.path.expanduser("~/PeleC/Exec/RegTests/New_Config/outputs")
 os.makedirs(SCRATCH_BASE, exist_ok=True)
-
-#os.makedirs(os.path.join(output_base, "lhs_samples"), exist_ok=True)
-
-
-
 
 
 print("[DEBUG] Python script started", file=sys.stderr)
 
 # Setup paths
 INP_FILE = "inputs.detonation.threebranch.inp"
-SIM_EXECUTABLE = "/home/jbishop6/PeleC/Exec/RegTests/Detonation2D/PeleC2d.gnu.ex"
+SIM_EXECUTABLE = "/home/jbishop6/PeleC/Exec/RegTests/New_Config/PeleC2d.gnu.MPI.ex"
 RESULTS_LOG = os.path.join(SCRATCH_BASE, "results_log.csv")
 
 # Create empty results_log.csv with headers (if not already there)
 if not os.path.exists(RESULTS_LOG):
     with open(RESULTS_LOG, "w") as f:
-        f.write("iteration,geo.Z,geo.X,geo.H,geo.W,thrust_avg,thrust_std,thrust_max,thrust_min\n")
+        f.write("iteration,geo.Z,geo.Y,geo.X,geo.L,geo.H,geo.W,thrust_avg,thrust_std,thrust_max,thrust_min\n")
 
 # Defining functions for LHS
 # Ensuring they are a valid combination of inputs so PeleC doesn't crash
 def is_valid_input(x):
-    geo_Z, geo_X, geo_H, geo_W = x
-    return (geo_X + geo_W <= 1.0) and (geo_H + geo_Z <= 2.0)
+    geo_Z, geo_Y, geo_X, geo_L, geo_H, geo_W = x
+    return (geo_X + geo_W <= 0.12) and (geo_H + geo_Z <= 0.08) and (geo_X > geo_Y)
     
 def generate_valid_lhs_samples(bounds, n_samples=5, max_attempts_per_sample=500):
     dim = bounds.shape[0]
@@ -97,7 +80,7 @@ def generate_valid_lhs_samples(bounds, n_samples=5, max_attempts_per_sample=500)
     return np.array(valid_samples)
                            
 # === Modify geometry and plotfile output path in .inp file ===
-def modify_geometry_params(path, Z, X, H, W, plot_dir):
+def modify_geometry_params(path, Z, Y, X, L, H, W, plot_dir):
     """
     Modify ONLY geometry parameters, preserving ALL other content
     Uses regex for maximum robustness
@@ -119,7 +102,9 @@ def modify_geometry_params(path, Z, X, H, W, plot_dir):
     
     # Replace parameters using regex (preserves everything else)
     content = re.sub(r'geo\.Z\s*=\s*[\d.eE+-]+', f'geo.Z = {Z}', content)
+    content = re.sub(r'geo\.Y\s*=\s*[\d.eE+-]+', f'geo.Y = {Y}', content)
     content = re.sub(r'geo\.X\s*=\s*[\d.eE+-]+', f'geo.X = {X}', content)
+    content = re.sub(r'geo\.L\s*=\s*[\d.eE+-]+', f'geo.L = {L}', content)
     content = re.sub(r'geo\.H\s*=\s*[\d.eE+-]+', f'geo.H = {H}', content)
     content = re.sub(r'geo\.W\s*=\s*[\d.eE+-]+', f'geo.W = {W}', content)
     content = re.sub(r'amr\.plot_file\s*=\s*\S+', f'amr.plot_file = {plot_dir}/plt', content)
@@ -215,7 +200,7 @@ def extract_thrust_from_plotfile(plotfile_dir, outlet_x=0.95, tolerance=0.10):
 
 
 # === Analyze thrust over all timesteps ===
-def analyze_thrust_timeseries(plotfiles, output_dir, geo_Z=None, geo_X=None, geo_H=None, geo_W=None):
+def analyze_thrust_timeseries(plotfiles, output_dir, geo_Z=None, geo_Y=None, geo_X=None, geo_L=None, geo_H=None, geo_W=None):
     """
     Analyze thrust from all plotfiles and compute statistics
     """
@@ -281,7 +266,9 @@ def analyze_thrust_timeseries(plotfiles, output_dir, geo_Z=None, geo_X=None, geo
         f.write(f"{'='*40}\n\n")
         f.write(f"Geometry Parameters:\n")
         f.write(f"  Z = {geo_Z}\n")
+        f.write(f"  Y = {geo_Y}\n")
         f.write(f"  X = {geo_X}\n")
+        f.write(f"  L = {geo_L}\n")
         f.write(f"  H = {geo_H}\n")
         f.write(f"  W = {geo_W}\n\n")
         f.write(f"Thrust Statistics:\n")
@@ -294,7 +281,7 @@ def analyze_thrust_timeseries(plotfiles, output_dir, geo_Z=None, geo_X=None, geo
     print(f"[INFO] Summary saved to: {summary_txt}")
     
     # Create thrust evolution plot
-    create_thrust_plot(results, output_dir, geo_Z, geo_X, geo_H)
+    create_thrust_plot(results, output_dir, geo_Z, geo_Y, geo_X, geo_L, geo_H)
     
     return {
         'thrust_avg': thrust_avg,
@@ -306,7 +293,7 @@ def analyze_thrust_timeseries(plotfiles, output_dir, geo_Z=None, geo_X=None, geo
 
 
 # === Create thrust evolution plot ===
-def create_thrust_plot(results, output_dir, geo_Z=None, geo_X=None, geo_H=None):
+def create_thrust_plot(results, output_dir, geo_Z=None, geo_Y=None, geo_X=None, geo_L=None, geo_H=None):
     """
     Create plot showing thrust evolution over time
     """
@@ -329,8 +316,8 @@ def create_thrust_plot(results, output_dir, geo_Z=None, geo_X=None, geo_H=None):
     ax.set_ylabel('Thrust (N)', fontsize=12, fontweight='bold')
 
     # Safe title formatting
-    if geo_Z is not None and geo_X is not None and geo_H is not None:
-        title = f'Thrust Evolution (Z={geo_Z:.3f}, X={geo_X:.3f}, H={geo_H:.3f})'
+    if geo_Z is not None and geo_X is not None and geo_H is not None and geo_Y is not None and geo_L is not None:
+        title = f'Thrust Evolution (Z={geo_Z:.3f}, Y={geo_Y:.3f}, X={geo_X:.3f}, L={geo_L:.3f}, H={geo_H:.3f})'
     else:
         title = "Thrust Evolution"
     
@@ -349,7 +336,7 @@ def create_thrust_plot(results, output_dir, geo_Z=None, geo_X=None, geo_H=None):
 
 
 # === Log results ===
-def log_results(Z, X, H, W, thrust_stats, iteration=None):
+def log_results(Z, Y, X, L, H, W, thrust_stats, iteration=None):
     """
     Log results to CSV with both average and peak thrust
     """
@@ -357,11 +344,11 @@ def log_results(Z, X, H, W, thrust_stats, iteration=None):
     with open(RESULTS_LOG, "a", newline="") as csvfile:
         writer = csv.writer(csvfile)
         if not file_exists:
-            writer.writerow(["iteration","geo.Z", "geo.X", "geo.H", "geo.W",
+            writer.writerow(["iteration","geo.Z", "geo.Y", "geo.X", "geo.L", "geo.H", "geo.W",
                         "thrust_avg", "thrust_std", "thrust_max", "thrust_min"])
         writer.writerow([
             iteration if iteration is not None else "",       
-            Z, X, H, W,
+            Z, Y, X, L, H, W,
             thrust_stats['thrust_avg'],
             thrust_stats['thrust_std'],
             thrust_stats['thrust_max'],
@@ -369,9 +356,9 @@ def log_results(Z, X, H, W, thrust_stats, iteration=None):
     print(f"[INFO] Logged results to {RESULTS_LOG}")
 
 # ===    RUN PELEC AND EXTRACT RESULTS == 
-def run_pelec_and_extract_thrust(geo_Z, geo_X, geo_H, geo_W, INP_FILE, SIM_EXECUTABLE, iteration=None):
+def run_pelec_and_extract_thrust(geo_Z, geo_Y, geo_X, geo_L, geo_H, geo_W, INP_FILE, SIM_EXECUTABLE, iteration=None):
       # Create unique output directory for results
-    run_id = f"Z{geo_Z}_X{geo_X}_H{geo_H}_W{geo_W}".replace(".", "p")
+    run_id = f"Z{geo_Z}_Y{geo_Y}_X{geo_X}_L{geo_L}_H{geo_H}_W{geo_W}".replace(".", "p")
     output_dir = os.path.join(SCRATCH_BASE, f"run_{run_id}")
     output_dir = os.path.abspath(output_dir)
     print(f"[DEBUG] Absolute output path: {output_dir}", file=sys.stderr)
@@ -396,7 +383,7 @@ def run_pelec_and_extract_thrust(geo_Z, geo_X, geo_H, geo_W, INP_FILE, SIM_EXECU
 
     try:
         # Modify input file to update geometry
-        modify_geometry_params(temp_inp_file, geo_Z, geo_X, geo_H, geo_W, output_dir)
+        modify_geometry_params(temp_inp_file, geo_Z, geo_Y, geo_X, geo_L, geo_H, geo_W, output_dir)
 
         # Run simulation in the temp working directory
         subprocess.run([f"./{executable_name}", temp_inp_file], cwd=temp_work_dir, check=True)
@@ -406,7 +393,7 @@ def run_pelec_and_extract_thrust(geo_Z, geo_X, geo_H, geo_W, INP_FILE, SIM_EXECU
         thrust_stats = analyze_thrust_timeseries(plotfiles, output_dir)
 
         # Log the results
-        log_results(geo_Z, geo_X, geo_H, geo_W, thrust_stats, iteration=iteration)
+        log_results(geo_Z, geo_Y, geo_X, geo_L, geo_H, geo_W, thrust_stats, iteration=iteration)
 
         print(f"\n{'='*60}")
         print("RUN COMPLETE")
@@ -439,21 +426,21 @@ def wait_for_jobs_to_finish(job_ids, check_interval=30):
         time.sleep(check_interval)
 # Evaluate PeleC for each
 def run_single_lhs_sample(x):
-    geo_Z, geo_X, geo_H, geo_W = x
-    print(f"[DEBUG] Starting LHS simulation for Z={geo_Z}, X={geo_X}, H={geo_H}, W={geo_W}", file=sys.stderr)
+    geo_Z, geo_Y, geo_X, geo_L, geo_H, geo_W = x
+    print(f"[DEBUG] Starting LHS simulation for Z={geo_Z}, Y={geo_Y}, X={geo_X}, L={geo_L}, H={geo_H}, W={geo_W}", file=sys.stderr)
     try:
-        result = run_pelec_and_extract_thrust(geo_Z, geo_X, geo_H, geo_W, INP_FILE, SIM_EXECUTABLE)
+        result = run_pelec_and_extract_thrust(geo_Z, geo_Y, geo_X, geo_L, geo_H, geo_W, INP_FILE, SIM_EXECUTABLE)
         return result
     except Exception as e:
         print(f"[ERROR] Failed LHS run for {x} — Exception: {e}", file=sys.stderr)
         return None
         
-def extract_thrust_from_existing_output(Z, X, H, W, run_directory):
+def extract_thrust_from_existing_output(Z, Y, X, L, H, W, run_directory):
     try:
         plotfiles = get_all_plotfiles(run_directory)
         thrust_stats = analyze_thrust_timeseries(plotfiles, run_directory)
 
-        log_results(Z, X, H, W, thrust_stats, iteration=None)
+        log_results(Z, Y, X, L, H, W, thrust_stats, iteration=None)
 
         return thrust_stats
     except Exception as e:
@@ -461,17 +448,9 @@ def extract_thrust_from_existing_output(Z, X, H, W, run_directory):
         return None
 
 
+
+
 # === MAIN WORKFLOW ===
-    # Parameters to optimize
-    # geo_Z = 0.1
-    # geo_X = 0.4
-    # geo_H = 0.1
-
-    # Creating initial samples for Bayesian Optimization
-    # In this case there are no prior data points and thus need to generate some
-    # This will be done by using Latin Hypercube Sampling (so random guesses are made within bounds)
-
-   # === MAIN WORKFLOW ===
 def main():
     lhs_input_csv = LHS_INPUT_CSV
     lhs_results_csv = LHS_RESULTS_CSV
@@ -496,7 +475,7 @@ def main():
     if os.path.exists(lhs_results_csv):
         df_results = pd.read_csv(lhs_results_csv)
         for _, row in df_results.iterrows():
-            key = tuple(round(row[c], 8) for c in ["geo.Z", "geo.X", "geo.H", "geo.W"])
+            key = tuple(round(row[c], 8) for c in ["geo.Z", "geo.Y", "geo.X", "geo.L", "geo.H", "geo.W"])
             existing_results.add(key)
     else:
         df_results = pd.DataFrame()
@@ -541,7 +520,7 @@ def main():
     df = pd.read_csv(lhs_results_csv)
 
     #  Now use *all* available data
-    X_init = df[["geo.Z", "geo.X", "geo.H", "geo.W"]].values
+    X_init = df[["geo.Z","geo.Y", "geo.X", "geo.L", "geo.H", "geo.W"]].values
     Y_init = df["thrust_max"].values
 
     if len(Y_init) < 5:
@@ -573,8 +552,9 @@ def main():
 
     max_iters = 15
     tol = 1e-2
+    # UPDATE BOUNDS
     bounds = np.array([
-        [0.08, 0.15],   # Z
+        [0.08, 0.15],   # Z 
         [0.30, 0.50],   # X
         [0.10, 0.20],   # H
         [0.08, 0.15]    # W
@@ -613,13 +593,13 @@ def main():
 
             best_index = np.argmax(ei)
             x_next = X_candidates[best_index]
-            geo_Z, geo_X, geo_H, geo_W = x_next
+            geo_Z, geo_Y, geo_X, geo_L, geo_H, geo_W = x_next
 
-            print(f"[INFO] Running BO sample: Z={geo_Z}, X={geo_X}, H={geo_H}, W={geo_W}")
+            print(f"[INFO] Running BO sample: Z={geo_Z}, Y={geo_Y}, X={geo_X}, L={geo_L}, H={geo_H}, W={geo_W}")
 
             try:
                 thrust_stats = run_pelec_and_extract_thrust(
-                    geo_Z, geo_X, geo_H, geo_W,
+                    geo_Z, geo_Y, geo_X, geo_L, geo_H, geo_W,
                     INP_FILE, SIM_EXECUTABLE,
                     iteration=iteration + 1
                 )
