@@ -98,3 +98,46 @@ print("Major product mass fractions:")
 for species, Y in zip(gas2.species_names, gas2.Y):
     if Y > 1.0e-5:
         print(f"{species:8s} {Y:.8f}")
+
+
+# ------------------------------------------------------------
+# SAVE RESULTS TO TEXT FILE
+# ------------------------------------------------------------
+
+output_file = "CJ_results.txt"
+
+with open(output_file, "w") as f:
+
+    f.write("========================================\n")
+    f.write("CJ DETONATION CALCULATION\n")
+    f.write("========================================\n\n")
+
+    f.write("Fresh reactant state:\n")
+    f.write(f"T1     = {T1:.6f} K\n")
+    f.write(f"P1     = {P1:.8e} Pa\n")
+    f.write(f"rho1   = {rho1:.8e} kg/m^3\n")
+    f.write(f"Mixture = {q}\n")
+    f.write(f"Mechanism = {mech}\n")
+
+    f.write("\n----------------------------------------\n")
+    f.write("CJ RESULTS\n")
+    f.write("----------------------------------------\n")
+
+    f.write(f"D_CJ   = {D_CJ:.8f} m/s\n")
+    f.write(f"P2     = {P2:.8e} Pa\n")
+    f.write(f"T2     = {T2:.8f} K\n")
+    f.write(f"rho2   = {rho2:.8e} kg/m^3\n")
+    f.write(f"u2     = {u2:.8f} m/s\n")
+
+    f.write("\n----------------------------------------\n")
+    f.write("CJ PRODUCT MASS FRACTIONS\n")
+    f.write("----------------------------------------\n")
+
+    for species, Y in zip(gas2.species_names, gas2.Y):
+        if Y > 1.0e-5:
+            f.write(f"{species:8s} {Y:.10e}\n")
+
+    f.write("\n========================================\n")
+
+
+print(f"\nResults saved to {output_file}")
