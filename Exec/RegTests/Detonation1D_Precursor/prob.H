@@ -99,12 +99,40 @@ pc_initdata(
     state(i, j, k, UTEMP) =
       prob_parm.T_l;
 
-    // Burned-product approximation
-    constexpr amrex::Real Y_H2O_prod = 1.0;
+    // Equilibrium CJ product mass fractions
+    constexpr amrex::Real Y_H2_prod   = 2.2586432364e-02;
+    constexpr amrex::Real Y_H_prod    = 5.6003292637e-03;
+    constexpr amrex::Real Y_O_prod    = 4.1706832118e-02;
+    constexpr amrex::Real Y_OH_prod   = 1.6439528924e-01;
+    constexpr amrex::Real Y_HO2_prod  = 4.1036232281e-04;
+    constexpr amrex::Real Y_H2O_prod  = 6.6091664441e-01;
+    constexpr amrex::Real Y_O2_prod   = 1.0433756341e-01;
+    constexpr amrex::Real Y_H2O2_prod = 4.6546873943e-05;
+    
+    state(i, j, k, UFS + H2_ID) =
+        rho * Y_H2_prod;
+    
+    state(i, j, k, UFS + H_ID) =
+        rho * Y_H_prod;
+    
+    state(i, j, k, UFS + O_ID) =
+        rho * Y_O_prod;
+    
+    state(i, j, k, UFS + OH_ID) =
+        rho * Y_OH_prod;
+    
+    state(i, j, k, UFS + HO2_ID) =
+        rho * Y_HO2_prod;
     
     state(i, j, k, UFS + H2O_ID) =
-      rho * Y_H2O_prod;
-  }
+        rho * Y_H2O_prod;
+    
+    state(i, j, k, UFS + O2_ID) =
+        rho * Y_O2_prod;
+    
+    state(i, j, k, UFS + H2O2_ID) =
+        rho * Y_H2O2_prod;
+      }
 
   // ============================================================
   // RIGHT STATE:
