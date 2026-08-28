@@ -30,128 +30,96 @@ pc_initdata(
   amrex::GeometryData const& geomdata,
   ProbParmDevice const& prob_parm)
 {
-  // ============================================================
-  // GEOMETRY
-  // ============================================================
-
+  // Geometry
   const amrex::Real* prob_lo = geomdata.ProbLo();
   const amrex::Real* dx = geomdata.CellSize();
-
-  const amrex::Real x =
-    prob_lo[0] + (i + 0.5) * dx[0];
-
-  // ============================================================
-  // STOICHIOMETRIC H2/O2 FRESH MIXTURE
-  //
-  // Reaction:
-  //     2 H2 + O2 -> 2 H2O
-  //
-  // Approximate reactant mass fractions:
-  //     Y_H2 = 0.1119
-  //     Y_O2 = 0.8881
-  // ============================================================
-
-  constexpr amrex::Real Y_H2 = 0.1119;
-  constexpr amrex::Real Y_O2 = 0.8881;
-
-  // Initialize every species to zero
-  for (int n = 0; n < NUM_SPECIES; ++n) {
-    state(i, j, k, UFS + n) = 0.0;
+  const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0];
+  const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
+  amrex::Real z = 0;
+#if AMREX_SPACEDIM == 3
+  z = prob_lo[2] + (k + 0.5) * dx[2];
+#endif
+  for (int n = 0; n < NUM_SPECIES; n++) {
+    state(i, j, k, UFS + n) = 0;
   }
 
-  // ============================================================
-  // LEFT STATE:
-  // HOT BURNED-PRODUCT REGION
-  // ============================================================
-
-  if (x <= prob_parm.split[0]) {
-
-    const amrex::Real rho = prob_parm.rho_l;
-    const amrex::Real u   = prob_parm.u_l;
-
-    // Density
-    state(i, j, k, URHO) = rho;
-
-    // Momentum
-    state(i, j, k, UMX) = rho * u;
-
-#if AMREX_SPACEDIM >= 2
-    state(i, j, k, UMY) = 0.0;
-#endif
-
-#if AMREX_SPACEDIM == 3
-    state(i, j, k, UMZ) = 0.0;
-#endif
-
-    // Internal energy density
-    state(i, j, k, UEINT) =
-      prob_parm.rhoe_l;
-
-    // Total energy density = internal + kinetic
-    state(i, j, k, UEDEN) =
-      prob_parm.rhoe_l +
-      0.5 * rho * u * u;
-
-    // Temperature
-    state(i, j, k, UTEMP) =
-      prob_parm.T_l;
-
-    // Burned-product approximation:
-    // left region is pure H2O
-    state(i, j, k, UFS + H2O_ID) =
-      rho;
-  }
-
-  // ============================================================
-  // RIGHT STATE:
-  // COLD FRESH STOICHIOMETRIC H2/O2 REACTANTS
-  // ============================================================
-
-  else {
-
-    const amrex::Real rho = prob_parm.rho_r;
-    const amrex::Real u   = prob_parm.u_r;
-
-    // Density
-    state(i, j, k, URHO) = rho;
-
-    // Momentum
-    state(i, j, k, UMX) = rho * u;
-
-#if AMREX_SPACIM >= 2
-    state(i, j, k, UMY) = 0.0;
-#endif
-
-#if AMREX_SPACEDIM == 3
-    state(i, j, k, UMZ) = 0.0;
-#endif
-
-    // Internal energy density
-    state(i, j, k, UEINT) =
-      prob_parm.rhoe_r;
-
-    // Total energy density = internal + kinetic
-    state(i, j, k, UEDEN) =
-      prob_parm.rhoe_r +
-      0.5 * rho * u * u;
-
-    // Temperature
-    state(i, j, k, UTEMP) =
-      prob_parm.T_r;
-
-    // Fresh stoichiometric H2/O2 mixture
-    state(i, j, k, UFS + H2_ID) =
-      rho * Y_H2;
-
-    state(i, j, k, UFS + O2_ID) =
-      rho * Y_O2;
+  // Set the states
+  if (prob_parm.idir == 1) {
+    if (x <= prob_parm.split[0]) {
+      state(i, j, k, URHO) = prob_parm.rho_l;
+      state(i, j, k, UMX) = prob_parm.rho_l * prob_parm.u_l;
+      state(i, j, k, UMY) = 0.0;
+      state(i, j, k, UMZ) = 0.0;
+      state(i, j, k, UEDEN) = prob_parm.rhoe_l + 0.5 * prob_parm.rho_l *
+                                                   prob_parm.u_l *
+                                                   prob_parm.u_l;
+      state(i, j, k, UEINT) = prob_parm.rhoe_l;
+      state(i, j, k, UTEMP) = prob_parm.T_l;
+      state(i, j, k, UFS + prob_parm.left_gas_id) = state(i, j, k, URHO);
+    } else {
+      state(i, j, k, URHO) = prob_parm.rho_r;
+      state(i, j, k, UMX) = prob_parm.rho_r * prob_parm.u_r;
+      state(i, j, k, UMY) = 0.0;
+      state(i, j, k, UMZ) = 0.0;
+      state(i, j, k, UEDEN) = prob_parm.rhoe_r + 0.5 * prob_parm.rho_r *
+                                                   prob_parm.u_r *
+                                                   prob_parm.u_r;
+      state(i, j, k, UEINT) = prob_parm.rhoe_r;
+      state(i, j, k, UTEMP) = prob_parm.T_r;
+      state(i, j, k, UFS + prob_parm.right_gas_id) = state(i, j, k, URHO);
+    }
+  } else if (prob_parm.idir == 2) {
+    if (y <= prob_parm.split[1]) {
+      state(i, j, k, URHO) = prob_parm.rho_l;
+      state(i, j, k, UMX) = 0.0;
+      state(i, j, k, UMY) = prob_parm.rho_l * prob_parm.u_l;
+      state(i, j, k, UMZ) = 0.0;
+      state(i, j, k, UEDEN) = prob_parm.rhoe_l + 0.5 * prob_parm.rho_l *
+                                                   prob_parm.u_l *
+                                                   prob_parm.u_l;
+      state(i, j, k, UEINT) = prob_parm.rhoe_l;
+      state(i, j, k, UTEMP) = prob_parm.T_l;
+      state(i, j, k, UFS + prob_parm.left_gas_id) = state(i, j, k, URHO);
+    } else {
+      state(i, j, k, URHO) = prob_parm.rho_r;
+      state(i, j, k, UMX) = 0.0;
+      state(i, j, k, UMY) = prob_parm.rho_r * prob_parm.u_r;
+      state(i, j, k, UMZ) = 0.0;
+      state(i, j, k, UEDEN) = prob_parm.rhoe_r + 0.5 * prob_parm.rho_r *
+                                                   prob_parm.u_r *
+                                                   prob_parm.u_r;
+      state(i, j, k, UEINT) = prob_parm.rhoe_r;
+      state(i, j, k, UTEMP) = prob_parm.T_r;
+      state(i, j, k, UFS + prob_parm.right_gas_id) = state(i, j, k, URHO);
+    }
+  } else if (prob_parm.idir == 3) {
+    if (z <= prob_parm.split[2]) {
+      state(i, j, k, URHO) = prob_parm.rho_l;
+      state(i, j, k, UMX) = 0.0;
+      state(i, j, k, UMY) = 0.0;
+      state(i, j, k, UMZ) = prob_parm.rho_l * prob_parm.u_l;
+      state(i, j, k, UEDEN) = prob_parm.rhoe_l + 0.5 * prob_parm.rho_l *
+                                                   prob_parm.u_l *
+                                                   prob_parm.u_l;
+      state(i, j, k, UEINT) = prob_parm.rhoe_l;
+      state(i, j, k, UTEMP) = prob_parm.T_l;
+      state(i, j, k, UFS + prob_parm.left_gas_id) = state(i, j, k, URHO);
+    } else {
+      state(i, j, k, URHO) = prob_parm.rho_r;
+      state(i, j, k, UMX) = 0.0;
+      state(i, j, k, UMY) = 0.0;
+      state(i, j, k, UMZ) = prob_parm.rho_r * prob_parm.u_r;
+      state(i, j, k, UEDEN) = prob_parm.rhoe_r + 0.5 * prob_parm.rho_r *
+                                                   prob_parm.u_r *
+                                                   prob_parm.u_r;
+      state(i, j, k, UEINT) = prob_parm.rhoe_r;
+      state(i, j, k, UTEMP) = prob_parm.T_r;
+      state(i, j, k, UFS + prob_parm.right_gas_id) = state(i, j, k, URHO);
+    }
+  } else {
+    amrex::Abort("invalid idir");
   }
 }
-
-
-// ============================================================
-// BOUNDARY CONDITION
-// ============================================================
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
@@ -172,22 +140,10 @@ bcnormal(
   }
 }
 
+// void pc_prob_close();
 
-// ============================================================
-// OPTIONAL PROBLEM CLOSE FUNCTION
-// ============================================================
+inline void pc_prob_close() {}
 
-inline void
-pc_prob_close()
-{
-}
-
-
-// ============================================================
-// DEFAULT PROBLEM-SPECIFIC FUNCTIONS
-// ============================================================
-
-using ProblemSpecificFunctions =
-  DefaultProblemSpecificFunctions;
+using ProblemSpecificFunctions = DefaultProblemSpecificFunctions;
 
 #endif
