@@ -2,7 +2,7 @@ import sys
 
 sys.path.insert(
     0,
-    "/Users/jenniferbishop/Documents/UCCS/Combustion_Research/Code/sdtoolbox-main/Python3"
+    "/home/jbishop6/sdtoolbox/Python3/sdtoolbox"
 )
 
 import cantera as ct
@@ -22,7 +22,7 @@ q = "H2:2 O2:1"
 
 # IMPORTANT:
 # Use the Cantera mechanism corresponding to your Davis mechanism
-mech = "mechanism.yaml"
+mech = "/home/jbishop6/PeleC/Submodules/PelePhysics/Mechanisms/Davis/mechanism.yaml"
 
 # ------------------------------------------------------------
 # CJ SPEED
