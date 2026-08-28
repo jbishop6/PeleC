@@ -23,9 +23,7 @@ echo "========================================"
 # ------------------------------------------------------------
 
 # Load conda into this non-interactive shell
-source /opt/ohpc/pub/anaconda/anaconda3/etc/profile.d/conda.sh
-
-# Activate Python environment
+source /home/jbishop6/miniconda3/etc/profile.d/conda.sh
 conda activate detonation
 
 echo ""
