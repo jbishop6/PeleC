@@ -79,8 +79,17 @@ amrex_probinit(
     
 amrex::Real Yl[NUM_SPECIES] = {0.0};
     
-// Simple burned-product approximation for first test
-Yl[H2O_ID] = 1.0;
+// Equilibrium CJ product composition from SDToolbox
+// Davis mechanism, stoichiometric H2/O2 at 300 K and 1 bar
+
+Yl[H2_ID]   = 2.2586432364e-02;
+Yl[H_ID]    = 5.6003292637e-03;
+Yl[O_ID]    = 4.1706832118e-02;
+Yl[OH_ID]   = 1.6439528924e-01;
+Yl[HO2_ID]  = 4.1036232281e-04;
+Yl[H2O_ID]  = 6.6091664441e-01;
+Yl[O2_ID]   = 1.0433756341e-01;
+Yl[H2O2_ID] = 4.6546873943e-05;
 
 
 // ============================================================
