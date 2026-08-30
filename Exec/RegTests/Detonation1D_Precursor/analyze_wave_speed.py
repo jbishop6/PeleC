@@ -214,11 +214,26 @@ for n, plotfile in enumerate(plotfiles):
     
         # Maximum distance the front could reasonably move forward
         max_forward_distance = MAX_SPEED_ALLOWED * dt_local
-    
-        # Search only near the previously detected front
-        search_min = previous_front - MAX_BACKWARD_DISTANCE
-        search_max = previous_front + max_forward_distance
-    
+        
+        # Always include several grid cells in the search window.
+        # This is necessary because the physical front may move less
+        # than one cell between closely spaced plotfiles.
+        min_forward_distance = 6.0 * dx
+        min_backward_distance = 3.0 * dx
+        
+        forward_distance = max(
+            max_forward_distance,
+            min_forward_distance
+        )
+        
+        backward_distance = max(
+            MAX_BACKWARD_DISTANCE,
+            min_backward_distance
+        )
+        
+        search_min = previous_front - backward_distance
+        search_max = previous_front + forward_distance
+            
         mask = (
             (x >= search_min) &
             (x <= search_max)
