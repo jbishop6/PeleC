@@ -42,9 +42,6 @@ INITIAL_SEARCH_MAX = 0.0070
 # force the answer to be near the CJ speed.
 MAX_SPEED_ALLOWED = 10000.0   # m/s
 
-# Allow a small backward motion due to numerical noise
-MAX_BACKWARD_DISTANCE = 2.0e-4   # m
-
 # Stop tracking before the wave reaches the right boundary
 X_STOP = 0.090
 
@@ -215,23 +212,19 @@ for n, plotfile in enumerate(plotfiles):
         # Maximum distance the front could reasonably move forward
         max_forward_distance = MAX_SPEED_ALLOWED * dt_local
         
-        # Always include several grid cells in the search window.
-        # This is necessary because the physical front may move less
-        # than one cell between closely spaced plotfiles.
-        min_forward_distance = 6.0 * dx
-        min_backward_distance = 3.0 * dx
+       # Always search several cells ahead because the front may move
+        # less than one grid cell between closely spaced plotfiles.
+        min_forward_distance = 8.0 * dx
         
         forward_distance = max(
             max_forward_distance,
             min_forward_distance
         )
         
-        backward_distance = max(
-            MAX_BACKWARD_DISTANCE,
-            min_backward_distance
-        )
+        # Allow only ONE cell behind the previous front for numerical
+        # jitter. The physical leading front should propagate rightward.
+        search_min = previous_front - dx
         
-        search_min = previous_front - backward_distance
         search_max = previous_front + forward_distance
             
         mask = (
@@ -254,16 +247,50 @@ for n, plotfile in enumerate(plotfiles):
             f"Tracking window too small at t={time:.6e} s"
         )
     
-    # Pressure gradient
+   # Pressure gradient
     dpdx = np.gradient(p_search, x_search)
     
-    # For a right-moving shock:
-    # high pressure is behind the front, low pressure is ahead,
-    # so pressure drops sharply as x increases.
-    shock_index = np.argmin(dpdx)
+    # --------------------------------------------------------
+    # Identify the LEADING strong pressure drop
+    # --------------------------------------------------------
     
-    x_front = x_search[shock_index]
-    p_front = p_search[shock_index]
+    # Most negative pressure gradient in this local window
+    min_gradient = np.min(dpdx)
+    
+    # Consider gradients that are at least 25% as strong as
+    # the strongest negative gradient.
+    gradient_threshold = 0.25 * min_gradient
+    
+    candidate_indices = np.where(
+        dpdx <= gradient_threshold
+    )[0]
+
+if len(candidate_indices) == 0:
+    raise RuntimeError(
+        f"No pressure-front candidates found at t={time:.6e} s"
+    )
+
+# The detonation front is the LEADING/rightmost strong
+# pressure drop.
+shock_index = candidate_indices[-1]
+
+x_front = x_search[shock_index]
+p_front = p_search[shock_index]
+
+# --------------------------------------------------------
+# Enforce right-moving front
+# --------------------------------------------------------
+
+if previous_front is not None:
+
+    # Allow at most one cell of apparent backward motion
+    # due to spatial discretization.
+    if x_front < previous_front - dx:
+        raise RuntimeError(
+            f"Front moved backward unexpectedly at "
+            f"t={time:.6e} s: "
+            f"{previous_front:.6f} -> {x_front:.6f} m"
+        )
 
     # Save this timestep's result
     times.append(time)
