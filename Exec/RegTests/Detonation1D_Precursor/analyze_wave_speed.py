@@ -33,20 +33,23 @@ D_CJ = 2834.958187   # m/s
 # Original location of the two-state interface
 X_INITIAL = 0.005    # m
 
-# Ignore a few cells immediately around the initial interface
-# when looking for the pressure front.
-X_SEARCH_MIN = 0.0051
+# First-frame search window around the initial interface
+INITIAL_SEARCH_MIN = 0.0045
+INITIAL_SEARCH_MAX = 0.0070
 
-# Optional upper search bound
-X_SEARCH_MAX = 0.095
+# Maximum physically allowed wave speed for tracking
+# This is intentionally much larger than D_CJ so we do not
+# force the answer to be near the CJ speed.
+MAX_SPEED_ALLOWED = 10000.0   # m/s
 
-# Skip some very early data when performing the linear fit.
-#
-# At extremely early times, the initialized discontinuity may
-# relax before establishing its propagation behavior.
-#
-# Change this later if needed after inspecting the results.
-FIT_START_TIME = 1.0e-8   # s
+# Allow a small backward motion due to numerical noise
+MAX_BACKWARD_DISTANCE = 2.0e-4   # m
+
+# Stop tracking before the wave reaches the right boundary
+X_STOP = 0.090
+
+# Ignore the earliest startup transient when fitting speed
+FIT_START_TIME = 1.0e-8
 
 
 # ============================================================
@@ -116,6 +119,9 @@ def find_pressure_field(ds):
 times = []
 front_positions = []
 front_pressures = []
+
+previous_front = None
+previous_time = None
 
 pressure_field = None
 
@@ -188,59 +194,84 @@ for n, plotfile in enumerate(plotfiles):
     
     x = xlo + (np.arange(nx) + 0.5) * dx
 
-    # --------------------------------------------------------
-    # Search only in the physically relevant portion
-    # --------------------------------------------------------
-    print(
-        f"x range = {x.min():.6f} to {x.max():.6f}, "
-        f"search = {X_SEARCH_MIN:.6f} to {X_SEARCH_MAX:.6f}"
-    )
-    mask = (
-        (x >= X_SEARCH_MIN) &
-        (x <= X_SEARCH_MAX)
-    )
+# --------------------------------------------------------
+# Track the SAME wave front from one plotfile to the next
+# --------------------------------------------------------
+
+    if previous_front is None:
+    
+        # First plotfile:
+        # search only near the known initial interface
+        mask = (
+            (x >= INITIAL_SEARCH_MIN) &
+            (x <= INITIAL_SEARCH_MAX)
+        )
+    
+    else:
+    
+        # Time elapsed since previous plotfile
+        dt_local = time - previous_time
+    
+        # Maximum distance the front could reasonably move forward
+        max_forward_distance = MAX_SPEED_ALLOWED * dt_local
+    
+        # Search only near the previously detected front
+        search_min = previous_front - MAX_BACKWARD_DISTANCE
+        search_max = previous_front + max_forward_distance
+    
+        mask = (
+            (x >= search_min) &
+            (x <= search_max)
+        )
+    
+    # Make sure the search window actually contains cells
     if not np.any(mask):
         raise RuntimeError(
-            f"Search mask is empty. "
-            f"x spans {x.min()} to {x.max()}, "
-            f"but search range is "
-            f"{X_SEARCH_MIN} to {X_SEARCH_MAX}."
+            f"No cells found in tracking window at t={time:.6e} s"
         )
-        
+    
     x_search = x[mask]
     p_search = p_x[mask]
-
-    # --------------------------------------------------------
-    # Find the leading pressure front
-    #
-    # For a right-moving detonation:
-    #
-    #     high pressure | shock | low pressure
-    #
-    # pressure therefore falls sharply with increasing x.
-    #
-    # The shock location is approximated by the most negative
-    # value of dp/dx.
-    # --------------------------------------------------------
-
+    
+    # Need at least a few points for gradient calculation
+    if len(x_search) < 3:
+        raise RuntimeError(
+            f"Tracking window too small at t={time:.6e} s"
+        )
+    
+    # Pressure gradient
     dpdx = np.gradient(p_search, x_search)
-
+    
+    # For a right-moving shock:
+    # high pressure is behind the front, low pressure is ahead,
+    # so pressure drops sharply as x increases.
     shock_index = np.argmin(dpdx)
-
+    
     x_front = x_search[shock_index]
     p_front = p_search[shock_index]
 
+    # Save this timestep's result
     times.append(time)
     front_positions.append(x_front)
     front_pressures.append(p_front)
-
+    
+    # Update tracker for the next plotfile
+    previous_front = x_front
+    previous_time = time
+    
     print(
         f"{plotfile.name:12s}  "
         f"t = {time:12.5e} s   "
         f"x_front = {x_front:10.6f} m"
     )
-
-
+    
+    # Stop before the front interacts with the right boundary
+    if x_front >= X_STOP:
+        print(
+            f"\nFront reached x = {x_front:.6f} m. "
+            "Stopping before right-boundary interaction."
+        )
+        break
 # ============================================================
 # CONVERT TO NUMPY ARRAYS
 # ============================================================
@@ -254,7 +285,10 @@ front_pressures = np.asarray(front_pressures)
 # REMOVE t = 0 / EARLY TRANSIENT FOR FIT
 # ============================================================
 
-fit_mask = times >= FIT_START_TIME
+fit_mask = (
+    (times >= FIT_START_TIME) &
+    (front_positions < X_STOP)
+)
 
 t_fit = times[fit_mask]
 x_fit = front_positions[fit_mask]
