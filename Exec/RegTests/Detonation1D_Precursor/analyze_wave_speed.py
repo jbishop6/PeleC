@@ -256,19 +256,40 @@ for n, plotfile in enumerate(plotfiles):
     
     # Most negative pressure gradient in this local window
     min_gradient = np.min(dpdx)
+
+    # If there is no negative pressure gradient in the search window,
+    # then our assumed right-moving leading pressure drop is absent.
+    if min_gradient >= 0.0:
+        candidate_indices = np.array([], dtype=int)
     
-    # Consider gradients that are at least 25% as strong as
-    # the strongest negative gradient.
-    gradient_threshold = 0.25 * min_gradient
+    else:
+        gradient_threshold = 0.25 * min_gradient
     
-    candidate_indices = np.where(
-        dpdx <= gradient_threshold
-    )[0]
+        candidate_indices = np.where(
+            dpdx <= gradient_threshold
+        )[0]
 
     if len(candidate_indices) == 0:
-        raise RuntimeError(
-            f"No pressure-front candidates found at t={time:.6e} s"
+        print(
+            f"\nNo pressure-front candidates found at "
+            f"t = {time:.6e} s."
         )
+        print(
+            f"Previous front position = "
+            f"{previous_front:.6f} m"
+        )
+        print(
+            f"Search window = "
+            f"{x_search.min():.6f} to {x_search.max():.6f} m"
+        )
+        print(
+            f"Minimum dp/dx = "
+            f"{min_gradient:.6e}"
+        )
+        print(
+            "Stopping front tracking at this point."
+        )
+        break
     
     # The detonation front is the LEADING/rightmost strong
     # pressure drop.
