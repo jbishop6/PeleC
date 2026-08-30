@@ -360,6 +360,21 @@ front_pressures = np.asarray(front_pressures)
 # ============================================================
 # REMOVE t = 0 / EARLY TRANSIENT FOR FIT
 # ============================================================
+print("\n========================================")
+print("TRACKING DEBUG")
+print("========================================")
+print(f"Number of tracked points = {len(times)}")
+
+if len(times) > 0:
+    print(f"First tracked time       = {times[0]:.8e} s")
+    print(f"Last tracked time        = {times[-1]:.8e} s")
+    print(f"First front position     = {front_positions[0]:.8f} m")
+    print(f"Last front position      = {front_positions[-1]:.8f} m")
+
+print(f"FIT_START_TIME           = {FIT_START_TIME:.8e} s")
+print(f"X_STOP                   = {X_STOP:.6f} m")
+print("========================================\n")
+
 
 fit_mask = (
     (times >= FIT_START_TIME) &
@@ -370,9 +385,13 @@ t_fit = times[fit_mask]
 x_fit = front_positions[fit_mask]
 
 if len(t_fit) < 2:
+    print(
+        f"Only {len(t_fit)} tracked points remain after "
+        "applying the fit mask."
+    )
+    print("Stopping before linear fit.")
     raise RuntimeError(
-        "Not enough points remain for the linear fit. "
-        "Reduce FIT_START_TIME."
+        "Not enough valid tracked points for linear fit."
     )
 
 
