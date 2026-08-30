@@ -265,47 +265,47 @@ for n, plotfile in enumerate(plotfiles):
         dpdx <= gradient_threshold
     )[0]
 
-if len(candidate_indices) == 0:
-    raise RuntimeError(
-        f"No pressure-front candidates found at t={time:.6e} s"
-    )
-
-# The detonation front is the LEADING/rightmost strong
-# pressure drop.
-shock_index = candidate_indices[-1]
-
-x_front = x_search[shock_index]
-p_front = p_search[shock_index]
-
-# --------------------------------------------------------
-# Enforce right-moving front
-# --------------------------------------------------------
-
-if previous_front is not None:
-
-    # Allow at most one cell of apparent backward motion
-    # due to spatial discretization.
-    if x_front < previous_front - dx:
+    if len(candidate_indices) == 0:
         raise RuntimeError(
-            f"Front moved backward unexpectedly at "
-            f"t={time:.6e} s: "
-            f"{previous_front:.6f} -> {x_front:.6f} m"
+            f"No pressure-front candidates found at t={time:.6e} s"
         )
+    
+    # The detonation front is the LEADING/rightmost strong
+    # pressure drop.
+    shock_index = candidate_indices[-1]
+    
+    x_front = x_search[shock_index]
+    p_front = p_search[shock_index]
+    
+    # --------------------------------------------------------
+    # Enforce right-moving front
+    # --------------------------------------------------------
 
-    # Save this timestep's result
-    times.append(time)
-    front_positions.append(x_front)
-    front_pressures.append(p_front)
+    if previous_front is not None:
     
-    # Update tracker for the next plotfile
-    previous_front = x_front
-    previous_time = time
+        # Allow at most one cell of apparent backward motion
+        # due to spatial discretization.
+        if x_front < previous_front - dx:
+            raise RuntimeError(
+                f"Front moved backward unexpectedly at "
+                f"t={time:.6e} s: "
+                f"{previous_front:.6f} -> {x_front:.6f} m"
+            )
     
-    print(
-        f"{plotfile.name:12s}  "
-        f"t = {time:12.5e} s   "
-        f"x_front = {x_front:10.6f} m"
-    )
+        # Save this timestep's result
+        times.append(time)
+        front_positions.append(x_front)
+        front_pressures.append(p_front)
+        
+        # Update tracker for the next plotfile
+        previous_front = x_front
+        previous_time = time
+        
+        print(
+            f"{plotfile.name:12s}  "
+            f"t = {time:12.5e} s   "
+            f"x_front = {x_front:10.6f} m"
+        )
     
     # Stop before the front interacts with the right boundary
     if x_front >= X_STOP:
