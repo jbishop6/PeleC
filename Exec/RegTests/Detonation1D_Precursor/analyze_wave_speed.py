@@ -200,12 +200,12 @@ for n, plotfile in enumerate(plotfiles):
         (x <= X_SEARCH_MAX)
     )
     if not np.any(mask):
-    raise RuntimeError(
-        f"Search mask is empty. "
-        f"x spans {x.min()} to {x.max()}, "
-        f"but search range is "
-        f"{X_SEARCH_MIN} to {X_SEARCH_MAX}."
-    )
+        raise RuntimeError(
+            f"Search mask is empty. "
+            f"x spans {x.min()} to {x.max()}, "
+            f"but search range is "
+            f"{X_SEARCH_MIN} to {X_SEARCH_MAX}."
+        )
         
     x_search = x[mask]
     p_search = p_x[mask]
