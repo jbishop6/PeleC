@@ -61,6 +61,11 @@ plotfiles = sorted(
     key=lambda p: int(p.name.replace("plt", ""))
 )
 
+print("\nFirst 20 plotfiles in analysis order:")
+
+for p in plotfiles[:20]:
+    print(p.name)
+
 if len(plotfiles) == 0:
     raise RuntimeError(
         f"No plt* directories found in:\n{RESULTS_DIR}"
