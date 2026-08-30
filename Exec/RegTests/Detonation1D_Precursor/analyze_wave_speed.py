@@ -283,18 +283,18 @@ if len(candidate_indices) == 0:
             f"{previous_front:.6f} m"
         )
     
-        print(
-            f"Search window = "
-            f"{x_search.min():.6f} to {x_search.max():.6f} m"
-        )
-        print(
-            f"Minimum dp/dx = "
-            f"{min_gradient:.6e}"
-        )
-        print(
-            "Stopping front tracking at this point."
-        )
-        break
+    print(
+        f"Search window = "
+        f"{x_search.min():.6f} to {x_search.max():.6f} m"
+    )
+    print(
+        f"Minimum dp/dx = "
+        f"{min_gradient:.6e}"
+    )
+    print(
+        "Stopping front tracking at this point."
+    )
+    break
         
     # The detonation front is the LEADING/rightmost strong
     # pressure drop.
