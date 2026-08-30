@@ -54,8 +54,11 @@ FIT_START_TIME = 1.0e-8
 # ============================================================
 
 plotfiles = sorted(
-    p for p in RESULTS_DIR.glob("plt*")
-    if p.is_dir()
+    (
+        p for p in RESULTS_DIR.glob("plt*")
+        if p.is_dir()
+    ),
+    key=lambda p: int(p.name.replace("plt", ""))
 )
 
 if len(plotfiles) == 0:
