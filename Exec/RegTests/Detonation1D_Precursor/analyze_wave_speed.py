@@ -133,6 +133,14 @@ pressure_field = None
 for n, plotfile in enumerate(plotfiles):
 
     ds = yt.load(str(plotfile))
+    time = float(ds.current_time)
+    
+    print(
+        f"PROCESSING: {plotfile.name:12s} "
+        f"t = {time:.12e} s"
+    )
+
+    
 
     # --------------------------------------------------------
     # Simulation time
@@ -203,14 +211,39 @@ for n, plotfile in enumerate(plotfiles):
 # Track the SAME wave front from one plotfile to the next
 # --------------------------------------------------------
 
-    if previous_front is None:
-    
-        # First plotfile:
-        # search only near the known initial interface
-        mask = (
-            (x >= INITIAL_SEARCH_MIN) &
-            (x <= INITIAL_SEARCH_MAX)
+        # Only perform backward-motion check after
+    # we already have a previous front
+    if previous_front is not None:
+
+        if x_front < previous_front - dx:
+            raise RuntimeError(
+                f"Front moved backward unexpectedly at "
+                f"t={time:.6e} s: "
+                f"{previous_front:.6f} -> {x_front:.6f} m"
+            )
+
+    # Save this timestep's result
+    times.append(time)
+    front_positions.append(x_front)
+    front_pressures.append(p_front)
+
+    # Update tracker for the next plotfile
+    previous_front = x_front
+    previous_time = time
+
+    print(
+        f"{plotfile.name:12s}  "
+        f"t = {time:12.5e} s   "
+        f"x_front = {x_front:10.6f} m"
+    )
+
+    # Stop before the front interacts with right boundary
+    if x_front >= X_STOP:
+        print(
+            f"\nFront reached x = {x_front:.6f} m. "
+            "Stopping before right-boundary interaction."
         )
+        break
     
     else:
     
