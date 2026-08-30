@@ -1,3 +1,21 @@
+from pathlib import Path
+
+# ONLY analyze this run
+results_dir = Path(
+    "/home/jbishop6/PeleC/Exec/RegTests/Detonation1D_Precursor/"
+    "results_2026-08-28_172816"
+)
+
+# Get plotfiles from ONLY that directory
+plotfiles = sorted(results_dir.glob("plt*"))
+
+print(f"Analyzing results from: {results_dir}")
+print(f"Found {len(plotfiles)} plotfiles")
+
+for pf in plotfiles:
+    print(pf)
+
+
 import sys
 
 sys.path.insert(
