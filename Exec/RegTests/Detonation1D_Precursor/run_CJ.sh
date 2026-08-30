@@ -26,6 +26,8 @@ echo "========================================"
 source /home/jbishop6/miniconda3/etc/profile.d/conda.sh
 conda activate detonation
 
+export PYTHONPATH="/home/jbishop6/sdtoolbox/Python3:$PYTHONPATH"
+
 echo ""
 echo "Python environment:"
 echo "CONDA_DEFAULT_ENV = $CONDA_DEFAULT_ENV"
