@@ -269,15 +269,20 @@ for n, plotfile in enumerate(plotfiles):
             dpdx <= gradient_threshold
         )[0]
 
-    if len(candidate_indices) == 0:
+     if len(candidate_indices) == 0:
         print(
             f"\nNo pressure-front candidates found at "
             f"t = {time:.6e} s."
         )
-        print(
-            f"Previous front position = "
-            f"{previous_front:.6f} m"
-        )
+    
+        if previous_front is None:
+            print("Previous front position = None (no front tracked yet)")
+        else:
+            print(
+                f"Previous front position = "
+                f"{previous_front:.6f} m"
+            )
+    
         print(
             f"Search window = "
             f"{x_search.min():.6f} to {x_search.max():.6f} m"
@@ -290,7 +295,7 @@ for n, plotfile in enumerate(plotfiles):
             "Stopping front tracking at this point."
         )
         break
-    
+        
     # The detonation front is the LEADING/rightmost strong
     # pressure drop.
     shock_index = candidate_indices[-1]
