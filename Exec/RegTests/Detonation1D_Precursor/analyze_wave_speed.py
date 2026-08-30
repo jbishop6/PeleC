@@ -126,11 +126,7 @@ for n, plotfile in enumerate(plotfiles):
     # --------------------------------------------------------
     # Simulation time
     # --------------------------------------------------------
-
-    try:
-        time = float(ds.current_time.to("s"))
-    except Exception:
-        time = float(ds.current_time)
+    time = float(ds.current_time)
 
     # --------------------------------------------------------
     # Determine pressure field on first plotfile
@@ -159,12 +155,7 @@ for n, plotfile in enumerate(plotfiles):
     # Extract pressure
     # --------------------------------------------------------
 
-    pressure = cg[pressure_field]
-
-    try:
-        pressure = pressure.to("Pa").d
-    except Exception:
-        pressure = np.asarray(pressure)
+    pressure = np.asarray(cg[pressure_field])
 
     # --------------------------------------------------------
     # Average across all transverse directions.
@@ -181,26 +172,41 @@ for n, plotfile in enumerate(plotfiles):
 
     # --------------------------------------------------------
     # Construct x cell-center coordinates
+    #
+    # Use the raw AMReX/PeleC coordinates.
+    # The precursor input defines x = 0.0 to 0.10 m.
+    # Avoid yt unit conversion here because it may apply
+    # BoxLib default unit assumptions.
     # --------------------------------------------------------
-
-    xlo = float(ds.domain_left_edge[0].to("m"))
-    xhi = float(ds.domain_right_edge[0].to("m"))
-
+    
+    xlo = float(ds.domain_left_edge[0])
+    xhi = float(ds.domain_right_edge[0])
+    
     nx = len(p_x)
-
+    
     dx = (xhi - xlo) / nx
-
+    
     x = xlo + (np.arange(nx) + 0.5) * dx
 
     # --------------------------------------------------------
     # Search only in the physically relevant portion
     # --------------------------------------------------------
-
+    print(
+        f"x range = {x.min():.6f} to {x.max():.6f}, "
+        f"search = {X_SEARCH_MIN:.6f} to {X_SEARCH_MAX:.6f}"
+    )
     mask = (
         (x >= X_SEARCH_MIN) &
         (x <= X_SEARCH_MAX)
     )
-
+    if not np.any(mask):
+    raise RuntimeError(
+        f"Search mask is empty. "
+        f"x spans {x.min()} to {x.max()}, "
+        f"but search range is "
+        f"{X_SEARCH_MIN} to {X_SEARCH_MAX}."
+    )
+        
     x_search = x[mask]
     p_search = p_x[mask]
 
