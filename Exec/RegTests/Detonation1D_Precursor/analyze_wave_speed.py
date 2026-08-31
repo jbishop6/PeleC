@@ -30,12 +30,9 @@ RESULTS_DIR = Path(
 # Theoretical CJ speed from SDToolbox + Davis mechanism
 D_CJ = 2834.958187   # m/s
 
-# Original location of the two-state interface
-X_INITIAL = 0.005    # m
-
-# First-frame search window around the initial interface
-INITIAL_SEARCH_MIN = 0.0045
-INITIAL_SEARCH_MAX = 0.0070
+X_INITIAL = 0.00005
+INITIAL_SEARCH_MIN = 0.000045
+INITIAL_SEARCH_MAX = 0.000070
 
 # Maximum physically allowed wave speed for tracking
 # This is intentionally much larger than D_CJ so we do not
@@ -43,7 +40,7 @@ INITIAL_SEARCH_MAX = 0.0070
 MAX_SPEED_ALLOWED = 10000.0   # m/s
 
 # Stop tracking before the wave reaches the right boundary
-X_STOP = 0.090
+X_STOP = 0.00090
 
 # Ignore the earliest startup transient when fitting speed
 FIT_START_TIME = 1.0e-8
@@ -198,8 +195,10 @@ for n, plotfile in enumerate(plotfiles):
     # BoxLib default unit assumptions.
     # --------------------------------------------------------
     
-    xlo = float(ds.domain_left_edge[0])
-    xhi = float(ds.domain_right_edge[0])
+   # PeleC spatial coordinates are in cm.
+    # Convert to meters for comparison with D_CJ in m/s.
+    xlo = float(ds.domain_left_edge[0]) * 1.0e-2
+    xhi = float(ds.domain_right_edge[0]) * 1.0e-2
     
     nx = len(p_x)
     
