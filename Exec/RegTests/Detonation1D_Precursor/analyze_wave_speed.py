@@ -207,27 +207,159 @@ for n, plotfile in enumerate(plotfiles):
     
     x = xlo + (np.arange(nx) + 0.5) * dx
 
-# --------------------------------------------------------
-# Track the SAME wave front from one plotfile to the next
-# --------------------------------------------------------
+    # --------------------------------------------------------
+    # Track the SAME wave front from one plotfile to the next
+    # --------------------------------------------------------
 
-        # Only perform backward-motion check after
-    # we already have a previous front
+    if previous_front is None:
+
+        # First plotfile:
+        # search only near the known initial interface
+        mask = (
+            (x >= INITIAL_SEARCH_MIN) &
+            (x <= INITIAL_SEARCH_MAX)
+        )
+
+    else:
+
+        # Time elapsed since previous plotfile
+        dt_local = time - previous_time
+
+        # Maximum distance the front could reasonably move forward
+        max_forward_distance = MAX_SPEED_ALLOWED * dt_local
+
+        # Always search several cells ahead because the front may move
+        # less than one grid cell between closely spaced plotfiles.
+        min_forward_distance = 8.0 * dx
+
+        forward_distance = max(
+            max_forward_distance,
+            min_forward_distance
+        )
+
+        # Allow only ONE cell behind the previous front for numerical
+        # jitter. The physical leading front should propagate rightward.
+        search_min = previous_front - dx
+        search_max = previous_front + forward_distance
+
+        mask = (
+            (x >= search_min) &
+            (x <= search_max)
+        )
+
+    # --------------------------------------------------------
+    # Make sure the tracking window contains cells
+    # --------------------------------------------------------
+
+    if not np.any(mask):
+        raise RuntimeError(
+            f"No cells found in tracking window at t={time:.6e} s"
+        )
+
+    x_search = x[mask]
+    p_search = p_x[mask]
+
+    if len(x_search) < 3:
+        raise RuntimeError(
+            f"Tracking window too small at t={time:.6e} s"
+        )
+
+    # --------------------------------------------------------
+    # Pressure gradient
+    # --------------------------------------------------------
+
+    dpdx = np.gradient(p_search, x_search)
+
+    min_gradient = np.min(dpdx)
+
+    # --------------------------------------------------------
+    # Identify strong negative pressure-gradient candidates
+    # --------------------------------------------------------
+
+    if min_gradient >= 0.0:
+        candidate_indices = np.array([], dtype=int)
+
+    else:
+        gradient_threshold = 0.25 * min_gradient
+
+        candidate_indices = np.where(
+            dpdx <= gradient_threshold
+        )[0]
+
+    # --------------------------------------------------------
+    # If no candidate exists, stop tracking cleanly
+    # --------------------------------------------------------
+
+    if len(candidate_indices) == 0:
+
+        print(
+            f"\nNo pressure-front candidates found at "
+            f"t = {time:.6e} s."
+        )
+
+        if previous_front is None:
+            print(
+                "Previous front position = None "
+                "(no front tracked yet)"
+            )
+        else:
+            print(
+                f"Previous front position = "
+                f"{previous_front:.6f} m"
+            )
+
+        print(
+            f"Search window = "
+            f"{x_search.min():.6f} to "
+            f"{x_search.max():.6f} m"
+        )
+
+        print(
+            f"Minimum dp/dx = "
+            f"{min_gradient:.6e}"
+        )
+
+        print(
+            "Stopping front tracking at this point."
+        )
+
+        break
+
+    # --------------------------------------------------------
+    # Choose the LEADING/rightmost strong pressure drop
+    # --------------------------------------------------------
+
+    shock_index = candidate_indices[-1]
+
+    x_front = x_search[shock_index]
+    p_front = p_search[shock_index]
+
+    # --------------------------------------------------------
+    # Enforce right-moving front
+    # --------------------------------------------------------
+
     if previous_front is not None:
 
         if x_front < previous_front - dx:
             raise RuntimeError(
                 f"Front moved backward unexpectedly at "
                 f"t={time:.6e} s: "
-                f"{previous_front:.6f} -> {x_front:.6f} m"
+                f"{previous_front:.6f} -> "
+                f"{x_front:.6f} m"
             )
 
+    # --------------------------------------------------------
     # Save this timestep's result
+    # --------------------------------------------------------
+
     times.append(time)
     front_positions.append(x_front)
     front_pressures.append(p_front)
 
-    # Update tracker for the next plotfile
+    # --------------------------------------------------------
+    # Update tracker for next plotfile
+    # --------------------------------------------------------
+
     previous_front = x_front
     previous_time = time
 
@@ -237,144 +369,10 @@ for n, plotfile in enumerate(plotfiles):
         f"x_front = {x_front:10.6f} m"
     )
 
-    # Stop before the front interacts with right boundary
-    if x_front >= X_STOP:
-        print(
-            f"\nFront reached x = {x_front:.6f} m. "
-            "Stopping before right-boundary interaction."
-        )
-        break
-    
-    else:
-    
-        # Time elapsed since previous plotfile
-        dt_local = time - previous_time
-    
-        # Maximum distance the front could reasonably move forward
-        max_forward_distance = MAX_SPEED_ALLOWED * dt_local
-        
-       # Always search several cells ahead because the front may move
-        # less than one grid cell between closely spaced plotfiles.
-        min_forward_distance = 8.0 * dx
-        
-        forward_distance = max(
-            max_forward_distance,
-            min_forward_distance
-        )
-        
-        # Allow only ONE cell behind the previous front for numerical
-        # jitter. The physical leading front should propagate rightward.
-        search_min = previous_front - dx
-        
-        search_max = previous_front + forward_distance
-            
-        mask = (
-            (x >= search_min) &
-            (x <= search_max)
-        )
-    
-    # Make sure the search window actually contains cells
-    if not np.any(mask):
-        raise RuntimeError(
-            f"No cells found in tracking window at t={time:.6e} s"
-        )
-    
-    x_search = x[mask]
-    p_search = p_x[mask]
-    
-    # Need at least a few points for gradient calculation
-    if len(x_search) < 3:
-        raise RuntimeError(
-            f"Tracking window too small at t={time:.6e} s"
-        )
-    
-   # Pressure gradient
-    dpdx = np.gradient(p_search, x_search)
-    
     # --------------------------------------------------------
-    # Identify the LEADING strong pressure drop
-    # --------------------------------------------------------
-    
-    # Most negative pressure gradient in this local window
-    min_gradient = np.min(dpdx)
-
-    # If there is no negative pressure gradient in the search window,
-    # then our assumed right-moving leading pressure drop is absent.
-    if min_gradient >= 0.0:
-        candidate_indices = np.array([], dtype=int)
-    
-    else:
-        gradient_threshold = 0.25 * min_gradient
-    
-        candidate_indices = np.where(
-            dpdx <= gradient_threshold
-        )[0]
-
-    if len(candidate_indices) == 0:
-        print(
-            f"\nNo pressure-front candidates found at "
-            f"t = {time:.6e} s."
-        )
-        
-        if previous_front is None:
-            print("Previous front position = None (no front tracked yet)")
-        else:
-            print(
-                f"Previous front position = "
-                f"{previous_front:.6f} m"
-            )
-        
-        print(
-            f"Search window = "
-            f"{x_search.min():.6f} to {x_search.max():.6f} m"
-        )
-        print(
-            f"Minimum dp/dx = "
-            f"{min_gradient:.6e}"
-        )
-        print(
-            "Stopping front tracking at this point."
-        )
-        break
-        
-    # The detonation front is the LEADING/rightmost strong
-    # pressure drop.
-    shock_index = candidate_indices[-1]
-    
-    x_front = x_search[shock_index]
-    p_front = p_search[shock_index]
-    
-    # --------------------------------------------------------
-    # Enforce right-moving front
+    # Stop before right-boundary interaction
     # --------------------------------------------------------
 
-    if previous_front is not None:
-    
-        # Allow at most one cell of apparent backward motion
-        # due to spatial discretization.
-        if x_front < previous_front - dx:
-            raise RuntimeError(
-                f"Front moved backward unexpectedly at "
-                f"t={time:.6e} s: "
-                f"{previous_front:.6f} -> {x_front:.6f} m"
-            )
-    
-        # Save this timestep's result
-        times.append(time)
-        front_positions.append(x_front)
-        front_pressures.append(p_front)
-        
-        # Update tracker for the next plotfile
-        previous_front = x_front
-        previous_time = time
-        
-        print(
-            f"{plotfile.name:12s}  "
-            f"t = {time:12.5e} s   "
-            f"x_front = {x_front:10.6f} m"
-        )
-    
-    # Stop before the front interacts with the right boundary
     if x_front >= X_STOP:
         print(
             f"\nFront reached x = {x_front:.6f} m. "
