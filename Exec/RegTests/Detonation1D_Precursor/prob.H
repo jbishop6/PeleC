@@ -141,6 +141,7 @@ pc_initdata(
     state(i, j, k, UFS + H2_ID) = rho * Y_H2;
     state(i, j, k, UFS + O2_ID) = rho * Y_O2;
   }
+}
 
 // ============================================================
 // BOUNDARY CONDITION
