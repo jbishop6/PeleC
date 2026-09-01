@@ -76,10 +76,11 @@ prob.idir = 0
 # 0.05 * 0.10 m = 0.005 m
 prob.frac = 0.05
 
-# CJ equilibrium product state
-prob.T_l = 3671.872
-prob.p_l = 1.86227569e6
-prob.u_l = 1291.038
+# Hot burned-product driver state
+# Pure H2O composition is specified in prob.H / prob.cpp
+prob.T_l = 2500.0
+prob.p_l = 5.0e5
+prob.u_l = 0.0
 
 # Fresh premixed H2/O2 state
 prob.T_r = 300.0
