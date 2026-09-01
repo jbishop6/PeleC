@@ -51,8 +51,8 @@ pc_initdata(
   //     Y_O2 = 0.8881
   //
   // Right state: stoichiometric fresh H2/O2 reactants.
-  // Left state: equilibrium CJ products obtained from the
-  // selected chemistry mechanism.
+  // Left state: simple burned-product approximation (pure H2O)
+  // for the initial GRI-Mech 3.0 test.
   // ============================================================
 
   constexpr amrex::Real Y_H2 = 0.1119;
@@ -100,39 +100,8 @@ pc_initdata(
     state(i, j, k, UTEMP) =
       prob_parm.T_l;
 
-    state(i, j, k, UFS + H2_ID)   = rho * Y_H2_prod;
-    state(i, j, k, UFS + H_ID)    = rho * Y_H_prod;
-    state(i, j, k, UFS + O_ID)    = rho * Y_O_prod;
-    state(i, j, k, UFS + OH_ID)   = rho * Y_OH_prod;
-    state(i, j, k, UFS + HO2_ID)  = rho * Y_HO2_prod;
-    state(i, j, k, UFS + H2O_ID)  = rho * Y_H2O_prod;
-    state(i, j, k, UFS + O2_ID)   = rho * Y_O2_prod;
-    state(i, j, k, UFS + H2O2_ID) = rho * Y_H2O2_prod;
-    
-    state(i, j, k, UFS + H2_ID) =
-        rho * Y_H2_prod;
-    
-    state(i, j, k, UFS + H_ID) =
-        rho * Y_H_prod;
-    
-    state(i, j, k, UFS + O_ID) =
-        rho * Y_O_prod;
-    
-    state(i, j, k, UFS + OH_ID) =
-        rho * Y_OH_prod;
-    
-    state(i, j, k, UFS + HO2_ID) =
-        rho * Y_HO2_prod;
-    
-    state(i, j, k, UFS + H2O_ID) =
-        rho * Y_H2O_prod;
-    
-    state(i, j, k, UFS + O2_ID) =
-        rho * Y_O2_prod;
-    
-    state(i, j, k, UFS + H2O2_ID) =
-        rho * Y_H2O2_prod;
-      }
+    // Simple burned-product approximation for initial GRI test
+    state(i, j, k, UFS + H2O_ID) = rho;
 
   // ============================================================
   // RIGHT STATE:
