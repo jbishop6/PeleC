@@ -33,7 +33,7 @@ PELE_CVODE_FORCE_YCORDER = FALSE
 PELE_USE_MAGMA = FALSE
 PELE_COMPILE_AJACOBIAN = FALSE
 Eos_Model := Fuego
-Chemistry_Model := Davis
+Chemistry_Model := grimech30
 Transport_Model := Simple
 
 # GNU Make
