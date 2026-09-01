@@ -65,7 +65,7 @@ pc_initdata(
 
   // ============================================================
   // LEFT STATE:
-  // HOT DRIVER / IGNITION REGION
+  // HOT BURNED-PRODUCT DRIVER
   // ============================================================
 
   if (x <= prob_parm.split[0]) {
@@ -88,24 +88,24 @@ pc_initdata(
 #endif
 
     // Internal energy
-    state(i, j, k, UEINT) =
-      prob_parm.rhoe_l;
+    state(i, j, k, UEINT) = prob_parm.rhoe_l;
 
-    // Total energy = internal + kinetic
+    // Total energy
     state(i, j, k, UEDEN) =
-      prob_parm.rhoe_l +
-      0.5 * rho * u * u;
+      prob_parm.rhoe_l + 0.5 * rho * u * u;
 
     // Temperature
-    state(i, j, k, UTEMP) =
-      prob_parm.T_l;
+    state(i, j, k, UTEMP) = prob_parm.T_l;
 
-    // Simple burned-product approximation for initial GRI test
+    // Temporary burned-product composition:
+    // pure H2O for initial GRI-Mech 3.0 precursor test
     state(i, j, k, UFS + H2O_ID) = rho;
+
+  }
 
   // ============================================================
   // RIGHT STATE:
-  // COLD FRESH REACTANTS
+  // COLD FRESH STOICHIOMETRIC H2/O2
   // ============================================================
 
   else {
@@ -128,27 +128,19 @@ pc_initdata(
 #endif
 
     // Internal energy
-    state(i, j, k, UEINT) =
-      prob_parm.rhoe_r;
+    state(i, j, k, UEINT) = prob_parm.rhoe_r;
 
-    // Total energy = internal + kinetic
+    // Total energy
     state(i, j, k, UEDEN) =
-      prob_parm.rhoe_r +
-      0.5 * rho * u * u;
+      prob_parm.rhoe_r + 0.5 * rho * u * u;
 
     // Temperature
-    state(i, j, k, UTEMP) =
-      prob_parm.T_r;
+    state(i, j, k, UTEMP) = prob_parm.T_r;
 
-    // Same premixed H2/O2 composition
-    state(i, j, k, UFS + H2_ID) =
-      rho * Y_H2;
-
-    state(i, j, k, UFS + O2_ID) =
-      rho * Y_O2;
+    // Fresh stoichiometric H2/O2
+    state(i, j, k, UFS + H2_ID) = rho * Y_H2;
+    state(i, j, k, UFS + O2_ID) = rho * Y_O2;
   }
-}
-
 
 // ============================================================
 // BOUNDARY CONDITION
