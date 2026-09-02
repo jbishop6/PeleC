@@ -3,7 +3,7 @@ from pathlib import Path
 # ONLY analyze this run
 results_dir = Path(
     "/home/jbishop6/PeleC/Exec/RegTests/Detonation1D_Precursor/"
-    "results_2026-08-28_172816"
+    "results_2026-09-01_123722"
 )
 
 # Get plotfiles from ONLY that directory
