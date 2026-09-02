@@ -74,7 +74,29 @@ pc_initdata(
     const amrex::Real u   = prob_parm.u_l;
 
     // Density
-    state(i, j, k, URHO) = rho;
+    state(i, j, k, UFS + H2_ID) =
+        rho * 2.2592365184e-02;
+
+    state(i, j, k, UFS + H_ID) =
+        rho * 5.6418811093e-03;
+    
+    state(i, j, k, UFS + O_ID) =
+        rho * 4.2570283138e-02;
+    
+    state(i, j, k, UFS + O2_ID) =
+        rho * 1.0694523501e-01;
+    
+    state(i, j, k, UFS + OH_ID) =
+        rho * 1.5779924332e-01;
+    
+    state(i, j, k, UFS + H2O_ID) =
+        rho * 6.6398235787e-01;
+    
+    state(i, j, k, UFS + HO2_ID) =
+        rho * 4.2107873568e-04;
+    
+    state(i, j, k, UFS + H2O2_ID) =
+        rho * 4.7555139817e-05;
 
     // Momentum
     state(i, j, k, UMX) = rho * u;
