@@ -40,7 +40,7 @@ q = "H2:2 O2:1"
 
 # IMPORTANT:
 # Use the Cantera mechanism corresponding to your Davis mechanism
-mech = "/home/jbishop6/PeleC/Submodules/PelePhysics/Mechanisms/Davis/mechanism.yaml"
+mech = "/home/jbishop6/PeleC/Submodules/PelePhysics/Mechanisms/grimech30/mechanism.yaml"
 
 # ------------------------------------------------------------
 # CJ SPEED
