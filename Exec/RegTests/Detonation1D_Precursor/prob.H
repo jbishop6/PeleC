@@ -63,9 +63,9 @@ pc_initdata(
     state(i, j, k, UFS + n) = 0.0;
   }
 
-  // ============================================================
+    // ============================================================
   // LEFT STATE:
-  // HOT BURNED-PRODUCT DRIVER
+  // GRI-Mech 3.0 EQUILIBRIUM CJ PRODUCTS
   // ============================================================
 
   if (x <= prob_parm.split[0]) {
@@ -73,30 +73,57 @@ pc_initdata(
     const amrex::Real rho = prob_parm.rho_l;
     const amrex::Real u   = prob_parm.u_l;
 
+    // ------------------------------------------------------------
+    // GRI-Mech 3.0 equilibrium CJ product mass fractions
+    //
+    // H2O is calculated as the remainder so that sum(Yk) = 1.
+    // ------------------------------------------------------------
+
+    constexpr amrex::Real Y_H2_prod   = 2.2592365184e-02;
+    constexpr amrex::Real Y_H_prod    = 5.6418811093e-03;
+    constexpr amrex::Real Y_O_prod    = 4.2570283138e-02;
+    constexpr amrex::Real Y_O2_prod   = 1.0694523501e-01;
+    constexpr amrex::Real Y_OH_prod   = 1.5779924332e-01;
+    constexpr amrex::Real Y_HO2_prod  = 4.2107873568e-04;
+    constexpr amrex::Real Y_H2O2_prod = 4.7555139817e-05;
+
+    constexpr amrex::Real Y_H2O_prod =
+      1.0
+      - Y_H2_prod
+      - Y_H_prod
+      - Y_O_prod
+      - Y_O2_prod
+      - Y_OH_prod
+      - Y_HO2_prod
+      - Y_H2O2_prod;
+
     // Density
+    state(i, j, k, URHO) = rho;
+
+    // Species densities = rho * Yk
     state(i, j, k, UFS + H2_ID) =
-        rho * 2.2592365184e-02;
+      rho * Y_H2_prod;
 
     state(i, j, k, UFS + H_ID) =
-        rho * 5.6418811093e-03;
-    
+      rho * Y_H_prod;
+
     state(i, j, k, UFS + O_ID) =
-        rho * 4.2570283138e-02;
-    
+      rho * Y_O_prod;
+
     state(i, j, k, UFS + O2_ID) =
-        rho * 1.0694523501e-01;
-    
+      rho * Y_O2_prod;
+
     state(i, j, k, UFS + OH_ID) =
-        rho * 1.5779924332e-01;
-    
+      rho * Y_OH_prod;
+
     state(i, j, k, UFS + H2O_ID) =
-        rho * 6.6398235787e-01;
-    
+      rho * Y_H2O_prod;
+
     state(i, j, k, UFS + HO2_ID) =
-        rho * 4.2107873568e-04;
-    
+      rho * Y_HO2_prod;
+
     state(i, j, k, UFS + H2O2_ID) =
-        rho * 4.7555139817e-05;
+      rho * Y_H2O2_prod;
 
     // Momentum
     state(i, j, k, UMX) = rho * u;
@@ -110,19 +137,17 @@ pc_initdata(
 #endif
 
     // Internal energy
-    state(i, j, k, UEINT) = prob_parm.rhoe_l;
+    state(i, j, k, UEINT) =
+      prob_parm.rhoe_l;
 
     // Total energy
     state(i, j, k, UEDEN) =
-      prob_parm.rhoe_l + 0.5 * rho * u * u;
+      prob_parm.rhoe_l +
+      0.5 * rho * u * u;
 
     // Temperature
-    state(i, j, k, UTEMP) = prob_parm.T_l;
-
-    // Temporary burned-product composition:
-    // pure H2O for initial GRI-Mech 3.0 precursor test
-    state(i, j, k, UFS + H2O_ID) = rho;
-
+    state(i, j, k, UTEMP) =
+      prob_parm.T_l;
   }
 
   // ============================================================
