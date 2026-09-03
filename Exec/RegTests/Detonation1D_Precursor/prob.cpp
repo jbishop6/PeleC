@@ -88,9 +88,19 @@ Yl[H_ID]    = 5.6418811093e-03;
 Yl[O_ID]    = 4.2570283138e-02;
 Yl[O2_ID]   = 1.0694523501e-01;
 Yl[OH_ID]   = 1.5779924332e-01;
-Yl[H2O_ID]  = 6.6398235787e-01;
 Yl[HO2_ID]  = 4.2107873568e-04;
 Yl[H2O2_ID] = 4.7555139817e-05;
+
+// Make H2O the remainder so the mass fractions sum to 1
+Yl[H2O_ID] =
+    1.0
+    - Yl[H2_ID]
+    - Yl[H_ID]
+    - Yl[O_ID]
+    - Yl[O2_ID]
+    - Yl[OH_ID]
+    - Yl[HO2_ID]
+    - Yl[H2O2_ID];
 
 
 // ============================================================
