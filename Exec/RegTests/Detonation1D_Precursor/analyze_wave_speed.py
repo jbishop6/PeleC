@@ -24,7 +24,7 @@ import yt
 # you want to analyze.
 RESULTS_DIR = Path(
     "/home/jbishop6/PeleC/Exec/RegTests/Detonation1D_Precursor/"
-    "results_2026-09-01_123722"
+    "results_2026-09-03_085218"
 )
 
 # Theoretical CJ speed from SDToolbox + Davis mechanism
