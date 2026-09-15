@@ -41,22 +41,21 @@ pc_initdata(
     prob_lo[0] + (i + 0.5) * dx[0];
 
   // ============================================================
-  // STOICHIOMETRIC H2/O2 MIXTURE
+  // FRESH C2H4/AIR MIXTURE
   //
-  // Reaction:
-  //     2 H2 + O2
+  // Baurle-Eklund reduced detonation mechanism.
   //
-  // Approximate mass fractions:
-  //     Y_H2 = 0.1119
-  //     Y_O2 = 0.8881
+  // Dr. Quinlan's supplied initialization uses mole fractions:
+  //   X_C2H4 = 0.065445
+  //   X_O2   = 0.196340
+  //   X_N2   = 0.738215
   //
-  // Right state: stoichiometric fresh H2/O2 reactants.
-  // Left state: simple burned-product approximation (pure H2O)
-  // for the initial GRI-Mech 3.0 test.
+  // Species state variables require mass fractions.
   // ============================================================
-
-  constexpr amrex::Real Y_H2 = 0.1119;
-  constexpr amrex::Real Y_O2 = 0.8881;
+  
+  constexpr amrex::Real Y_C2H4 = 0.0637512142;
+  constexpr amrex::Real Y_O2   = 0.2181587710;
+  constexpr amrex::Real Y_N2   = 0.7180900148;
 
   // Initialize all species to zero
   for (int n = 0; n < NUM_SPECIES; ++n) {
@@ -152,7 +151,7 @@ pc_initdata(
 
   // ============================================================
   // RIGHT STATE:
-  // COLD FRESH STOICHIOMETRIC H2/O2
+  // COLD FRESH C2H4/AIR
   // ============================================================
 
   else {
@@ -184,9 +183,10 @@ pc_initdata(
     // Temperature
     state(i, j, k, UTEMP) = prob_parm.T_r;
 
-    // Fresh stoichiometric H2/O2
-    state(i, j, k, UFS + H2_ID) = rho * Y_H2;
-    state(i, j, k, UFS + O2_ID) = rho * Y_O2;
+    // Fresh C2H4/air mixture
+    state(i, j, k, UFS + C2H4_ID) = rho * Y_C2H4;
+    state(i, j, k, UFS + O2_ID)   = rho * Y_O2;
+    state(i, j, k, UFS + N2_ID)   = rho * Y_N2;
   }
 }
 
