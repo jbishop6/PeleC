@@ -62,9 +62,9 @@ pc_initdata(
     state(i, j, k, UFS + n) = 0.0;
   }
 
-    // ============================================================
+  // ============================================================
   // LEFT STATE:
-  // GRI-Mech 3.0 EQUILIBRIUM CJ PRODUCTS
+  // BAURLE-EKLUND EQUILIBRIUM CJ PRODUCTS
   // ============================================================
 
   if (x <= prob_parm.split[0]) {
@@ -73,56 +73,48 @@ pc_initdata(
     const amrex::Real u   = prob_parm.u_l;
 
     // ------------------------------------------------------------
-    // GRI-Mech 3.0 equilibrium CJ product mass fractions
-    //
-    // H2O is calculated as the remainder so that sum(Yk) = 1.
+    // Baurle-Eklund equilibrium CJ product mass fractions
     // ------------------------------------------------------------
-
-    constexpr amrex::Real Y_H2_prod   = 2.2592365184e-02;
-    constexpr amrex::Real Y_H_prod    = 5.6418811093e-03;
-    constexpr amrex::Real Y_O_prod    = 4.2570283138e-02;
-    constexpr amrex::Real Y_O2_prod   = 1.0694523501e-01;
-    constexpr amrex::Real Y_OH_prod   = 1.5779924332e-01;
-    constexpr amrex::Real Y_HO2_prod  = 4.2107873568e-04;
-    constexpr amrex::Real Y_H2O2_prod = 4.7555139817e-05;
-
+    
+    constexpr amrex::Real Y_H2_prod =
+      6.0552175215e-04;
+    
+    constexpr amrex::Real Y_O2_prod =
+      2.9936951915e-02;
+    
     constexpr amrex::Real Y_H2O_prod =
-      1.0
-      - Y_H2_prod
-      - Y_H_prod
-      - Y_O_prod
-      - Y_O2_prod
-      - Y_OH_prod
-      - Y_HO2_prod
-      - Y_H2O2_prod;
-
+      7.6466780497e-02;
+    
+    constexpr amrex::Real Y_CO_prod =
+      4.3988898172e-02;
+    
+    constexpr amrex::Real Y_CO2_prod =
+      1.3090495130e-01;
+    
+    constexpr amrex::Real Y_N2_prod =
+      7.1809689637e-01;
+    
     // Density
     state(i, j, k, URHO) = rho;
-
+    
     // Species densities = rho * Yk
     state(i, j, k, UFS + H2_ID) =
       rho * Y_H2_prod;
-
-    state(i, j, k, UFS + H_ID) =
-      rho * Y_H_prod;
-
-    state(i, j, k, UFS + O_ID) =
-      rho * Y_O_prod;
-
+    
     state(i, j, k, UFS + O2_ID) =
       rho * Y_O2_prod;
-
-    state(i, j, k, UFS + OH_ID) =
-      rho * Y_OH_prod;
-
+    
     state(i, j, k, UFS + H2O_ID) =
       rho * Y_H2O_prod;
-
-    state(i, j, k, UFS + HO2_ID) =
-      rho * Y_HO2_prod;
-
-    state(i, j, k, UFS + H2O2_ID) =
-      rho * Y_H2O2_prod;
+    
+    state(i, j, k, UFS + CO_ID) =
+      rho * Y_CO_prod;
+    
+    state(i, j, k, UFS + CO2_ID) =
+      rho * Y_CO2_prod;
+    
+    state(i, j, k, UFS + N2_ID) =
+      rho * Y_N2_prod;
 
     // Momentum
     state(i, j, k, UMX) = rho * u;
