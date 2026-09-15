@@ -28,17 +28,16 @@ amrex_probinit(
     // ------------------------------------------------------------
     // LEFT STATE: hot ignition / driver mixture
     // ------------------------------------------------------------
-
-    P->T_l = 2500.0;     // K
-    P->p_l = 5.0e5;      // Pa
-    P->u_l = 0.0;        // m/s
+    P->T_l = 3027.66029625;     // K
+    P->p_l = 1.86291511e7;      // dyn/cm^2
+    P->u_l = 8.2306187790e4;    // cm/s
 
     // ------------------------------------------------------------
     // RIGHT STATE: fresh premixed reactants
     // ------------------------------------------------------------
 
     P->T_r = 300.0;      // K
-    P->p_r = 1.0e5;      // Pa
+    P->p_r = 1.0e6;      // Pa
     P->u_r = 0.0;        // m/s
 
     // ============================================================
@@ -74,34 +73,18 @@ amrex_probinit(
         problo[0] + P->frac * (probhi[0] - problo[0]);
 
 // ============================================================
-// LEFT STATE COMPOSITION: BURNED PRODUCTS
-//
-// Simple burned-product approximation for initial
-// GRI-Mech 3.0 test: pure H2O
+// LEFT STATE COMPOSITION:
+// BAURLE-EKLUND EQUILIBRIUM CJ PRODUCTS
 // ============================================================
 
 amrex::Real Yl[NUM_SPECIES] = {0.0};
 
-// GRI-Mech 3.0 equilibrium CJ products
-Yl[H2_ID]   = 2.2592365184e-02;
-Yl[H_ID]    = 5.6418811093e-03;
-Yl[O_ID]    = 4.2570283138e-02;
-Yl[O2_ID]   = 1.0694523501e-01;
-Yl[OH_ID]   = 1.5779924332e-01;
-Yl[HO2_ID]  = 4.2107873568e-04;
-Yl[H2O2_ID] = 4.7555139817e-05;
-
-// Make H2O the remainder so the mass fractions sum to 1
-Yl[H2O_ID] =
-    1.0
-    - Yl[H2_ID]
-    - Yl[H_ID]
-    - Yl[O_ID]
-    - Yl[O2_ID]
-    - Yl[OH_ID]
-    - Yl[HO2_ID]
-    - Yl[H2O2_ID];
-
+Yl[H2_ID]  = 6.0552175215e-04;
+Yl[O2_ID]  = 2.9936951915e-02;
+Yl[H2O_ID] = 7.6466780497e-02;
+Yl[CO_ID]  = 4.3988898172e-02;
+Yl[CO2_ID] = 1.3090495130e-01;
+Yl[N2_ID]  = 7.1809689637e-01;
 
 // ============================================================
 // RIGHT STATE COMPOSITION: FRESH C2H4/AIR
