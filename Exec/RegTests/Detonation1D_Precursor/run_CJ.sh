@@ -42,7 +42,7 @@ echo ""
 echo "Starting CJ calculation..."
 echo ""
 
-python CJ_speed.py
+python CJ_speed_Baurle.py
 
 run_status=$?
 
