@@ -104,19 +104,24 @@ Yl[H2O_ID] =
 
 
 // ============================================================
-// RIGHT STATE COMPOSITION: FRESH STOICHIOMETRIC H2/O2
+// RIGHT STATE COMPOSITION: FRESH C2H4/AIR
 //
-// 2 H2 + O2
+// Dr. Quinlan's supplied mixture:
+// X_C2H4 = 0.065445
+// X_O2   = 0.196340
+// X_N2   = 0.738215
 //
-// mass fractions approximately:
-// Y_H2 = 0.1119
-// Y_O2 = 0.8881
+// Corresponding mass fractions:
+// Y_C2H4 = 0.0637512142
+// Y_O2   = 0.2181587710
+// Y_N2   = 0.7180900148
 // ============================================================
 
 amrex::Real Yr[NUM_SPECIES] = {0.0};
 
-Yr[H2_ID] = 0.1119;
-Yr[O2_ID] = 0.8881;
+Yr[C2H4_ID] = 0.0637512142;
+Yr[O2_ID]   = 0.2181587710;
+Yr[N2_ID]   = 0.7180900148;
 
     // ============================================================
     // COMPUTE CONSISTENT LEFT STATE
@@ -181,8 +186,9 @@ Yr[O2_ID] = 0.8881;
         << "Y_H2O = " << Yl[H2O_ID] << "\n"
         
         << "\nRIGHT REACTANTS:\n"
-        << "Y_H2 = " << Yr[H2_ID] << "\n"
-        << "Y_O2 = " << Yr[O2_ID] << "\n"
+        << "Y_C2H4 = " << Yr[C2H4_ID] << "\n"
+        << "Y_O2   = " << Yr[O2_ID] << "\n"
+        << "Y_N2   = " << Yr[N2_ID] << "\n"
         << "========================================\n\n";
 }
 
