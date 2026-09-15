@@ -34,7 +34,7 @@ geometry.coord_sys = 0
 geometry.is_periodic = 0 1
 
 geometry.prob_lo = 0.0   0.0
-geometry.prob_hi = 0.10  0.002
+geometry.prob_hi = 10.0  0.2
 
 # 50 micron resolution in x:
 # 0.10 / 2000 = 5e-5 m
@@ -76,14 +76,16 @@ prob.idir = 0
 # 0.05 * 0.10 m = 0.005 m
 prob.frac = 0.05
 
-# GRI-Mech 3.0 equilibrium CJ product state
-prob.T_l = 3675.6858
-prob.p_l = 1.863462e6
-prob.u_l = 1291.5850
+# Baurle-Eklund equilibrium CJ product state
+# PeleC uses CGS: pressure [dyn/cm^2], velocity [cm/s]
+prob.T_l = 3027.66029625
+prob.p_l = 1.86291511e7
+prob.u_l = 8.2306187790e4
 
-# Fresh premixed H2/O2 state
+# Fresh premixed C2H4/air state
+# Corresponds to T = 300 K and P = 100000 Pa
 prob.T_r = 300.0
-prob.p_r = 1.0e5
+prob.p_r = 1.0e6
 prob.u_r = 0.0
 
 
