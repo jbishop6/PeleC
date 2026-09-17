@@ -30,19 +30,13 @@ RESULTS_DIR = Path(
 # Theoretical CJ speed from SDToolbox + mechanism
 D_CJ = 1855.14819089  # m/s, Baurle-Eklund C2H4/air
 
-X_INITIAL = 0.00005
-INITIAL_SEARCH_MIN = 0.000045
-INITIAL_SEARCH_MAX = 0.000070
+X_INITIAL = 0.005
+INITIAL_SEARCH_MIN = 0.0045
+INITIAL_SEARCH_MAX = 0.0070
 
-# Maximum physically allowed wave speed for tracking
-# This is intentionally much larger than D_CJ so we do not
-# force the answer to be near the CJ speed.
-MAX_SPEED_ALLOWED = 10000.0   # m/s
+MAX_SPEED_ALLOWED = 10000.0
 
-# Stop tracking before the wave reaches the right boundary
 X_STOP = 0.090
-
-# Ignore the earliest startup transient when fitting speed
 FIT_START_TIME = 1.0e-8
 
 
