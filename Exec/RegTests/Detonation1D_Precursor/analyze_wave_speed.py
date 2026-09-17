@@ -252,8 +252,13 @@ for n, plotfile in enumerate(plotfiles):
 
     if not np.any(mask):
         raise RuntimeError(
-            f"No cells found in tracking window at t={time:.6e} s"
-        )
+            f"No cells found in tracking window at t={time:.6e} s\n"
+            f"x range: {x.min():.8e} to {x.max():.8e} m\n"
+            f"Search range: {INITIAL_SEARCH_MIN:.8e} to "
+            f"{INITIAL_SEARCH_MAX:.8e} m\n"
+            f"dx: {dx:.8e} m\n"
+            f"Previous front: {previous_front}"
+    )
 
     x_search = x[mask]
     p_search = p_x[mask]
