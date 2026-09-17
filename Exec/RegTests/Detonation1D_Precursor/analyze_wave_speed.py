@@ -24,11 +24,11 @@ import yt
 # you want to analyze.
 RESULTS_DIR = Path(
     "/home/jbishop6/PeleC/Exec/RegTests/Detonation1D_Precursor/"
-    "results_2026-09-03_085218"
+    "results_9_16"
 )
 
-# Theoretical CJ speed from SDToolbox + Davis mechanism
-D_CJ = 2834.958187   # m/s
+# Theoretical CJ speed from SDToolbox + mechanism
+D_CJ = 1855.14819089  # m/s, Baurle-Eklund C2H4/air
 
 X_INITIAL = 0.00005
 INITIAL_SEARCH_MIN = 0.000045
@@ -40,7 +40,7 @@ INITIAL_SEARCH_MAX = 0.000070
 MAX_SPEED_ALLOWED = 10000.0   # m/s
 
 # Stop tracking before the wave reaches the right boundary
-X_STOP = 0.00090
+X_STOP = 0.090
 
 # Ignore the earliest startup transient when fitting speed
 FIT_START_TIME = 1.0e-8
