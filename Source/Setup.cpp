@@ -306,6 +306,11 @@ PeleC::variableSetUp()
   name[cnt] = "Temp";
 
   // Define the ADV variable names
+amrex::Print() << "DEBUG: NUM_ADV=" << NUM_ADV
+               << ", adv_names.size()=" << adv_names.size()
+               << ", adv_names.capacity()=" << adv_names.capacity()
+               << std::endl;
+  
   ProblemSpecificFunctions::set_adv_names(adv_names);
   // NOLINTNEXTLINE(readability-container-size-empty)
   AMREX_ALWAYS_ASSERT(adv_names.size() == NUM_ADV);
