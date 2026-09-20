@@ -38,7 +38,7 @@ mpirun \
     --mca plm slurm \
     --mca ras slurm \
     -np "$SLURM_NTASKS" \
-    ./PeleC2d.gnu.DEBUG.MPI.ex input.detonation1D.inp
+    ./PeleC2d.gnu.MPI.ex input.detonation1D.inp
 
 run_status=$?
 
