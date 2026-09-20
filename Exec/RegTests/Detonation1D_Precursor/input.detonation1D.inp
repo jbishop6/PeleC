@@ -24,6 +24,7 @@ cvode.solve_type = dense_direct
 ode.rtol     = 1.0e-6
 ode.atol     = 1.0e-10
 transport.const_thermal_diffusion_ratio = 0
+transport.use_soret = 0
 
 
 # ------------------ GEOMETRY ------------------
