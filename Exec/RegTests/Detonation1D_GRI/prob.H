@@ -176,9 +176,10 @@ pc_initdata(
     state(i, j, k, UTEMP) = prob_parm.T_r;
 
     // Fresh C2H4/air mixture
-    state(i, j, k, UFS + C2H4_ID) = rho * Y_C2H4;
-    state(i, j, k, UFS + O2_ID)   = rho * Y_O2;
-    state(i, j, k, UFS + N2_ID)   = rho * Y_N2;
+    // Initialize fresh-reactant species
+    for (int n = 0; n < NUM_SPECIES; ++n) {
+        state(i, j, k, UFS + n) = rho * prob_parm.Y_r[n];
+    }
   }
 }
 
