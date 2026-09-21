@@ -78,11 +78,11 @@ prob.idir = 0
 # 0.05 * 0.10 m = 0.005 m
 prob.frac = 0.05
 
-# Baurle-Eklund equilibrium CJ product state
+# grimech30 equilibrium CJ product state
 # PeleC uses CGS: pressure [dyn/cm^2], velocity [cm/s]
-prob.T_l = 3027.66029625
-prob.p_l = 1.86291511e7
-prob.u_l = 8.2306187790e4
+prob.T_l = 2922.89536447
+prob.p_l = 1.82039705e7
+prob.u_l = 8.17092650e4
 
 # Fresh premixed C2H4/air state
 # Corresponds to T = 300 K and P = 100000 Pa
