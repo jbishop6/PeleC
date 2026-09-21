@@ -1,0 +1,129 @@
+# ============================================================
+# QUASI-1D DETONATION PRECURSOR
+# PeleC is 2-D, but domain is thin in y
+# ============================================================
+
+# ------------------ TIME CONTROL ------------------
+
+# First run: keep this short just to verify initialization
+max_step = 1000000
+stop_time = 5.e-6
+
+pelec.fixed_dt = 1.e-11
+
+pelec.cfl         = 0.5
+pelec.init_shrink = 0.1
+pelec.change_max  = 1.05
+pelec.dt_cutoff   = 5.0e-20
+
+
+# ------------------ CHEMISTRY SOLVER ------------------
+
+cvode.dt_min = 1.0e-18
+cvode.solve_type = dense_direct
+ode.rtol     = 1.0e-6
+ode.atol     = 1.0e-10
+transport.const_thermal_diffusion_ratio = 0
+transport.use_soret = 0
+
+
+# ------------------ GEOMETRY ------------------
+
+geometry.coord_sys = 0
+
+# x is non-periodic
+# y is periodic -> solution should remain essentially 1-D
+geometry.is_periodic = 0 1
+
+geometry.prob_lo = 0.0   0.0
+geometry.prob_hi = 10.0  0.2
+
+# 50 micron resolution in x:
+# 0.10 / 2000 = 5e-5 m
+#
+# y only needs enough cells to satisfy the 2-D solver
+amr.n_cell = 2000 8
+
+
+# ------------------ BOUNDARY CONDITIONS ------------------
+
+# x-low  : extrapolation
+# y-low  : periodic/interior
+pelec.lo_bc = "FOExtrap" "Interior"
+
+# x-high : extrapolation
+# y-high : periodic/interior
+pelec.hi_bc = "FOExtrap" "Interior"
+
+
+# ------------------ PHYSICS ------------------
+
+pelec.do_hydro = 1
+pelec.do_react = 1
+
+# Inviscid precursor for now
+pelec.diffuse_vel  = 0
+pelec.diffuse_temp = 0
+pelec.diffuse_spec = 0
+
+pelec.chem_integrator = ReactorCvode
+
+
+# ------------------ PROBLEM INITIAL CONDITION ------------------
+
+# Hot driver is on the LEFT in x
+prob.idir = 0
+
+# Driver occupies first 5% of tube
+# 0.05 * 0.10 m = 0.005 m
+prob.frac = 0.05
+
+# Baurle-Eklund equilibrium CJ product state
+# PeleC uses CGS: pressure [dyn/cm^2], velocity [cm/s]
+prob.T_l = 3027.66029625
+prob.p_l = 1.86291511e7
+prob.u_l = 8.2306187790e4
+
+# Fresh premixed C2H4/air state
+# Corresponds to T = 300 K and P = 100000 Pa
+prob.T_r = 300.0
+prob.p_r = 1.0e6
+prob.u_r = 0.0
+
+
+# ------------------ AMR / GRID ------------------
+
+# Start without refinement so we understand the base solution
+amr.max_level = 0
+
+amr.blocking_factor = 8
+amr.max_grid_size   = 256
+amr.n_error_buf     = 2
+
+
+# ------------------ VERBOSITY ------------------
+
+pelec.v = 1
+amr.v   = 1
+
+amr.data_log = datlog
+
+
+# ------------------ CHECKPOINTS ------------------
+
+amr.checkpoint_files_output = 0
+amr.check_file = chk
+amr.check_int  = 1000
+
+
+# ------------------ PLOTFILES ------------------
+
+amr.plot_files_output = 1
+amr.plot_file = plt
+
+# Frequent output while debugging
+amr.plot_int = 50
+
+amr.plot_vars = density Temp
+
+amr.derive_plot_vars = pressure x_velocity
