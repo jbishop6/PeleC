@@ -143,10 +143,6 @@ with open(output_file, "w") as f:
     f.write("----------------------------------------\n")
 
     for species, Y in zip(gas2.species_names, gas2.Y):
-        if Y > 1.0e-5:
-            f.write(f"{species:8s} {Y:.10e}\n")
-
-    for species, Y in zip(gas2.species_names, gas2.Y):
         f.write(f"{species:8s} {Y:.16e}\n")
 
     f.write("\n========================================\n")
