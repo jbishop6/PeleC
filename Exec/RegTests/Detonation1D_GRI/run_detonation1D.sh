@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=det1d
+#SBATCH --job-name=det1dgri
 #SBATCH --nodes=1
 #SBATCH --ntasks=8
 #SBATCH --output=slurm-%j.out
