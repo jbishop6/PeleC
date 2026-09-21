@@ -109,7 +109,7 @@ for species, Y in zip(gas2.species_names, gas2.Y):
 # SAVE RESULTS TO TEXT FILE
 # ------------------------------------------------------------
 
-output_file = "CJ_results_Baurle.txt"
+output_file = "CJ_results_gri.txt"
 
 with open(output_file, "w") as f:
 
