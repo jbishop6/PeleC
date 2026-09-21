@@ -145,6 +145,17 @@ with open(output_file, "w") as f:
     for species, Y in zip(gas2.species_names, gas2.Y):
         f.write(f"{species:8s} {Y:.16e}\n")
 
+
+    f.write("\n----------------------------------------\n")
+    f.write("GRI prob.cpp LEFT-STATE COMPOSITION\n")
+    f.write("----------------------------------------\n\n")
+
+    f.write("amrex::Real Yl[NUM_SPECIES] = {0.0};\n\n")
+
+    for species, Y in zip(gas2.species_names, gas2.Y):
+        species_id = species.replace("CH2(S)", "CH2_S") + "_ID"
+        f.write(f"Yl[{species_id}] = {Y:.16e};\n")
+
     f.write("\n========================================\n")
 
 
