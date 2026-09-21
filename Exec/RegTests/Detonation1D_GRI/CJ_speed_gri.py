@@ -1,0 +1,148 @@
+import sys
+
+sys.path.insert(
+    0,
+    "/home/jbishop6/sdtoolbox/Python3/sdtoolbox"
+)
+
+import cantera as ct
+from sdtoolbox.postshock import CJspeed, PostShock_eq
+
+# ------------------------------------------------------------
+# Fresh reactant state -- this comes directly from your input
+# ------------------------------------------------------------
+
+T1 = 300.0
+P1 = 1.0e5
+
+# C2H4/air mixture from Dr. Quinlan's supplied case
+# Mole fractions:
+# X_C2H4 = 0.065445
+# X_O2   = 0.196340
+# X_N2   = 0.738215
+q = "C2H4:0.065445 O2:0.196340 N2:0.738215"
+
+# IMPORTANT:
+# Use the Cantera mechanism corresponding to your Davis mechanism
+mech = (
+    "/home/jbishop6/PeleC/Submodules/PelePhysics/Mechanisms/"
+    "grimech30/mechanism.yaml"
+)
+
+# ------------------------------------------------------------
+# CJ SPEED
+# ------------------------------------------------------------
+
+D_CJ = CJspeed(P1, T1, q, mech)
+
+print(f"CJ speed = {D_CJ:.3f} m/s")
+
+
+# ------------------------------------------------------------
+# FRESH MIXTURE DENSITY
+# ------------------------------------------------------------
+
+gas1 = ct.Solution(mech)
+gas1.TPX = T1, P1, q
+
+rho1 = gas1.density
+
+
+# ------------------------------------------------------------
+# EQUILIBRIUM POST-DETONATION CJ STATE
+# ------------------------------------------------------------
+
+gas2 = PostShock_eq(
+    D_CJ,
+    P1,
+    T1,
+    q,
+    mech
+)
+
+rho2 = gas2.density
+T2   = gas2.T
+P2   = gas2.P
+
+
+# ------------------------------------------------------------
+# LAB-FRAME PRODUCT VELOCITY
+#
+# Mass conservation across moving wave:
+#
+# rho1 * D = rho2 * (D - u2)
+#
+# Therefore:
+#
+# u2 = D * (1 - rho1/rho2)
+# ------------------------------------------------------------
+
+u2 = D_CJ * (1.0 - rho1 / rho2)
+
+
+print()
+print("Fresh state:")
+print(f"rho1 = {rho1:.8e} kg/m^3")
+print(f"T1   = {T1:.3f} K")
+print(f"P1   = {P1:.8e} Pa")
+
+print()
+print("CJ product state:")
+print(f"rho2 = {rho2:.8e} kg/m^3")
+print(f"T2   = {T2:.3f} K")
+print(f"P2   = {P2:.8e} Pa")
+print(f"u2   = {u2:.3f} m/s")
+
+print()
+print("CJ speed:")
+print(f"D_CJ = {D_CJ:.3f} m/s")
+
+print()
+print("Major product mass fractions:")
+
+for species, Y in zip(gas2.species_names, gas2.Y):
+    if Y > 1.0e-5:
+        print(f"{species:8s} {Y:.8f}")
+
+
+# ------------------------------------------------------------
+# SAVE RESULTS TO TEXT FILE
+# ------------------------------------------------------------
+
+output_file = "CJ_results_Baurle.txt"
+
+with open(output_file, "w") as f:
+
+    f.write("========================================\n")
+    f.write("CJ DETONATION CALCULATION\n")
+    f.write("========================================\n\n")
+
+    f.write("Fresh reactant state:\n")
+    f.write(f"T1     = {T1:.6f} K\n")
+    f.write(f"P1     = {P1:.8e} Pa\n")
+    f.write(f"rho1   = {rho1:.8e} kg/m^3\n")
+    f.write(f"Mixture = {q}\n")
+    f.write(f"Mechanism = {mech}\n")
+
+    f.write("\n----------------------------------------\n")
+    f.write("CJ RESULTS\n")
+    f.write("----------------------------------------\n")
+
+    f.write(f"D_CJ   = {D_CJ:.8f} m/s\n")
+    f.write(f"P2     = {P2:.8e} Pa\n")
+    f.write(f"T2     = {T2:.8f} K\n")
+    f.write(f"rho2   = {rho2:.8e} kg/m^3\n")
+    f.write(f"u2     = {u2:.8f} m/s\n")
+
+    f.write("\n----------------------------------------\n")
+    f.write("CJ PRODUCT MASS FRACTIONS\n")
+    f.write("----------------------------------------\n")
+
+    for species, Y in zip(gas2.species_names, gas2.Y):
+        if Y > 1.0e-5:
+            f.write(f"{species:8s} {Y:.10e}\n")
+
+    f.write("\n========================================\n")
+
+
+print(f"\nResults saved to {output_file}")
