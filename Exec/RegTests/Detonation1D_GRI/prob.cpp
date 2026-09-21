@@ -154,6 +154,12 @@ Yr[C2H4_ID] = 0.0637512142;
 Yr[O2_ID]   = 0.2181587710;
 Yr[N2_ID]   = 0.7180900148;
 
+// Store compositions for cell initialization in prob.H
+for (int n = 0; n < NUM_SPECIES; ++n) {
+    P->Y_l[n] = Yl[n];
+    P->Y_r[n] = Yr[n];
+}
+
     // ============================================================
     // COMPUTE CONSISTENT LEFT STATE
     // ============================================================
