@@ -4,6 +4,7 @@
 #include <AMReX_REAL.H>
 #include <AMReX_GpuQualifiers.H>
 #include <AMReX_GpuMemory.H>
+#include "mechanism.H"
 
 struct ProbParmDevice
 {
@@ -28,6 +29,11 @@ struct ProbParmDevice
   int idir = 0;
 
   amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> split;
+
+  // Species mass fractions for each initial state
+  amrex::Real Y_l[NUM_SPECIES] = {0.0};
+  amrex::Real Y_r[NUM_SPECIES] = {0.0};
+
 };
 
 struct ProbParmHost
