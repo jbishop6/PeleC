@@ -762,6 +762,12 @@ speed_plot = (
     "wave_speed_vs_time.png"
 )
 
+print("Actual x-axis limits:", plt.xlim())
+print(
+    "Saving diagnostic to:",
+    RESULTS_DIR / "pressure_profiles_tracking_check.png"
+)
+
 plt.savefig(
     speed_plot,
     dpi=300
