@@ -345,6 +345,45 @@ for n, plotfile in enumerate(plotfiles):
     p_front = p_search[shock_index]
 
     # --------------------------------------------------------
+    # Find the fixed-pressure crossing near the detected front
+    # --------------------------------------------------------
+    
+    crossings = np.where(
+        (p_search[:-1] >= P_THRESHOLD) &
+        (p_search[1:] < P_THRESHOLD)
+    )[0]
+    
+    if len(crossings) == 0:
+        raise RuntimeError(
+            f"No pressure-threshold crossing at t={time:.6e} s"
+        )
+    
+    # Select the crossing closest to the gradient-detected front
+    crossing_index = crossings[
+        np.argmin(
+            np.abs(
+                0.5 * (
+                    x_search[crossings] +
+                    x_search[crossings + 1]
+                ) - x_front
+            )
+        )
+    ]
+    
+    # Two cell centers surrounding the threshold
+    x1 = x_search[crossing_index]
+    x2 = x_search[crossing_index + 1]
+    
+    # Pressures at those centers
+    p1 = p_search[crossing_index]
+    p2 = p_search[crossing_index + 1]
+    
+    # Linear interpolation to estimate the subcell position
+    x_subcell = x1 + (
+        (P_THRESHOLD - p1) / (p2 - p1)
+    ) * (x2 - x1)
+
+    # --------------------------------------------------------
     # Save representative pressure profiles for diagnostics
     # --------------------------------------------------------
     
@@ -385,6 +424,9 @@ for n, plotfile in enumerate(plotfiles):
     front_positions.append(x_front)
     front_pressures.append(p_front)
 
+
+    subcell_positions.append(x_subcell)
+
     # --------------------------------------------------------
     # Update tracker for next plotfile
     # --------------------------------------------------------
@@ -415,6 +457,7 @@ for n, plotfile in enumerate(plotfiles):
 times = np.asarray(times)
 front_positions = np.asarray(front_positions)
 front_pressures = np.asarray(front_pressures)
+subcell_positions = np.asarray(subcell_positions)
 
 
 # ============================================================
@@ -443,6 +486,7 @@ fit_mask = (
 
 t_fit = times[fit_mask]
 x_fit = front_positions[fit_mask]
+x_subcell_fit = subcell_positions[fit_mask]
 
 if len(t_fit) < 2:
     print(
@@ -467,6 +511,18 @@ coefficients = np.polyfit(t_fit, x_fit, 1)
 
 D_sim = coefficients[0]
 intercept = coefficients[1]
+subcell_coefficients = np.polyfit(
+    t_fit,
+    x_subcell_fit,
+    1
+)
+
+D_subcell = subcell_coefficients[0]
+subcell_intercept = subcell_coefficients[1]
+
+x_subcell_prediction = (
+    D_subcell * t_fit + subcell_intercept
+)
 
 x_prediction = (
     D_sim * t_fit + intercept
@@ -559,6 +615,14 @@ print(
     f"{FIT_START_TIME:.3e} s"
 )
 
+print(f"Interpolated speed : {D_subcell:.3f} m/s")
+
+print(
+    f"Interpolated difference from CJ : "
+    f"{100.0 * (D_subcell - D_CJ) / D_CJ:.3f} %"
+)
+
+
 print("========================================\n")
 
 
@@ -572,6 +636,7 @@ data = np.column_stack(
     (
         times,
         front_positions,
+        subcell_positions,
         front_pressures
     )
 )
@@ -580,7 +645,10 @@ np.savetxt(
     csv_file,
     data,
     delimiter=",",
-    header="time_s,x_front_m,pressure_front_Pa",
+    header=(
+        "time_s,gradient_front_m,"
+        "subcell_front_m,pressure_front"
+    ),
     comments=""
 )
 
@@ -706,6 +774,21 @@ plt.plot(
     )
 )
 
+plt.plot(
+    times,
+    subcell_positions,
+    "-",
+    linewidth=2,
+    label="Interpolated pressure-threshold position"
+)
+
+plt.plot(
+    t_fit,
+    x_subcell_prediction,
+    "--",
+    label=f"Subcell linear fit: D = {D_subcell:.1f} m/s"
+)
+
 plt.xlabel("Time [s]")
 plt.ylabel("Leading pressure-front position [m]")
 plt.title("PeleC Wave-Front Propagation")
@@ -766,11 +849,7 @@ speed_plot = (
     "wave_speed_vs_time.png"
 )
 
-print("Actual x-axis limits:", plt.xlim())
-print(
-    "Saving diagnostic to:",
-    RESULTS_DIR / "pressure_profiles_tracking_check.png"
-)
+
 
 plt.savefig(
     speed_plot,
