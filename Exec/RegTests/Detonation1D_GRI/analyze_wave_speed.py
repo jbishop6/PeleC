@@ -122,25 +122,6 @@ diagnostic_profiles = []
 # Number of profiles to save
 N_DIAGNOSTIC_PROFILES = 5
 
-x_front = x_search[shock_index]
-p_front = p_search[shock_index]
-
-# Save representative profiles throughout the simulation
-sample_interval = max(
-    1,
-    len(plotfiles) // N_DIAGNOSTIC_PROFILES
-)
-
-if n % sample_interval == 0:
-    diagnostic_profiles.append(
-        (
-            time,
-            x.copy(),
-            p_x.copy(),
-            x_front
-        )
-    )
-
 previous_front = None
 previous_time = None
 
@@ -356,6 +337,25 @@ for n, plotfile in enumerate(plotfiles):
 
     x_front = x_search[shock_index]
     p_front = p_search[shock_index]
+
+    # --------------------------------------------------------
+    # Save representative pressure profiles for diagnostics
+    # --------------------------------------------------------
+    
+    sample_interval = max(
+        1,
+        len(plotfiles) // N_DIAGNOSTIC_PROFILES
+    )
+    
+    if n % sample_interval == 0:
+        diagnostic_profiles.append(
+            (
+                time,
+                x.copy(),
+                p_x.copy(),
+                x_front
+            )
+        )
 
     # --------------------------------------------------------
     # Enforce right-moving front
