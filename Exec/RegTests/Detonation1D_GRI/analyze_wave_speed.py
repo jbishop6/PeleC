@@ -116,6 +116,31 @@ times = []
 front_positions = []
 front_pressures = []
 
+# Save representative pressure profiles for diagnostics
+diagnostic_profiles = []
+
+# Number of profiles to save
+N_DIAGNOSTIC_PROFILES = 5
+
+x_front = x_search[shock_index]
+p_front = p_search[shock_index]
+
+# Save representative profiles throughout the simulation
+sample_interval = max(
+    1,
+    len(plotfiles) // N_DIAGNOSTIC_PROFILES
+)
+
+if n % sample_interval == 0:
+    diagnostic_profiles.append(
+        (
+            time,
+            x.copy(),
+            p_x.copy(),
+            x_front
+        )
+    )
+
 previous_front = None
 previous_time = None
 
@@ -736,6 +761,39 @@ speed_plot = (
 
 plt.savefig(
     speed_plot,
+    dpi=300
+)
+
+plt.close()
+
+# ============================================================
+# PRESSURE PROFILE DIAGNOSTICS
+# ============================================================
+
+plt.figure(figsize=(10, 6))
+
+for time, x, pressure, x_front in diagnostic_profiles:
+    plt.plot(
+        x,
+        pressure,
+        label=f"t = {time:.2e} s"
+    )
+
+    plt.axvline(
+        x_front,
+        linestyle="--",
+        alpha=0.5
+    )
+
+plt.xlabel("Position [m]")
+plt.ylabel("Pressure [PeleC output units]")
+plt.title("Pressure Profiles and Detected Wave Fronts")
+plt.legend()
+plt.grid()
+plt.tight_layout()
+
+plt.savefig(
+    RESULTS_DIR / "pressure_profiles_tracking_check.png",
     dpi=300
 )
 
