@@ -1,5 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=det1dgri
+#SBATCH --partition=compute-long
 #SBATCH --nodes=1
 #SBATCH --ntasks=8
 #SBATCH --output=slurm-%j.out
