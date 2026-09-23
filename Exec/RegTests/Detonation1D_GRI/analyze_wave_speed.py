@@ -354,15 +354,15 @@ for n, plotfile in enumerate(plotfiles):
     )[0]
     
     if len(crossings) == 0:
-        print("\nTHRESHOLD TRACKING DIAGNOSTIC")
-        print(f"Time: {time:.8e} s")
-        print(f"Threshold: {P_THRESHOLD:.6e}")
-        print(f"Tracking window: {x_search.min():.8f} to {x_search.max():.8f} m")
-        print(f"Minimum pressure: {p_search.min():.6e}")
-        print(f"Maximum pressure: {p_search.max():.6e}")
-    
         raise RuntimeError(
-            f"No pressure-threshold crossing at t={time:.6e} s"
+            f"\nTHRESHOLD TRACKING DIAGNOSTIC\n"
+            f"Time: {time:.8e} s\n"
+            f"Threshold: {P_THRESHOLD:.6e}\n"
+            f"Tracking window: "
+            f"{x_search.min():.8f} to {x_search.max():.8f} m\n"
+            f"Minimum pressure: {p_search.min():.6e}\n"
+            f"Maximum pressure: {p_search.max():.6e}\n"
+            f"No pressure-threshold crossing found."
         )
     
     # Select the crossing closest to the gradient-detected front
