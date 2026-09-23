@@ -745,9 +745,12 @@ plt.axhline(
     )
 )
 
-plt.xlabel("Time [s]")
-plt.ylabel("Wave speed [m/s]")
-plt.title("PeleC Wave-Speed History")
+plt.xlabel("Position [m]")
+plt.ylabel("Pressure [PeleC output units]")
+plt.title("Pressure Profiles and Detected Wave Fronts")
+
+# Zoom in on the initial interface and nearby wave motion
+plt.xlim(0.0045, 0.0060)
 
 plt.legend()
 plt.grid()
