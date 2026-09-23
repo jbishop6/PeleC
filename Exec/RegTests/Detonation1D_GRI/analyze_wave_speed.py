@@ -39,6 +39,11 @@ MAX_SPEED_ALLOWED = 10000.0
 X_STOP = 0.090
 FIT_START_TIME = 1.0e-8
 
+# Pressure threshold for subcell wave-front tracking
+P_HIGH = 1.82e7
+P_LOW = 1.0e6
+
+P_THRESHOLD = 0.5 * (P_HIGH + P_LOW)
 
 # ============================================================
 # FIND PLOTFILES
@@ -115,6 +120,7 @@ def find_pressure_field(ds):
 times = []
 front_positions = []
 front_pressures = []
+subcell_positions = []
 
 # Save representative pressure profiles for diagnostics
 diagnostic_profiles = []
