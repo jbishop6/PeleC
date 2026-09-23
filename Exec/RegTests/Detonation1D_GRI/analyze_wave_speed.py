@@ -244,7 +244,7 @@ for n, plotfile in enumerate(plotfiles):
 
         # Allow only ONE cell behind the previous front for numerical
         # jitter. The physical leading front should propagate rightward.
-        search_min = previous_front - dx
+        search_min = previous_front - 8.0 * dx
         search_max = previous_front + forward_distance
 
         mask = (
