@@ -30,159 +30,48 @@ pc_initdata(
   amrex::GeometryData const& geomdata,
   ProbParmDevice const& prob_parm)
 {
-  // ============================================================
-  // 1-D POSITION
-  // ============================================================
 
-  const amrex::Real* prob_lo = geomdata.ProbLo();
-  const amrex::Real* dx = geomdata.CellSize();
-
-  const amrex::Real x =
-    prob_lo[0] + (i + 0.5) * dx[0];
-
-  // ============================================================
-  // FRESH C2H4/AIR MIXTURE
-  //
-  // Baurle-Eklund reduced detonation mechanism.
-  //
-  // Dr. Quinlan's supplied initialization uses mole fractions:
-  //   X_C2H4 = 0.065445
-  //   X_O2   = 0.196340
-  //   X_N2   = 0.738215
-  //
-  // Species state variables require mass fractions.
-  // ============================================================
+    // ============================================================
+    // UNIFORM FRESH C2H4/O2/N2 MIXTURE
+    //
+    // Brown 1999 Shepherd validation condition:
+    //   C2H4 + 3 O2 + 12 N2
+    //
+    // Thermodynamic state is specified through prob_parm.
+    // ============================================================
   
-  constexpr amrex::Real Y_C2H4 = 0.0637512142;
-  constexpr amrex::Real Y_O2   = 0.2181587710;
-  constexpr amrex::Real Y_N2   = 0.7180900148;
-
-  // Initialize all species to zero
-  for (int n = 0; n < NUM_SPECIES; ++n) {
-    state(i, j, k, UFS + n) = 0.0;
-  }
-
-  // ============================================================
-  // LEFT STATE:
-  // BAURLE-EKLUND EQUILIBRIUM CJ PRODUCTS
-  // ============================================================
-
-  if (x <= prob_parm.split[0]) {
-
-    const amrex::Real rho = prob_parm.rho_l;
-    const amrex::Real u   = prob_parm.u_l;
-
-    // ------------------------------------------------------------
-    // Baurle-Eklund equilibrium CJ product mass fractions
-    // ------------------------------------------------------------
-    
-    constexpr amrex::Real Y_H2_prod =
-      6.0552175215e-04;
-    
-    constexpr amrex::Real Y_O2_prod =
-      2.9936951915e-02;
-    
-    constexpr amrex::Real Y_H2O_prod =
-      7.6466780497e-02;
-    
-    constexpr amrex::Real Y_CO_prod =
-      4.3988898172e-02;
-    
-    constexpr amrex::Real Y_CO2_prod =
-      1.3090495130e-01;
-    
-    constexpr amrex::Real Y_N2_prod =
-      7.1809689637e-01;
-    
-    // Density
-    state(i, j, k, URHO) = rho;
-    
-    // Species densities = rho * Yk
-    state(i, j, k, UFS + H2_ID) =
-      rho * Y_H2_prod;
-    
-    state(i, j, k, UFS + O2_ID) =
-      rho * Y_O2_prod;
-    
-    state(i, j, k, UFS + H2O_ID) =
-      rho * Y_H2O_prod;
-    
-    state(i, j, k, UFS + CO_ID) =
-      rho * Y_CO_prod;
-    
-    state(i, j, k, UFS + CO2_ID) =
-      rho * Y_CO2_prod;
-    
-    state(i, j, k, UFS + N2_ID) =
-      rho * Y_N2_prod;
-
-    // Momentum
-    state(i, j, k, UMX) = rho * u;
-
-#if AMREX_SPACEDIM >= 2
-    state(i, j, k, UMY) = 0.0;
-#endif
-
-#if AMREX_SPACEDIM == 3
-    state(i, j, k, UMZ) = 0.0;
-#endif
-
-    // Internal energy
-    state(i, j, k, UEINT) =
-      prob_parm.rhoe_l;
-
-    // Total energy
-    state(i, j, k, UEDEN) =
-      prob_parm.rhoe_l +
-      0.5 * rho * u * u;
-
-    // Temperature
-    state(i, j, k, UTEMP) =
-      prob_parm.T_l;
-  }
-
-  // ============================================================
-  // RIGHT STATE:
-  // COLD FRESH C2H4/AIR
-  // ============================================================
-
-  else {
-
     const amrex::Real rho = prob_parm.rho_r;
     const amrex::Real u   = prob_parm.u_r;
-
+  
     // Density
     state(i, j, k, URHO) = rho;
-
+  
     // Momentum
     state(i, j, k, UMX) = rho * u;
-
-#if AMREX_SPACEDIM >= 2
+  
+  #if AMREX_SPACEDIM >= 2
     state(i, j, k, UMY) = 0.0;
-#endif
-
-#if AMREX_SPACEDIM == 3
+  #endif
+  
+  #if AMREX_SPACEDIM == 3
     state(i, j, k, UMZ) = 0.0;
-#endif
-
+  #endif
+  
     // Internal energy
     state(i, j, k, UEINT) = prob_parm.rhoe_r;
-
+  
     // Total energy
     state(i, j, k, UEDEN) =
       prob_parm.rhoe_r + 0.5 * rho * u * u;
-
+  
     // Temperature
     state(i, j, k, UTEMP) = prob_parm.T_r;
-
-    // Fresh C2H4/air mixture
-    // Initialize fresh-reactant species
+  
+    // Species densities
     for (int n = 0; n < NUM_SPECIES; ++n) {
-        state(i, j, k, UFS + n) = rho * prob_parm.Y_r[n];
+      state(i, j, k, UFS + n) = rho * prob_parm.Y_r[n];
     }
   }
-}
-
 // ============================================================
 // BOUNDARY CONDITION
 // ============================================================
