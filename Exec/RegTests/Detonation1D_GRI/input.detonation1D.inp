@@ -7,7 +7,7 @@
 
 # First run: keep this short just to verify initialization
 max_step = 1000000
-stop_time = 5.e-6
+stop_time = 5.e-5
 
 pelec.fixed_dt = 1.e-11
 
@@ -58,7 +58,7 @@ pelec.hi_bc = "FOExtrap" "Interior"
 
 # ------------------ PHYSICS ------------------
 
-pelec.do_hydro = 1
+pelec.do_hydro = 0
 pelec.do_react = 1
 
 # Inviscid precursor for now
@@ -70,24 +70,15 @@ pelec.chem_integrator = ReactorCvode
 
 
 # ------------------ PROBLEM INITIAL CONDITION ------------------
-
-# Hot driver is on the LEFT in x
 prob.idir = 0
-
-# Driver occupies first 5% of tube
-# 0.05 * 0.10 m = 0.005 m
 prob.frac = 0.05
 
-# grimech30 equilibrium CJ product state
-# PeleC uses CGS: pressure [dyn/cm^2], velocity [cm/s]
-prob.T_l = 2922.89536447
-prob.p_l = 1.82039705e7
-prob.u_l = 8.17092650e4
+prob.T_l = 1291.0
+prob.p_l = 3.3538575e6
+prob.u_l = 0.0
 
-# Fresh premixed C2H4/air state
-# Corresponds to T = 300 K and P = 100000 Pa
-prob.T_r = 300.0
-prob.p_r = 1.0e6
+prob.T_r = 1291.0
+prob.p_r = 3.3538575e6
 prob.u_r = 0.0
 
 
@@ -122,7 +113,7 @@ amr.plot_files_output = 1
 amr.plot_file = plt
 
 # Frequent output while debugging
-amr.plot_int = 50
+amr.plot_int = 10000
 
 amr.plot_vars = density Temp
 
