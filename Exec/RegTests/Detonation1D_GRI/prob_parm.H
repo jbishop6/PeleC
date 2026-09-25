@@ -8,31 +8,16 @@
 
 struct ProbParmDevice
 {
-  // Left / ignition state
-  amrex::Real p_l   = -1.0;
-  amrex::Real u_l   = 0.0;
-  amrex::Real rho_l = 0.0;
-  amrex::Real rhoe_l = 0.0;
-  amrex::Real T_l   = -1.0;
 
-  // Right / fresh-reactant state
+  // Uniform fresh-reactant state
   amrex::Real p_r   = -1.0;
   amrex::Real u_r   = 0.0;
   amrex::Real rho_r = 0.0;
   amrex::Real rhoe_r = 0.0;
   amrex::Real T_r   = -1.0;
 
-  // Fraction of domain occupied by the ignition/driver region
-  amrex::Real frac = 0.05;
-
-  // In 1-D this will be x-direction
-  int idir = 0;
-
-  amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> split;
-
-  // Species mass fractions for each initial state
-  amrex::Real Y_l[NUM_SPECIES] = {0.0};
-  amrex::Real Y_r[NUM_SPECIES] = {0.0};
+// Species mass fractions for uniform fresh-reactant state
+amrex::Real Y_r[NUM_SPECIES] = {0.0};
 
 };
 
