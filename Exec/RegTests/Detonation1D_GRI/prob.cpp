@@ -45,11 +45,17 @@ amrex_probinit(
 // Converted to mass fractions for PeleC.
 // ============================================================
 
+amrex::Real Xr[NUM_SPECIES] = {0.0};
 amrex::Real Yr[NUM_SPECIES] = {0.0};
 
-Yr[C2H4_ID] = 0.0609583326;
-Yr[O2_ID]   = 0.2085846646;
-Yr[N2_ID]   = 0.7304570028;
+// Exact Brown 1999 mole fractions:
+// C2H4 + 3 O2 + 12 N2
+Xr[C2H4_ID] = 1.0 / 16.0;
+Xr[O2_ID]   = 3.0 / 16.0;
+Xr[N2_ID]   = 12.0 / 16.0;
+
+// Convert to mechanism-consistent mass fractions
+eos.X2Y(Xr, Yr);
 
     // ============================================================
     // COMPUTE CONSISTENT RIGHT STATE
