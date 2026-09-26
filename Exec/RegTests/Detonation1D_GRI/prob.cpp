@@ -57,6 +57,11 @@ Xr[N2_ID]   = 12.0 / 16.0;
 // Convert to mechanism-consistent mass fractions
 eos.X2Y(Xr, Yr);
 
+// Store mass fractions for cell initialization in prob.H
+for (int n = 0; n < NUM_SPECIES; ++n) {
+    P->Y_r[n] = Yr[n];
+}
+
     // ============================================================
     // COMPUTE CONSISTENT RIGHT STATE
     // ============================================================
