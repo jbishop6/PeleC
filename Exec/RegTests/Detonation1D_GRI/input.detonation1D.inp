@@ -6,8 +6,8 @@
 # ------------------ TIME CONTROL ------------------
 
 # First run: keep this short just to verify initialization
-max_step = 10000
-stop_time = 5.e-5
+max_step = 50000
+stop_time = 2.e-4
 
 pelec.fixed_dt = 1.e-8
 
@@ -113,7 +113,7 @@ amr.plot_files_output = 1
 amr.plot_file = plt
 
 # Frequent output while debugging
-amr.plot_int = 10
+amr.plot_int = 50
 
 amr.plot_vars = density Temp
 
