@@ -42,7 +42,7 @@ geometry.prob_hi = 10.0  0.2
 # 0.10 / 2000 = 5e-5 m
 #
 # y only needs enough cells to satisfy the 2-D solver
-amr.n_cell = 2000 8
+amr.n_cell = 8 8
 
 
 # ------------------ BOUNDARY CONDITIONS ------------------
