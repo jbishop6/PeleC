@@ -27,7 +27,7 @@ for plt in "$RESULTS_DIR"/plt*; do
     if [ -d "$plt" ]; then
 
         # Get simulation time
-        time=$($FTIME "$plt" | awk '{print $3}')
+        time=$($FTIME "$plt" | awk '{print $4}')
 
         # Extract Temp from this plotfile
         $FEXTRACT -v Temp -s "${plt}.slice" "$plt" > /dev/null
