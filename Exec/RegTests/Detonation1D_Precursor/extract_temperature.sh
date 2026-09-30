@@ -5,7 +5,7 @@
 # P = 3.31 atm
 # Experimental induction time = 30.4 us
 
-RESULTS_DIR="validation_Brown1999_GRI_1291K_3.31atm_30.4us_2026-09-27_171604"
+RESULTS_DIR="validation_Brown1999_Baurle_1291K_3.31atm_30.4us_2026-09-30_111533"
 
 FEXTRACT=~/PeleC/Submodules/PelePhysics/Submodules/amrex/Tools/Plotfile/fextract.gnu.ex
 FTIME=~/PeleC/Submodules/PelePhysics/Submodules/amrex/Tools/Plotfile/ftime.gnu.ex
