@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # ============================================================
-# Calculate induction time for Brown 1999 GRI validation case
+# Calculate induction time for Brown 1999 Baurle validation case
 # Definition: time corresponding to maximum dT/dt
 # ============================================================
 
-RESULTS_DIR="$HOME/PeleC/Exec/RegTests/Detonation1D_GRI/validation_Brown1999_GRI_1291K_3.31atm_30.4us_2026-09-27_171604"
+RESULTS_DIR="$HOME/PeleC/Exec/RegTests/Detonation1D_Precursor/validation_Brown1999_Baurle_1291K_3.31atm_30.4us_2026-09-30_111533"
 
 cd "$RESULTS_DIR" || exit 1
 
@@ -36,7 +36,7 @@ tau_s = t[i]
 tau_us = tau_s * 1.0e6
 
 print("========================================")
-print("GRI-Mech Induction-Time Result")
+print("Baurle-Mech Induction-Time Result")
 print("========================================")
 print(f"Induction time       = {tau_s:.8e} s")
 print(f"Induction time       = {tau_us:.3f} us")
@@ -49,7 +49,7 @@ print(f"Ratio (model/exp)     = {tau_us / 30.4:.4f}")
 
 # Save result
 with open("induction_time_result.txt", "w") as f:
-    f.write("GRI-Mech Brown 1999 validation\n")
+    f.write("Baurle-Mech Brown 1999 validation\n")
     f.write("T = 1291 K\n")
     f.write("P = 3.31 atm\n")
     f.write("Mixture = C2H4 + 3 O2 + 12 N2\n\n")
