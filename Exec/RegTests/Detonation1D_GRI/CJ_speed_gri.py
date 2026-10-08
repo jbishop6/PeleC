@@ -12,15 +12,10 @@ from sdtoolbox.postshock import CJspeed, PostShock_eq
 # Fresh reactant state -- this comes directly from your input
 # ------------------------------------------------------------
 
-T1 = 300.0
-P1 = 1.0e5
+T1 = 1291.0               # K, post-reflected-shock temperature
+P1 = 3.31 * 101325.0      # Pa, post-reflected-shock pressure
 
-# C2H4/air mixture from Dr. Quinlan's supplied case
-# Mole fractions:
-# X_C2H4 = 0.065445
-# X_O2   = 0.196340
-# X_N2   = 0.738215
-q = "C2H4:0.065445 O2:0.196340 N2:0.738215"
+q = "C2H4:1 O2:3 N2:12"
 
 # IMPORTANT:
 # Use the Cantera mechanism corresponding to your Davis mechanism
