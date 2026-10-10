@@ -410,6 +410,13 @@ print(f"FIT_START_TIME           = {FIT_START_TIME:.8e} s")
 print(f"X_STOP                   = {X_STOP:.6f} m")
 print("========================================\n")
 
+print("\nTracked front data:")
+for t, x_front in zip(times, front_positions):
+    print(f"t = {t:.8e} s, x_front = {x_front:.8e} m")
+
+print(f"\nFIT_START_TIME = {FIT_START_TIME:.8e} s")
+print(f"X_STOP = {X_STOP:.8e} m")
+print(f"Total tracked points = {len(times)}")
 
 fit_mask = (
     (times >= FIT_START_TIME) &
