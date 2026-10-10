@@ -257,6 +257,12 @@ for n, plotfile in enumerate(plotfiles):
     x_search = x[mask]
     p_search = p_x[mask]
 
+    print(f"Grid dimensions: {ds.domain_dimensions}")
+    print(f"Domain x range: {xlo:.8e} to {xhi:.8e} m")
+    print(f"Grid spacing: {dx:.8e} m")
+    print(f"Tracking window cells: {len(x_search)}")
+    print(f"Tracking window limits: {INITIAL_SEARCH_MIN} to {INITIAL_SEARCH_MAX} m")
+
     if len(x_search) < 3:
         raise RuntimeError(
             f"Tracking window too small at t={time:.6e} s"
