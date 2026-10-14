@@ -1,6 +1,9 @@
+
 #include "prob.H"
 
 #include <AMReX_ParmParse.H>
+#include <AMReX_Print.H>
+#include <AMReX.H>
 
 using namespace amrex;
 
@@ -11,109 +14,84 @@ amrex_probinit(
     const int*,
     const int*,
     const int*,
-    const amrex::Real* problo,
-    const amrex::Real* probhi)
+    const amrex::Real*,
+    const amrex::Real*)
 {
     auto* P = PeleC::h_prob_parm_device;
     auto eos = pele::physics::PhysicsType::eos();
 
-    // ------------------------------------------------------------
-    // UNIFORM SHEPHERD VALIDATION STATE
-    // Brown 1999: 1291 K, 3.31 atm
-    // ------------------------------------------------------------
-    
-    P->T_r = 1291.0;          // K
-    P->p_r = 3.3538575e6;     // dyn/cm^2 = 3.31 atm
-    P->u_r = 0.0;             // cm/s
-    
-    // ============================================================
-    // READ INPUT OVERRIDES
-    // ============================================================
-    
     amrex::ParmParse pp("prob");
-    
+
+    // Fresh reactants: Cantera CJ reference state
+    P->T_r = 300.0;
+    P->p_r = 1.01325e6;
+    P->u_r = 0.0;
+
     pp.query("T_r", P->T_r);
     pp.query("p_r", P->p_r);
     pp.query("u_r", P->u_r);
 
-// ============================================================
-// SHEPHERD / BROWN 1999 REACTANT COMPOSITION
-//
-// Mole ratio:
-//   C2H4 + 3 O2 + 12 N2
-// ============================================================
+    // Initiation state: supplied through input file
+    bool have_Tl = pp.query("T_l", P->T_l);
+    bool have_pl = pp.query("p_l", P->p_l);
+    pp.query("u_l", P->u_l);
+    pp.query("x_interface", P->x_interface);
 
-amrex::Real Xr[NUM_SPECIES] = {0.0};
-amrex::Real Yr[NUM_SPECIES] = {0.0};
+    AMREX_ALWAYS_ASSERT_WITH_MESSAGE(
+        have_Tl && have_pl &&
+        P->T_l > 0.0 && P->p_l > 0.0,
+        "Specify positive prob.T_l and prob.p_l"
+    );
 
-// Exact Brown 1999 mole fractions
-Xr[C2H4_ID] = 1.0 / 16.0;
-Xr[O2_ID]   = 3.0 / 16.0;
-Xr[N2_ID]   = 12.0 / 16.0;
+    // C2H4 + 3 O2 + 12 N2
+    amrex::Real X[NUM_SPECIES] = {0.0};
+    amrex::Real Y[NUM_SPECIES] = {0.0};
 
-// Convert mole fractions to mechanism-consistent mass fractions
-eos.X2Y(Xr, Yr);
+    X[C2H4_ID] = 1.0 / 16.0;
+    X[O2_ID]   = 3.0 / 16.0;
+    X[N2_ID]   = 12.0 / 16.0;
 
-// Store mass fractions for cell initialization in prob.H
-for (int n = 0; n < NUM_SPECIES; ++n) {
-    P->Y_r[n] = Yr[n];
+    eos.X2Y(X, Y);
+
+    for (int n = 0; n < NUM_SPECIES; ++n) {
+        P->Y_r[n] = Y[n];
+        P->Y_l[n] = Y[n];
+    }
+
+    // Right-state thermodynamics
+    amrex::Real e_r = 0.0;
+
+    eos.PYT2R(P->p_r, P->Y_r,
+              P->T_r, P->rho_r);
+
+    eos.RTY2E(P->rho_r, P->T_r,
+              P->Y_r, e_r);
+
+    P->rhoe_r = P->rho_r * e_r;
+
+    // Left-state thermodynamics
+    amrex::Real e_l = 0.0;
+
+    eos.PYT2R(P->p_l, P->Y_l,
+              P->T_l, P->rho_l);
+
+    eos.RTY2E(P->rho_l, P->T_l,
+              P->Y_l, e_l);
+
+    P->rhoe_l = P->rho_l * e_l;
+
+    amrex::Print()
+        << "\nDETONATION PROPAGATION INITIALIZATION\n"
+        << "Right: T = " << P->T_r
+        << " K, p = " << P->p_r << " dyn/cm^2\n"
+        << "Left:  T = " << P->T_l
+        << " K, p = " << P->p_l << " dyn/cm^2\n"
+        << "Interface x = " << P->x_interface
+        << " cm\n";
 }
-
-// ============================================================
-// COMPUTE CONSISTENT REACTANT STATE
-// ============================================================
-
-amrex::Real e_r = 0.0;
-
-eos.PYT2R(
-    P->p_r,
-    Yr,
-    P->T_r,
-    P->rho_r);
-
-eos.RTY2E(
-    P->rho_r,
-    P->T_r,
-    Yr,
-    e_r);
-
-P->rhoe_r = P->rho_r * e_r;
-
-// ============================================================
-// DEBUG OUTPUT
-// ============================================================
-
-amrex::Print()
-    << "\n========================================\n"
-    << " SHEPHERD INDUCTION-TIME VALIDATION\n"
-    << "========================================\n"
-    << "Mechanism: Baurle-Eklund\n"
-    << "T   = " << P->T_r << " K\n"
-    << "p   = " << P->p_r << " dyn/cm^2\n"
-    << "rho = " << P->rho_r << " g/cm^3\n"
-    << "u   = " << P->u_r << " cm/s\n"
-    << "\nREACTANT MIXTURE: C2H4 + 3 O2 + 12 N2\n"
-    << "Y_C2H4 = " << Yr[C2H4_ID] << "\n"
-    << "Y_O2   = " << Yr[O2_ID] << "\n"
-    << "Y_N2   = " << Yr[N2_ID] << "\n"
-    << "========================================\n\n";
 
 }
 
-} // extern "C"
-
-
-void
-PeleC::problem_post_init()
-{
-}
-
-void
-PeleC::problem_post_timestep()
-{
-}
-
-void
-PeleC::problem_post_restart()
-{
-}
+void PeleC::problem_post_init() {}
+void PeleC::problem_post_timestep() {}
+void PeleC::problem_post_restart() {}
