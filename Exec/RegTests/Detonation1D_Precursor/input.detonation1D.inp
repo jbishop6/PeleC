@@ -1,15 +1,15 @@
+
 # ============================================================
-# SHEPHERD INDUCTION-TIME VALIDATION
-# Brown 1999 - Baurle-Eklund mechanism
-# PeleC is 2-D, but domain is thin in y
+# ETHYLENE-AIR DETONATION PROPAGATION
+# Baurle-Eklund mechanism
+# Quasi-1D PeleC simulation
 # ============================================================
 
 # ------------------ TIME CONTROL ------------------
 
-# First run: keep this short just to verify initialization
-max_step = 100000
-stop_time = 2.e-4
-pelec.fixed_dt = 1.e-8
+max_step = 5000000
+stop_time = 5.e-5
+pelec.fixed_dt = 1.e-11
 
 pelec.cfl         = 0.5
 pelec.init_shrink = 0.1
@@ -21,8 +21,9 @@ pelec.dt_cutoff   = 5.0e-20
 
 cvode.dt_min = 1.0e-18
 cvode.solve_type = dense_direct
-ode.rtol     = 1.0e-6
-ode.atol     = 1.0e-10
+ode.rtol = 1.0e-6
+ode.atol = 1.0e-10
+
 transport.const_thermal_diffusion_ratio = 0
 transport.use_soret = 0
 
@@ -31,37 +32,26 @@ transport.use_soret = 0
 
 geometry.coord_sys = 0
 
-# x is non-periodic
-# y is periodic -> solution should remain essentially 1-D
 geometry.is_periodic = 0 1
 
-geometry.prob_lo = 0.0   0.0
-geometry.prob_hi = 10.0  0.2
+geometry.prob_lo = 0.0  0.0
+geometry.prob_hi = 10.0 0.2
 
-# 50 micron resolution in x:
-# 0.10 / 2000 = 5e-5 m
-#
-# y only needs enough cells to satisfy the 2-D solver
-amr.n_cell = 8 8
+# 50 micron x-resolution
+amr.n_cell = 2000 8
 
 
 # ------------------ BOUNDARY CONDITIONS ------------------
 
-# x-low  : extrapolation
-# y-low  : periodic/interior
 pelec.lo_bc = "FOExtrap" "Interior"
-
-# x-high : extrapolation
-# y-high : periodic/interior
 pelec.hi_bc = "FOExtrap" "Interior"
 
 
 # ------------------ PHYSICS ------------------
 
-pelec.do_hydro = 0
+pelec.do_hydro = 1
 pelec.do_react = 1
 
-# Inviscid precursor for now
 pelec.diffuse_vel  = 0
 pelec.diffuse_temp = 0
 pelec.diffuse_spec = 0
@@ -69,34 +59,33 @@ pelec.diffuse_spec = 0
 pelec.chem_integrator = ReactorCvode
 
 
-# ------------------ PROBLEM INITIAL CONDITION ------------------
+# ------------------ PROBLEM INITIAL CONDITIONS ------------------
 
-# Brown 1999 Shepherd induction-time validation
-# C2H4 + 3 O2 + 12 N2
-# T = 1291 K, P = 3.31 atm
-#
-# PeleC uses CGS:
-# pressure [dyn/cm^2], velocity [cm/s]
+# Unburned ethylene-air mixture
+# These values are placeholders pending verification
+# of prob.cpp and prob.H initialization.
 
-prob.T_r = 1291.0
-prob.p_r = 3.3538575e6
+prob.T_r = 300.0
+prob.p_r = 1.0e6
 prob.u_r = 0.0
+
+# Left-side driver state and species composition
+# must be verified in prob.cpp/prob.H before running.
 
 
 # ------------------ AMR / GRID ------------------
 
-# Start without refinement so we understand the base solution
 amr.max_level = 0
 
 amr.blocking_factor = 8
-amr.max_grid_size   = 256
-amr.n_error_buf     = 2
+amr.max_grid_size = 256
+amr.n_error_buf = 2
 
 
 # ------------------ VERBOSITY ------------------
 
 pelec.v = 1
-amr.v   = 1
+amr.v = 1
 
 amr.data_log = datlog
 
@@ -105,7 +94,7 @@ amr.data_log = datlog
 
 amr.checkpoint_files_output = 0
 amr.check_file = chk
-amr.check_int  = 1000
+amr.check_int = 1000
 
 
 # ------------------ PLOTFILES ------------------
@@ -113,9 +102,7 @@ amr.check_int  = 1000
 amr.plot_files_output = 1
 amr.plot_file = plt
 
-# Frequent output while debugging
-amr.plot_int = 10
+amr.plot_int = 1000
 
 amr.plot_vars = density Temp
-
 amr.derive_plot_vars = pressure x_velocity
