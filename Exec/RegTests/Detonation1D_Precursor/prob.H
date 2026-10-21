@@ -4,6 +4,18 @@
 #include <AMReX_Print.H>
 #include <AMReX_ParmParse.H>
 #include <AMReX_Geometry.H>
+#include <AMReX_FArrayBox.H>
+#include <AMReX_REAL.H>
+#include <AMReX_GpuMemory.H>
+
+#include "mechanism.H"
+#include "PeleC.H"
+#include "IndexDefines.H"
+#include "Constants.H"
+#include "PelePhysics.H"
+#include "Tagging.H"
+#include "ProblemSpecificFunctions.H"
+#include "prob_parm.H"
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
