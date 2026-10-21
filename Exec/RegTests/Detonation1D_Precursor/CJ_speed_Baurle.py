@@ -30,15 +30,6 @@ mech = (
 
 D_CJ = CJspeed(P1, T1, q, mech)
 
-print("\nComplete CJ product mass fractions:")
-
-for species, Y in zip(gas2.species_names, gas2.Y):
-    print(f"{species:8s} {Y:.16e}")
-
-print(f"\nSum of mass fractions = {sum(gas2.Y):.16f}")
-
-print(f"CJ speed = {D_CJ:.3f} m/s")
-
 
 # ------------------------------------------------------------
 # FRESH MIXTURE DENSITY
@@ -61,6 +52,15 @@ gas2 = PostShock_eq(
     q,
     mech
 )
+
+print("\nComplete CJ product mass fractions:")
+
+for species, Y in zip(gas2.species_names, gas2.Y):
+    print(f"{species:8s} {Y:.16e}")
+
+print(f"\nSum of mass fractions = {sum(gas2.Y):.16f}")
+
+print(f"CJ speed = {D_CJ:.3f} m/s")
 
 rho2 = gas2.density
 T2   = gas2.T
