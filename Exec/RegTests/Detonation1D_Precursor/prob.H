@@ -74,3 +74,49 @@ pc_initdata(
         state(i, j, k, UFS + n) = rho * Y;
     }
 }
+
+
+    
+// ============================================================
+// BOUNDARY CONDITION
+// ============================================================
+
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+void
+bcnormal(
+    const amrex::Real* /*x[AMREX_SPACEDIM]*/,
+    const amrex::Real s_int[NVAR],
+    amrex::Real s_ext[NVAR],
+    const int /*idir*/,
+    const int /*sgn*/,
+    const amrex::Real /*time*/,
+    amrex::GeometryData const& /*geomdata*/,
+    ProbParmDevice const& /*prob_parm*/,
+    const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& /*turb_fluc*/)
+{
+    for (int n = 0; n < NVAR; n++) {
+        s_ext[n] = s_int[n];
+    }
+}
+
+
+// ============================================================
+// OPTIONAL PROBLEM CLOSE FUNCTION
+// ============================================================
+
+inline void
+pc_prob_close()
+{
+}
+
+
+// ============================================================
+// DEFAULT PROBLEM-SPECIFIC FUNCTIONS
+// ============================================================
+
+using ProblemSpecificFunctions =
+    DefaultProblemSpecificFunctions;
+
+#endif
+
