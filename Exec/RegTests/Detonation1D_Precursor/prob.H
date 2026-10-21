@@ -1,3 +1,9 @@
+#ifndef PROB_H
+#define PROB_H
+
+#include <AMReX_Print.H>
+#include <AMReX_ParmParse.H>
+#include <AMReX_Geometry.H>
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
