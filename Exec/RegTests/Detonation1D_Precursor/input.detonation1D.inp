@@ -7,8 +7,8 @@
 
 # ------------------ TIME CONTROL ------------------
 
-max_step = 5000000
-stop_time = 5.e-5
+max_step = 100000
+stop_time = 1.e-6
 pelec.fixed_dt = 1.e-11
 
 pelec.cfl         = 0.5
@@ -39,6 +39,7 @@ geometry.prob_hi = 10.0 0.2
 
 # 50 micron x-resolution
 amr.n_cell = 2000 8
+amr.max_level = 0
 
 
 # ------------------ BOUNDARY CONDITIONS ------------------
@@ -61,16 +62,19 @@ pelec.chem_integrator = ReactorCvode
 
 # ------------------ PROBLEM INITIAL CONDITIONS ------------------
 
-# Unburned ethylene-air mixture
-# These values are placeholders pending verification
-# of prob.cpp and prob.H initialization.
-
+# Right state: unburned ethylene-air
 prob.T_r = 300.0
 prob.p_r = 1.0e6
 prob.u_r = 0.0
 
-# Left-side driver state and species composition
-# must be verified in prob.cpp/prob.H before running.
+# Left state: equilibrium CJ products
+prob.T_l = 2972.52675
+prob.p_l = 1.82035524e7
+prob.u_l = 81281.27
+
+# Initial interface at 0.5 cm
+prob.x_interface = 0.5
+
 
 
 # ------------------ AMR / GRID ------------------
