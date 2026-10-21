@@ -53,16 +53,27 @@ amrex_probinit(
 
     eos.X2Y(X, Y);
 
-    // Right state: fresh ethylene-air
+    
+    // Right state: fresh ethylene-air reactants
     for (int n = 0; n < NUM_SPECIES; ++n) {
         P->Y_r[n] = Y[n];
     }
-    
+
     // Left state: equilibrium CJ products from Cantera
     for (int n = 0; n < NUM_SPECIES; ++n) {
         P->Y_l[n] = 0.0;
     }
-    
+
+    P->Y_l[C2H4_ID] = 1.6366874174283230e-21;
+    P->Y_l[H2_ID]   = 5.2256466613311513e-04;
+    P->Y_l[O2_ID]   = 2.6250749996976387e-02;
+    P->Y_l[H2O_ID]  = 7.3619680940778337e-02;
+    P->Y_l[CO_ID]   = 3.8697656923326870e-02;
+    P->Y_l[CO2_ID]  = 1.3045234470000630e-01;
+    P->Y_l[N2_ID]   = 7.3045700272779030e-01;
+    P->Y_l[HE_ID]   = 0.0;
+    P->Y_l[AR_ID]   = 0.0;
+
     P->Y_l[H2_ID]  = 5.2256466613e-4;
     P->Y_l[O2_ID]  = 2.6250749997e-2;
     P->Y_l[H2O_ID] = 7.3619680941e-2;
