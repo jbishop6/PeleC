@@ -43,13 +43,13 @@ amrex_probinit(
         "Specify positive prob.T_l and prob.p_l"
     );
 
-    // C2H4 + 3 O2 + 12 N2
+    // C2H4 + 3 O2 + 11.28 N2
     amrex::Real X[NUM_SPECIES] = {0.0};
     amrex::Real Y[NUM_SPECIES] = {0.0};
 
-    X[C2H4_ID] = 1.0 / 16.0;
-    X[O2_ID]   = 3.0 / 16.0;
-    X[N2_ID]   = 12.0 / 16.0;
+    X[C2H4_ID] = 1.0 / 15.28;
+    X[O2_ID]   = 3.0 / 15.28;
+    X[N2_ID]   = 11.28 / 15.28;
 
     eos.X2Y(X, Y);
 
@@ -63,23 +63,13 @@ amrex_probinit(
     for (int n = 0; n < NUM_SPECIES; ++n) {
         P->Y_l[n] = 0.0;
     }
-
-    P->Y_l[C2H4_ID] = 1.6366874174283230e-21;
-    P->Y_l[H2_ID]   = 5.2256466613311513e-04;
-    P->Y_l[O2_ID]   = 2.6250749996976387e-02;
-    P->Y_l[H2O_ID]  = 7.3619680940778337e-02;
-    P->Y_l[CO_ID]   = 3.8697656923326870e-02;
-    P->Y_l[CO2_ID]  = 1.3045234470000630e-01;
-    P->Y_l[N2_ID]   = 7.3045700272779030e-01;
-    P->Y_l[HE_ID]   = 0.0;
-    P->Y_l[AR_ID]   = 0.0;
-
-    P->Y_l[H2_ID]  = 5.2256466613e-4;
-    P->Y_l[O2_ID]  = 2.6250749997e-2;
-    P->Y_l[H2O_ID] = 7.3619680941e-2;
-    P->Y_l[CO_ID]  = 3.8697656923e-2;
-    P->Y_l[CO2_ID] = 1.3045234470e-1;
-    P->Y_l[N2_ID]  = 7.3045700277e-1;
+    
+    P->Y_l[H2_ID]  = 6.008842310e-04;
+    P->Y_l[O2_ID]  = 2.9752577828e-02;
+    P->Y_l[H2O_ID] = 7.6508987355e-02;
+    P->Y_l[CO_ID]  = 4.3741320483e-02;
+    P->Y_l[CO2_ID] = 1.3129415878e-01;
+    P->Y_l[N2_ID]  = 7.1810214713e-01;
 
     // Right-state thermodynamics
     amrex::Real e_r = 0.0;
