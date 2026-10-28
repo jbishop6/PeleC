@@ -8,8 +8,8 @@
 # ------------------ TIME CONTROL ------------------
 
 max_step = 100000
-stop_time = 1.e-6
-pelec.fixed_dt = 1.e-11
+stop_time = 1.e-5
+pelec.fixed_dt = 1.e-10
 
 pelec.cfl         = 0.5
 pelec.init_shrink = 0.1
@@ -79,8 +79,6 @@ prob.x_interface = 0.5
 
 # ------------------ AMR / GRID ------------------
 
-amr.max_level = 0
-
 amr.blocking_factor = 8
 amr.max_grid_size = 256
 amr.n_error_buf = 2
@@ -106,7 +104,7 @@ amr.check_int = 1000
 amr.plot_files_output = 1
 amr.plot_file = plt
 
-amr.plot_int = 1000
+amr.plot_int = 2000
 
 amr.plot_vars = density Temp
 amr.derive_plot_vars = pressure x_velocity
