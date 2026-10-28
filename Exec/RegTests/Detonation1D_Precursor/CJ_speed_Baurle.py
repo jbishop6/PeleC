@@ -12,10 +12,10 @@ from sdtoolbox.postshock import CJspeed, PostShock_eq
 # Fresh reactant state -- this comes directly from your input
 # ------------------------------------------------------------
 
-T1 = 300.0
-P1 = 100000.0
+T1 = 295 # K
+P1 = 1.0e5 # Pa (1 bar)
 
-q = "C2H4:1 O2:3 N2:12"
+q = 'C2H4:1 O2:3 N2:11.28'
 
 # IMPORTANT:
 # Use the Cantera mechanism corresponding to your Davis mechanism
