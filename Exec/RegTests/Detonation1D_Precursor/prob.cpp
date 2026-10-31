@@ -71,6 +71,22 @@ amrex_probinit(
     P->Y_l[CO2_ID] = 1.3129415878e-01;
     P->Y_l[N2_ID]  = 7.1810214713e-01;
 
+    // Normalize equilibrium CJ product mass fractions
+    amrex::Real sumY = 0.0;
+    
+    for (int n = 0; n < NUM_SPECIES; ++n) {
+        sumY += P->Y_l[n];
+    }
+
+AMREX_ALWAYS_ASSERT_WITH_MESSAGE(
+    sumY > 0.0,
+    "CJ product mass fractions must have a positive sum"
+);
+
+for (int n = 0; n < NUM_SPECIES; ++n) {
+    P->Y_l[n] /= sumY;
+}
+
     // Right-state thermodynamics
     amrex::Real e_r = 0.0;
 
