@@ -1,4 +1,3 @@
-
 #!/bin/bash
 #SBATCH --job-name=ign_delay
 #SBATCH --nodes=1
