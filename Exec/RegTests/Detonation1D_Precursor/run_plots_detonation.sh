@@ -19,6 +19,20 @@ echo "Working directory: $(pwd)"
 echo "========================================"
 
 # ------------------------------------------------------------
+# SIMULATION RESULTS DIRECTORY
+# ------------------------------------------------------------
+
+RESULTS_DIR="/home/jbishop6/PeleC/Exec/RegTests/Detonation1D_Precursor/validation_Brown1999_Baurle_1291K_3.31atm_30.4us_2026-11-02_095632"
+
+if [ ! -d "$RESULTS_DIR" ]; then
+    echo "ERROR: Results directory does not exist:"
+    echo "$RESULTS_DIR"
+    exit 1
+fi
+
+echo "Analyzing results from: $RESULTS_DIR"
+
+# ------------------------------------------------------------
 # INITIALIZE CONDA
 # ------------------------------------------------------------
 
