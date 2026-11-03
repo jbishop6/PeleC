@@ -24,11 +24,11 @@ import yt
 # you want to analyze.
 RESULTS_DIR = Path(
     "/home/jbishop6/PeleC/Exec/RegTests/Detonation1D_Precursor/"
-    "validation_Brown1999_Baurle_1291K_3.31atm_30.4us_2026-09-28_095020"
+    "validation_Brown1999_Baurle_1291K_3.31atm_30.4us_2026-11-02_095632"
 )
 
 # Theoretical CJ speed from SDToolbox + mechanism
-D_CJ = 1855.14819089  # m/s, Baurle-Eklund C2H4/air
+D_CJ = 1855.50803897  # m/s, Baurle-Eklund C2H4/air
 
 X_INITIAL = 0.005
 INITIAL_SEARCH_MIN = 0.0
@@ -261,7 +261,10 @@ for n, plotfile in enumerate(plotfiles):
     print(f"Domain x range: {xlo:.8e} to {xhi:.8e} m")
     print(f"Grid spacing: {dx:.8e} m")
     print(f"Tracking window cells: {len(x_search)}")
-    print(f"Tracking window limits: {INITIAL_SEARCH_MIN} to {INITIAL_SEARCH_MAX} m")
+    print(
+        f"Tracking window limits: "
+        f"{x_search.min():.6e} to {x_search.max():.6e} m"
+    )
 
     if len(x_search) < 3:
         raise RuntimeError(
@@ -333,7 +336,7 @@ for n, plotfile in enumerate(plotfiles):
     # Choose the LEADING/rightmost strong pressure drop
     # --------------------------------------------------------
 
-    shock_index = candidate_indices[-1]
+    shock_index = np.argmin(dpdx)
 
     x_front = x_search[shock_index]
     p_front = p_search[shock_index]
@@ -562,7 +565,7 @@ np.savetxt(
     csv_file,
     data,
     delimiter=",",
-    header="time_s,x_front_m,pressure_front_Pa",
+    header="time_s,x_front_m,pressure_front_dyn_per_cm2",
     comments=""
 )
 
