@@ -1,4 +1,3 @@
-
 #!/bin/bash
 #SBATCH --job-name=frozen_shock
 #SBATCH --nodes=1
