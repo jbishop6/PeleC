@@ -1,3 +1,9 @@
+import sys
+
+sys.path.insert(
+    0,
+    "/home/jbishop6/sdtoolbox/Python3/sdtoolbox"
+)
 
 import cantera as ct
 from sdtoolbox.postshock import PostShock_fr
