@@ -2,7 +2,7 @@ import sys
 
 sys.path.insert(
     0,
-    "/home/jbishop6/sdtoolbox/Python3/sdtoolbox"
+    "/home/jbishop6/sdtoolbox/Python3"
 )
 
 import cantera as ct
