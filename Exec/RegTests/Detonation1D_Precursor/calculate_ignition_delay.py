@@ -9,11 +9,7 @@ import matplotlib.pyplot as plt
 # USER SETTINGS
 # --------------------------------------------------
 
-MECHANISM = (
-    "/home/jbishop6/PelePhysics/"
-    "Mechanisms/BaurleEklund_C2H4_7s3r_Ar/"
-    "mechanism.yaml"
-)
+MECHANISM = "/home/jbishop6/PeleC/Submodules/PelePhysics/Mechanisms/BaurleEklund_C2H4_7s3r_Ar/mechanism.yaml"
 
 T0 = 950.0             # K
 P0 = 15.7e5            # Pa (15.7 bar)
