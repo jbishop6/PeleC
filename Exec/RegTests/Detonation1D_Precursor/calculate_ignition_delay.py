@@ -11,8 +11,14 @@ import matplotlib.pyplot as plt
 
 MECHANISM = "/home/jbishop6/PeleC/Submodules/PelePhysics/Mechanisms/BaurleEklund_C2H4_7s3r_Ar/mechanism.yaml"
 
-T0 = 950.0             # K
-P0 = 15.7e5            # Pa (15.7 bar)
+# --------------------------------------------------
+# FROZEN POST-SHOCK CONDITIONS
+# --------------------------------------------------
+
+T0 = 1630.2099       # K
+P0 = 35.0512e5       # Pa
+
+COMPOSITION = "C2H4:1 O2:3 N2:11.28"
 
 # Same fresh mixture as PeleC
 COMPOSITION = "C2H4:1, O2:3, N2:11.28"
