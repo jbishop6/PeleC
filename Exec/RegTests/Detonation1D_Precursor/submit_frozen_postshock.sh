@@ -40,6 +40,9 @@ echo ""
 echo "Checking Cantera and SDToolbox..."
 
 python -c "
+import sys
+sys.path.insert(0, '/home/jbishop6/sdtoolbox/Python3')
+
 import cantera as ct
 from sdtoolbox.postshock import PostShock_fr
 
