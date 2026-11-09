@@ -50,7 +50,7 @@ pelec.hi_bc = "FOExtrap" "Interior"
 # ------------------ PHYSICS ------------------
 
 pelec.do_hydro = 1
-pelec.do_react = 0
+pelec.do_react = 1
 
 pelec.diffuse_vel  = 0
 pelec.diffuse_temp = 0
