@@ -12,7 +12,7 @@ import yt
 
 RESULTS_DIR = Path(
     "/home/jbishop6/PeleC/Exec/RegTests/Detonation1D_Precursor/"
-    "validation_Brown1999_Baurle_1291K_3.31atm_30.4us_2026-11-09_1242500"
+    "validation_Brown1999_Baurle_1291K_3.31atm_30.4us_2026-11-09_124250"
 )
 
 PLOTFILES = ["plt02000", "plt50000", "plt98000"]
