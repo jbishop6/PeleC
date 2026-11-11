@@ -54,15 +54,19 @@ gas_shock = PostShock_fr(
     D_CJ, P1, T1, q, MECH
 )
 
-rho1 = gas1.density
+T_vn = gas_shock.T
+P_vn = gas_shock.P
 rho_vn = gas_shock.density
+Y_vn = gas_shock.Y.copy()
+
+rho1 = gas1.density
 
 # Shock-frame gas velocity
 U_vn = D_CJ * rho1 / rho_vn
 
 print(f"CJ speed: {D_CJ:.6f} m/s")
-print(f"Frozen shock T: {gas_shock.T:.3f} K")
-print(f"Frozen shock P: {gas_shock.P / 1e5:.3f} bar")
+print(f"Frozen shock T: {T_vn:.3f} K")
+print(f"Frozen shock P: {P_vn / 1e5:.3f} bar")
 
 # --------------------------------------------------
 # ZND INTEGRATION
@@ -156,8 +160,8 @@ with open(summary_path, "w") as f:
     f.write(f"D_CJ = {D_CJ:.9f} m/s\n\n")
 
     f.write("FROZEN POST-SHOCK STATE\n")
-    f.write(f"T_vN = {gas_shock.T:.6f} K\n")
-    f.write(f"P_vN = {gas_shock.P:.6e} Pa\n")
+    f.write(f"T_vN = {T_vn:.6f} K\n")
+    f.write(f"P_vN = {P_vn:.6e} Pa\n")
     f.write(f"rho_vN = {rho_vn:.9f} kg/m3\n")
     f.write(f"U_vN = {U_vn:.6f} m/s\n\n")
 
@@ -169,7 +173,12 @@ with open(summary_path, "w") as f:
     f.write(f"Final lab velocity = {u_lab[-1]:.6f} m/s\n")
     f.write(f"Number of points = {len(x)}\n")
 
-    for key in ("ind_time", "ind_len", "exo_time", "exo_len"):
+    for key in (
+        "ind_time_ZND",
+        "ind_len_ZND",
+        "exo_time_ZND",
+        "exo_len_ZND",
+    ):
         if key in znd:
             f.write(f"{key} = {znd[key]}\n")
 
