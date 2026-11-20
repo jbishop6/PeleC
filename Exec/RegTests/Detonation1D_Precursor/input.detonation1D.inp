@@ -8,7 +8,8 @@
 
 max_step = 100000
 stop_time = 1.e-5
-pelec.fixed_dt = 1.e-10
+# pelec.fixed_dt = 1.e-10
+pelec.initial_dt = 1.e-10
 
 pelec.cfl         = 0.5
 pelec.init_shrink = 0.1
@@ -105,5 +106,6 @@ amr.plot_file = plt
 
 amr.plot_int = 1000
 
-amr.plot_vars = density Temp
+# amr.plot_vars = density Temp
+# amr.plot_vars = all
 amr.derive_plot_vars = pressure x_velocity

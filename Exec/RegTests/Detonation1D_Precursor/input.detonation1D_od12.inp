@@ -1,0 +1,111 @@
+# ============================================================
+# ETHYLENE-AIR DETONATION PROPAGATION
+# Baurle-Eklund mechanism
+# Quasi-1D PeleC simulation
+# ============================================================
+
+# ------------------ TIME CONTROL ------------------
+
+max_step = 100000
+stop_time = 1.5e-6
+# pelec.fixed_dt = 1.e-10
+pelec.initial_dt = 1.e-10
+
+pelec.cfl         = 0.5
+pelec.init_shrink = 0.1
+pelec.change_max  = 1.10
+pelec.dt_cutoff   = 5.0e-20
+
+
+# ------------------ CHEMISTRY SOLVER ------------------
+
+cvode.dt_min = 1.0e-18
+cvode.solve_type = dense_direct
+ode.rtol = 1.0e-6
+ode.atol = 1.0e-10
+
+transport.const_thermal_diffusion_ratio = 0
+transport.use_soret = 0
+
+
+# ------------------ GEOMETRY ------------------
+
+geometry.coord_sys = 0
+
+geometry.is_periodic = 0 1
+
+geometry.prob_lo = 0.0  0.0
+geometry.prob_hi = 30.0 0.2
+
+# 50 micron x-resolution
+amr.n_cell = 48000 8
+amr.max_level = 0
+
+
+# ------------------ BOUNDARY CONDITIONS ------------------
+
+pelec.lo_bc = "NoSlipWall" "Interior"
+pelec.hi_bc = "FOExtrap" "Interior"
+
+
+# ------------------ PHYSICS ------------------
+
+pelec.do_hydro = 1
+pelec.do_react = 1
+
+pelec.diffuse_vel  = 0
+pelec.diffuse_temp = 0
+pelec.diffuse_spec = 0
+
+pelec.chem_integrator = ReactorCvode
+
+
+# ------------------ PROBLEM INITIAL CONDITIONS ------------------
+
+# Right state: unburned ethylene-air
+prob.T_r = 295.0
+prob.p_r = 1.0e6
+prob.u_r = 0.0
+
+# Left state: equilibrium CJ products
+prob.T_l = 3520.6          # overdriven f=D/D_CJ=1.2 (was 3026.748696 = CJ)
+prob.p_l = 4.187943e7      # 41.33 atm (was 1.89433462e7 = 18.70 atm)
+prob.u_l = 1.563660e5      # 1563.7 m/s (was 82360.948936 = 823.6 m/s)
+
+# Initial interface at 0.5 cm
+prob.x_interface = 0.5
+
+
+
+# ------------------ AMR / GRID ------------------
+
+amr.blocking_factor = 8
+amr.max_grid_size = 256
+amr.n_error_buf = 2
+
+
+# ------------------ VERBOSITY ------------------
+
+pelec.v = 1
+amr.v = 1
+
+amr.data_log = datlog
+
+
+# ------------------ CHECKPOINTS ------------------
+
+amr.checkpoint_files_output = 0
+amr.check_file = chk
+amr.check_int = 1000
+
+
+# ------------------ PLOTFILES ------------------
+
+amr.plot_files_output = 1
+amr.plot_file = plt_od_long
+
+amr.plot_int = 1000
+
+# amr.plot_vars = density Temp
+# amr.plot_vars = all
+amr.derive_plot_vars = pressure x_velocity
